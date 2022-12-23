@@ -1,1 +1,1 @@
-dbstop if error
+dbstop if error % debugging option

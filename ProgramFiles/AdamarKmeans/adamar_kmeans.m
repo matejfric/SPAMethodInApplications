@@ -13,8 +13,8 @@ end
 
 fprintf("\nPerforming the K-means algorithm for K=%d\n", K);
 
-PiY = [X(:,5)'; 1-X(:,5)']; % [P(x is corroded); P(x is not corroded)]
-X = X(:, 1:4);
+PiY = [X(:,end)'; 1-X(:,end)']; % [P(x is corroded); P(x is not corroded)]
+X = X(:, 1:end-1); % Drop ground truth
 
 % Remember scaling for testing dataset
 a = min(X(:, 1));
@@ -22,7 +22,7 @@ b = max(X(:, 1));
 X(:, 1) = (X(:, 1) - a) / (a - b); % Scale to [-1,1] (MinMaxScaler)
 
 % Initial approximation of C and Lambda
-[idx, C] = kmeans(X, K, 'MaxIter',1000);
+[idx, C] = kmeans(X, K, 'MaxIter',1000); % X without ground truth
 Gamma = zeros(K,length(idx));
 for k = 1:K
     Gamma(k,idx==k) = 1;

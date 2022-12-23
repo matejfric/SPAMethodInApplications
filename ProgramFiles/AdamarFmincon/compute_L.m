@@ -1,3 +1,5 @@
+% Never used, please see compute_L2()
+
 function L = compute_L(C,Gamma,Lambda,X,alpha, PiY)
 %COMPUTE_L Compute objective function value
 

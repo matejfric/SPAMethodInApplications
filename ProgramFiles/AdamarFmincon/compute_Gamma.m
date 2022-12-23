@@ -17,11 +17,6 @@ function Gamma = compute_Gamma(C,Gamma,Lambda,X,alpha, PiY)
     Aeq = kron(ones(1,K),eye(T));
     beq = ones(T,1);
     
-    if false % test of implementation
-        f_test_1 = compute_L(C,reshape(gamma0,T,K)',Lambda,X,alpha, PiY);
-        f_test_2 = compute_L2(C,reshape(gamma0,T,K)',Lambda,X,alpha, PiY);
-    end
-    
     f = @(gamma) compute_L2(C,reshape(gamma,T,K)',Lambda,X,alpha, PiY);
     
     options = optimoptions(...

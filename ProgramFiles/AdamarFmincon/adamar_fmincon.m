@@ -1,5 +1,6 @@
-function [C, Gamma, PiX, Lambda, it, Lit, learningErrors] = ...
+function [C, Gamma, PiX, Lambda, it, Lit, learningErrors, stats] = ...
     adamar_fmincon(X, K, alpha, C0, Gamma0, Lambda0, PiY, trueLabels, maxIters)
+
 %ADAMAR_FMINCON Summary of this function goes here
 % X        data
 % K        number of clusters
@@ -91,6 +92,8 @@ while it < maxIters % practical stopping criteria after computing new L (see "br
     PiX = round(Lambda*Gamma)'; % round => binary matrix
     learningErrors(it) = sum(abs(PiX(:,1) - trueLabels)) / length(trueLabels);
     disp(['Learning error = ' num2str(learningErrors(it))]);
+    
+    stats(it) = statistics(PiX(:,1), trueLabels); %(labels, ground_truth)
 end
 
 % Never used:

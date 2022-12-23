@@ -26,7 +26,8 @@ if true
     % The more images, the lesser F-count must be set in fmincon, otherwise
     % MATLAB will run out of memory. It is impossible to reach low learning
     % error for multiple images.
-    
+     
+ %   smaller_images = [137];
      smaller_images = [137, 172, 228, 240];
 %    smaller_images = [ 172, 177, 179, 203];
 %    smaller_images = [ 172, 177, 179, 203, 209, 212, 228, 240 ]; % Balanced
@@ -35,11 +36,11 @@ if true
         ca{i,1} = imread(sprintf('%s/Original/%d.jpg', DATASET, smaller_images(i)));
         ca{i,2} = imread(sprintf('%s/Annotations/%d.png', DATASET, smaller_images(i)));
     end
-    X = roughness_analysis(ca);
+    X = [roughness_analysis(ca), color_analysis(ca), get_ground_truth(ca)];
 end
 
 fprintf("How balanced are the labels? Ones: %.2f, Zeros: %.2f\n",...
-    sum(X(:,5)), size(X(:,5), 1)-sum(X(:,5)));
+    sum(X(:,end)), size(X(:,end), 1)-sum(X(:,end)));
 
 K = 10; % Number of clusters
 adamar_helper(X, K);
