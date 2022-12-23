@@ -1,7 +1,7 @@
 #images
-#*.png
-#*.jpg
-#*.jpeg
+*.png
+*.jpg
+*.jpeg
 
 # Windows default autosave extension
 *.asv
