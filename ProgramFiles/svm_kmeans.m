@@ -49,6 +49,9 @@ end
 stats_train = statistics(labels_train, X(:,end));
 stats_test = statistics(labels_test, Y(:,end));
 
+visualize(ca_pred(1,1), ca_pred(1,2), Y(:,end), labels_test, ["SVM K-means K=", num2str(K)]);
+pause
+
 % err = norm(abs(label2 - Y(:,end)),1) / size(label1, 1);
 % errKmeans = norm(abs(label1 - Y(:,end)),1) / size(label1, 1);
 

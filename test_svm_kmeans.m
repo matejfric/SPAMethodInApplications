@@ -6,8 +6,6 @@ addpath('ProgramFiles/TQDM') % Progress bar
 
 rng(42);
 
-DATASET = 'Dataset';
-
 ca = load_images();
 
 %descriptors = [Descriptor.Roughness Descriptor.Color Descriptor.RoughnessGLRL];
@@ -20,7 +18,7 @@ fprintf("How balanced are the labels? Ones: %.2f, Zeros: %.2f\n ",...
 % TEST SVM WITH K-MEANS AND GAMMA MATRIX
 
 %cluster_counts = 2:2:10;
-cluster_counts = 2.^(1:9);
+cluster_counts = 2.^(1:8);
 
 %lprecision = zeros(1,length(cluster_counts)); % Missing preallocation
 

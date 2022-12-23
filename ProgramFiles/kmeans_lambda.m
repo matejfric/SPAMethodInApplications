@@ -32,8 +32,8 @@ stats_train = statistics(PiX(:,1), X(:,end));
 % disp(['K-means+KL+Jensen learning error = ' num2str(errX)]);
 
 %Y = roughness_analysis(ca_predict);
-ca_predict = load_images(testing_images);
-Y = get_descriptors(ca_predict, descriptors);
+ca_pred = load_images(testing_images);
+Y = get_descriptors(ca_pred, descriptors);
 %Y(:, 1) = (Y(:, 1) - a) / (a - b); % Scale to [-1,1] (MinMaxScaler)
 
 % K-means
@@ -52,6 +52,8 @@ PiY = round(Lambda*GammaY)'; % round => binary matrix
 stats_test = statistics(PiY(:,1), Y(:,end));
 % errY = sum(abs(PiY(:,1) - Y(:,end)))/size(Y,1);
 % disp(['K-means+KL+Jensen testing error  = ' num2str(errY)]);
+
+visualize(ca_pred(1,1), ca_pred(1,2), Y(:,end), PiY(:,1), ["K-means Lambda K=", num2str(K)]);
 
 end
 

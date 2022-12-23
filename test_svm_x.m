@@ -1,10 +1,10 @@
-%TODO: GLRL
-
 close all
 clear all
 
 addpath('ProgramFiles')
 addpath('ProgramFiles/TQDM')
+
+rng(42);
 
 ca = load_images();
 %descriptors = [Descriptor.Color];
@@ -20,10 +20,13 @@ fprintf("How balanced are the labels? Ones: %.2f, Zeros: %.2f\n ",...
 
 % TEST SVM ON RAW DATA
 
-range = 1:5; % Numbers of runs
+range = 1:3; % Numbers of runs
+
+%testing_images = 6:10;
+testing_images = 68;
 
 for i = progress(range)
-    [stats_train, stats_test] = svm_x(X, 68, descriptors);
+    [stats_train, stats_test] = svm_x(X, testing_images, descriptors);
     
     %C = cell2mat(struct2cell(stats_learn)); % Convert struct to vector
     

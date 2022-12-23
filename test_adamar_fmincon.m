@@ -1,9 +1,8 @@
 close all
-
 addpath('ProgramFiles')
 addpath('ProgramFiles/TQDM') % Progress bar
 addpath('ProgramFiles/AdamarFmincon')
-
+rng(42);
 DATASET = 'Dataset';
 
 if false

@@ -1,12 +1,9 @@
 close all
-
-
 addpath('ProgramFiles')
 addpath('ProgramFiles/TQDM') % Progress bar
 addpath('ProgramFiles/AdamarFmincon') % adamar_predict()
 addpath('ProgramFiles/AdamarKmeans') % adamar_kmeans
-
-DATASET = 'Dataset';
+rng(42);
 
 ca = load_images();
 smaller_images = [ 172, 177, 179, 203, 209, 212, 228, 240 ];

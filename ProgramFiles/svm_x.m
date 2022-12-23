@@ -28,6 +28,8 @@ Y = get_descriptors(ca_pred, descriptors);
 stats_train = statistics(labels_train, X(:,end));
 stats_test = statistics(labels_test, Y(:,end));
 
+visualize(ca_pred(1,1), ca_pred(1,2), Y(:,end), labels_test, "SVM X");
+
 % err = norm(abs(label2 - Y(:,end)),1) / size(label1, 1);
 % errKmeans = norm(abs(label1 - Y(:,end)),1) / size(label1, 1);
 % fprintf("\nSVM with raw data error:         %.2f (Corroded patches predicted %.2f Vs. true %.2f),\nSVM with Kmeans and Gamma error: %.2f (Corroded patches predicted %.2f Vs. true %.2f)",...

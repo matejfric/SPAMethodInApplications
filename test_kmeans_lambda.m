@@ -4,11 +4,11 @@ clear all
 addpath('ProgramFiles')
 addpath('ProgramFiles/TQDM') % Progress bar
 
-DATASET = 'Dataset';
+rng(42);
 
 ca = load_images();
-descriptors = [Descriptor.Roughness Descriptor.Color Descriptor.RoughnessGLRL];
-%descriptors = [];
+%descriptors = [Descriptor.Roughness Descriptor.Color Descriptor.RoughnessGLRL];
+descriptors = [];
 X = get_descriptors(ca, descriptors);
     
 fprintf("How balanced are the labels? Ones: %.2f, Zeros: %.2f\n ",...
@@ -17,7 +17,7 @@ fprintf("How balanced are the labels? Ones: %.2f, Zeros: %.2f\n ",...
 % TEST K-MEANS + KL-JENSEN LAMBDA SOLVER 
 
 %cluster_counts = 2:2:10;
-cluster_counts = 2.^(1:9);
+cluster_counts = 2.^(1:8);
 
 %lprecision = zeros(1,length(cluster_counts)); %...preallocation
 
