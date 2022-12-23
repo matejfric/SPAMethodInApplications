@@ -24,7 +24,7 @@ maxIters = 3;
 [C, Gamma, PiX, Lambda, it, Lit, learningErrors, stats_train] = ...
     adamar_fmincon(normalize(X(:,1:end-1)'), 10, 0.5, C', Gamma, Lambda, PiY, X(:,end), maxIters);
 
-Lambda
+disp(Lambda);
 
 for i = 1:maxIters
     lprecision(i) = stats_train(i).precision;

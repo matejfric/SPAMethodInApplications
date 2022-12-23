@@ -1,3 +1,4 @@
+% TEST SVM ON RAW DATA
 close all
 clear all
 
@@ -18,8 +19,6 @@ X = get_descriptors(ca, descriptors);
 fprintf("How balanced are the labels? Ones: %.2f, Zeros: %.2f\n ",...
     sum(X(:,end)), size(X(:,end), 1)-sum(X(:,end)));
 
-% TEST SVM ON RAW DATA
-
 range = 1:3; % Numbers of runs
 
 %testing_images = 6:10;
@@ -27,8 +26,6 @@ testing_images = 68;
 
 for i = progress(range)
     [stats_train, stats_test] = svm_x(X, testing_images, descriptors);
-    
-    %C = cell2mat(struct2cell(stats_learn)); % Convert struct to vector
     
     lprecision(i) = stats_train.precision;
     lrecall(i) = stats_train.recall;
@@ -41,42 +38,9 @@ for i = progress(range)
     taccuracy(i) = stats_test.accuracy;
 end
 
-% PLOTS
-
-% Training
-figure
-subplot(1,2,1)
-set(gca,'DefaultLineLineWidth',2)
-plot(range,lprecision) 
-hold on 
-plot(range,lrecall)
-hold on 
-plot(range,lf1score)
-hold on 
-plot(range,laccuracy)
-xlabel('Run')
-ylabel('Score')
-legend('Precision','Recall', 'F1-score', 'Accuracy')
-title('Training Phase')
-hold off
-
-% Testing
-subplot(1,2,2)
-set(gca,'DefaultLineLineWidth',2)
-plot(range,tprecision) 
-hold on 
-plot(range,trecall)
-hold on 
-plot(range,tf1score)
-hold on 
-plot(range,taccuracy)
-xlabel('Run')
-ylabel('Score')
-legend('Precision','Recall', 'F1-score', 'Accuracy')
-title('Testing Phase')
-sgtitle('SVM X')
-hold off
-
+score_plot('SVM X', range, ...
+    lprecision, lrecall, lf1score, laccuracy,...
+    tprecision, trecall, tf1score, taccuracy)
 
 fprintf("\nProgram finished succesfully.\n");
 

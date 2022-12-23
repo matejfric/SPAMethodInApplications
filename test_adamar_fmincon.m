@@ -1,3 +1,4 @@
+%ADAMAR FMINCON()
 close all
 addpath('ProgramFiles')
 addpath('ProgramFiles/TQDM') % Progress bar
@@ -26,8 +27,8 @@ if true
     % MATLAB will run out of memory. It is impossible to reach low learning
     % error for multiple images.
      
- %   smaller_images = [137];
-     smaller_images = [137, 172, 228, 240];
+     smaller_images = 137;
+%    smaller_images = [137, 172, 228, 240];
 %    smaller_images = [ 172, 177, 179, 203];
 %    smaller_images = [ 172, 177, 179, 203, 209, 212, 228, 240 ]; % Balanced
     ca = cell(length(smaller_images),2);

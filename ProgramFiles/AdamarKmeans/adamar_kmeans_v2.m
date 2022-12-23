@@ -1,4 +1,4 @@
-function [Lambda, C, K, a, b]...
+function [Lambda, C, K, a, b, stats]...
     = adamar_kmeans_v2(X, K, alpha, maxIters)
 %KMEANS_ADAMAR Summary of this function goes here
 %   Detailed explanation goes here
@@ -80,6 +80,7 @@ for i = 1:maxIters % redundant value of Lambda doesn't change!
     disp(['Learning error = ' num2str(learningErrors(i))]);
 end
 
+stats = statistics(PiX(:,1), ground_truth);
     
 end
 

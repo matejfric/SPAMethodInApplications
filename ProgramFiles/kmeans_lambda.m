@@ -1,9 +1,9 @@
 function [stats_train, stats_test] =...
-    kmeans_lambda(X, number_of_clusters, testing_images, descriptors)
+    kmeans_lambda(X, K, testing_images, descriptors)
 %KMEANS_KL Summary of this function goes here
 arguments
     X {mustBeNumeric}
-    number_of_clusters (1,1) {mustBeNumeric}
+    K (1,1) {mustBeNumeric}
     testing_images {mustBeNumeric} = 68
     descriptors = []
 end
@@ -14,9 +14,9 @@ end
 %X(:, 1) = (X(:, 1) - a) / (a - b); % Scale to [-1,1] (MinMaxScaler)
 
 % K-means
-[idx, C] = kmeans(X(:,1:end-1), number_of_clusters, 'MaxIter',1000);
-Gamma = zeros(number_of_clusters,length(idx));
-for k = 1:number_of_clusters
+[idx, C] = kmeans(X(:,1:end-1), K, 'MaxIter',1000);
+Gamma = zeros(K,length(idx));
+for k = 1:K
    Gamma(k,idx==k) = 1; 
 end
 
@@ -37,13 +37,13 @@ Y = get_descriptors(ca_pred, descriptors);
 %Y(:, 1) = (Y(:, 1) - a) / (a - b); % Scale to [-1,1] (MinMaxScaler)
 
 % K-means
-dist_from_C = zeros(number_of_clusters, size(Y,1));
-for k=1:number_of_clusters
+dist_from_C = zeros(K, size(Y,1));
+for k=1:K
     dist_from_C(k,:) = sum((Y(:,1:end-1)' - C(k,:)').^2,1);
 end
 [~,idxY] = min(dist_from_C);
-GammaY = zeros(number_of_clusters,length(idxY));
-for k = 1:number_of_clusters
+GammaY = zeros(K,length(idxY));
+for k = 1:K
    GammaY(k,idxY==k) = 1; 
 end
 
