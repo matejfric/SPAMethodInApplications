@@ -9,6 +9,9 @@ FP = C(1,2);
 FN = C(2,1);
 TP = C(2,2);
 
+stats.fp = FP;
+stats.fn = FN;
+
 %confusionchart(C);
 
 % PRECISION

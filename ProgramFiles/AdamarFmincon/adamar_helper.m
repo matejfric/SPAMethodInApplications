@@ -1,4 +1,4 @@
-function [] = adamar_helper(X, K)
+function [] = adamar_helper(X, K, descriptors)
 %ADAMAR_HELPER Summary of this function goes here
 %   K........number of clusters
 
@@ -20,7 +20,7 @@ Lambda = lambda_solver_jensen(Gamma, PiY);
 % Gamma=PiX (K, T), resp. (K_X, T)
 % Lambda (2 x K), resp. (K_Y, K_X)
 % C (K, 4), resp. (K, features)
-maxIters = 3;
+maxIters = 2;
 [C, Gamma, PiX, Lambda, it, Lit, learningErrors, stats_train] = ...
     adamar_fmincon(normalize(X(:,1:end-1)'), 10, 0.5, C', Gamma, Lambda, PiY, X(:,end), maxIters);
 
@@ -33,18 +33,15 @@ for i = 1:maxIters
     laccuracy(i) = stats_train(i).accuracy;
 end
     
-testingErrors = zeros(0,10);
-fprintf("Testing errors: ")
-for i= 1:size(testingErrors,2)
-    [testingErrors(i), ~, stats_test] = adamar_predict(Lambda, C, K, a, b, i);
-    fprintf("%.2f, ", testingErrors(i));
+images = [ 172, 177, 179, 203];
+for i= 1:numel(images)
+    [stats_test] = adamar_predict(Lambda, C, K, [], [], images(i), descriptors);
     
     tprecision(i) = stats_test.precision;
     trecall(i) = stats_test.recall;
     tf1score(i) = stats_test.f1score;
     taccuracy(i) = stats_test.accuracy;
 end
-fprintf("testing precision: %.2f", sum(testingErrors) / size(testingErrors,2));
 
 % PLOTS
 
@@ -68,7 +65,7 @@ title('Training Phase')
 hold off
 
 % Testing
-range = 1:size(testingErrors,2);
+range = 1:numel(images);
 
 subplot(1,2,2)
 set(gca,'DefaultLineLineWidth',2)

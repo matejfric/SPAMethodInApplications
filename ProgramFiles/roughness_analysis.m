@@ -13,8 +13,8 @@ function [X, features] = roughness_analysis(ca_dataset)
 
 row = 1;
 
-offsets = [0 7]; %Khayatazad
-%offsets = [0 7; -7 7;-7 0;-7 -7]; % +1% f1score
+%offsets = [0 7]; %Khayatazad
+offsets = [0 7; -7 7;-7 0;-7 -7]; % +1% f1score
 
 % 4 graycoprops * directions of GLCM calculation {0°, 45°, 90°, 135°}
 features = 4 * size(offsets, 1);

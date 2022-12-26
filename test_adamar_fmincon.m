@@ -6,6 +6,8 @@ addpath('ProgramFiles/AdamarFmincon')
 rng(42);
 DATASET = 'Dataset';
 
+descriptors = [Descriptor.Roughness Descriptor.Color]; %TODO
+
 if false
     % Results in allocation error (100 GB RAM) => rescale images OR find a better algorithm
     number_of_images = 10;
@@ -27,7 +29,8 @@ if true
     % MATLAB will run out of memory. It is impossible to reach low learning
     % error for multiple images.
      
-     smaller_images = 137;
+%    smaller_images = 137;
+     smaller_images = [137, 203, 209];
 %    smaller_images = [137, 172, 228, 240];
 %    smaller_images = [ 172, 177, 179, 203];
 %    smaller_images = [ 172, 177, 179, 203, 209, 212, 228, 240 ]; % Balanced
@@ -43,4 +46,4 @@ fprintf("How balanced are the labels? Ones: %.2f, Zeros: %.2f\n",...
     sum(X(:,end)), size(X(:,end), 1)-sum(X(:,end)));
 
 K = 10; % Number of clusters
-adamar_helper(X, K);
+adamar_helper(X, K, descriptors);

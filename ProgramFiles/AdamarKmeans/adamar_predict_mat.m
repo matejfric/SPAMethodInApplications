@@ -1,22 +1,17 @@
-function [stats] = adamar_predict(Lambda, C, K, a, b, images, descriptors)
+function [stats] = adamar_predict_mat(Lambda, C, K, a, b, ca_Y)
 %ADAMAR_PREDICT Make a prediction based on ADAMAR model
 %   Lambda...transion matrix
 %   C........centroids
 %   K........number of clusters
 %   a........colmin of X
 %   b........colmax of X
+%   ca_Y.....matrices of descriptors in cell array
 
-if(isempty(images))
-    %image_number = 137; % 137...hřebík
-    images = 68;
-end
-
-n = numel(images);
+n = numel(ca_Y);
 
 for i = 1:n
-    % Load image and get descriptors
-    ca = load_images(images(i));
-    Y = get_descriptors(ca, descriptors);
+    Y = ca_Y;
+    %Y = ca_Y{i}.X;
     
     % % Normalization
     %Y(:,1:end-1) = normalize(Y(:,1:end-1));
@@ -56,8 +51,6 @@ stats_avg.f1score = stats_avg.f1score / n;
 stats_avg.accuracy = stats_avg.accuracy / n;
 
 stats = stats_avg;
-
-visualize(ca(1,1), ca(1,2), Y(:,end), PiY(:,1), sprintf('Adamar K-means, K=%d', K));
 
 end
 

@@ -1,7 +1,10 @@
-#images
+# Images
 *.png
 *.jpg
 *.jpeg
+
+# Matlab matrices
+*.mat
 
 # Windows default autosave extension
 *.asv

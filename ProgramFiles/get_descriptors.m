@@ -32,6 +32,8 @@ end
 X_True = get_ground_truth(ca);
 
 X = [X_GLCM, X_GLRLM, X_Color, X_True];
+
+%Normalization?
 %X(:,1:end-1) = normalize(X(:,1:end-1));
 
 end
