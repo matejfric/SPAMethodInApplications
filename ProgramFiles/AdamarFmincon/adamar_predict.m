@@ -23,10 +23,19 @@ for i = 1:n
     
     % MinMaxScaling
     if ~isempty(a) && ~isempty(b)
-        Y = rescale(Y,'InputMin',a,'InputMax',b); 
+%         Y = rescale(Y,'InputMin',a,'InputMax',b); 
+        
+        % Selective MinMaxScaling [-1,1]
+        l = -1;
+        u = 1;
+        cols = b > 1; % Select columns to be scaled
+        Y(:,cols) = l + ...
+            ((Y(:,cols)-a(cols))./(b(cols)-a(cols))).*(u-l);
     end
 
-    % K-means
+    % Is the evaluation process correct???
+
+    % K-means (one step)
     dist_from_C = zeros(K, size(Y,1));
     for k=1:K
         dist_from_C(k,:) = sum((Y(:,1:end-1)' - C(:,k)).^2,1);

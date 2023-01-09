@@ -17,6 +17,6 @@ for i = 3:numel(listing)
 
 end
 
-%ca_shuffled = ca(randperm(numel(ca)));
+ca = ca(randperm(numel(ca))); % shuffle
 
 end

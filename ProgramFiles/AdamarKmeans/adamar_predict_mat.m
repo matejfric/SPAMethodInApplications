@@ -10,18 +10,27 @@ function [stats] = adamar_predict_mat(Lambda, C, K, a, b, ca_Y)
 n = numel(ca_Y);
 
 for i = 1:n
-    Y = ca_Y;
-    %Y = ca_Y{i}.X;
+    %Y = ca_Y;
+    Y = ca_Y{i}.X;
     
     % % Normalization
     %Y(:,1:end-1) = normalize(Y(:,1:end-1));
     
     % MinMaxScaling
     if ~isempty(a) && ~isempty(b)
-        Y = rescale(Y,'InputMin',a,'InputMax',b); 
+        % Y = rescale(Y,'InputMin',a,'InputMax',b);  % [0,1]
+        
+        % Selective MinMaxScaling [-1,1]
+        l = -1;
+        u = 1;
+        cols = b > 1; % Select columns to be scaled
+        Y(:,cols) = l + ...
+            ((Y(:,cols)-a(cols))./(b(cols)-a(cols))).*(u-l);
     end
+    
+    % Is the evaluation process correct???
 
-    % K-means
+    % K-means (one step)
     dist_from_C = zeros(K, size(Y,1));
     for k=1:K
         dist_from_C(k,:) = sum((Y(:,1:end-1)' - C(:,k)).^2,1);

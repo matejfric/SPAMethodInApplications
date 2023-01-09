@@ -1,7 +1,6 @@
 function [Lambda, C, K, stats]...
     = adamar_kmeans(X, K, alpha, maxIters)
-%KMEANS_ADAMAR Summary of this function goes here
-%   Detailed explanation goes here
+%KMEANS_ADAMAR 
 %   K........number of clusters
 
 switch(nargin)
@@ -12,7 +11,7 @@ switch(nargin)
         maxIters = 10;
 end
 
-fprintf("\nPerforming the K-means algorithm for K=%d\n", K);
+fprintf("\nPerforming the K-means algorithm for K=%d, alpha=%d\n", K, alpha);
 
 PiY = [X(:,end)'; 1-X(:,end)']; % [P(x is corroded); P(x is not corroded)]
 ground_truth = X(:,end);
@@ -43,9 +42,9 @@ Lambda = lambda_solver_jensen(Gamma, PiY);
 % Initial objective function value
 L = compute_L2(C',Gamma,Lambda,X',alpha, PiY);
 L0 = L;
-fprintf("it=%d  L=%.2f", 0, L0);
+fprintf("it=%d  L=%.2f\n", 0, L0);
 learningErrors = zeros(0, maxIters); % preallocation
-myeps = 1e-6; %TODO
+myeps = 1e-3; %TODO
 
 T = size(X,1); % Number of features
 for i = 1:maxIters
@@ -55,7 +54,6 @@ for i = 1:maxIters
         PiYLambda = 0;
         for kx = 1:K
             for ky = 1:2
-                %PiYLambda = PiYLambda + PiY(ky,t)*(Lambda(ky,kx) - 1); % log ~~ x-1
                 PiYLambda = PiYLambda + PiY(ky,t)*log(Lambda(ky,kx));
             end
         end
@@ -86,12 +84,14 @@ for i = 1:maxIters
         break;
     end
     
+    L_real = compute_fval_adamar_kmeans(C',Gamma,Lambda,X',alpha, PiY);
+    
     % Computation of learning error
     PiX = round(Lambda*Gamma)'; % Prediction (round => binary matrix)
     stats = statistics(PiX(:,1), ground_truth);
     learningErrors(i) = sum(abs(PiX(:,1) - ground_truth)) / length(ground_truth);
-    fprintf("it=%d  L=%.2f  FN=%d  FP=%d  f1score=%.3f  error:%.3f\n",...
-        i, L, stats.fn, stats.fp, stats.f1score, learningErrors(i));
+    fprintf("it=%d  L=%.2f  L_a=%.2f  FN=%d  FP=%d  f1score=%.3f  error:%.3f\n",...
+        i, L_real, L, stats.fn, stats.fp, stats.f1score, learningErrors(i));
 end
     
 end

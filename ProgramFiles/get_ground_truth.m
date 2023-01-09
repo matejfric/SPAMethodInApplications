@@ -20,13 +20,16 @@ for img = 1:images
         for j=1:cols
             % Read annotations
             patch = ca_annotatations{i,j};
-            % More than half of the pixels in the patch contain corrosion
+            % More than half of the pixels in the patch contains corrosion
             %! (Another hyperparameter)
             if sum(sum(patch>0)) / numel(patch) > 0.5 
                 ground_truth(row) = 1;
             else
                 ground_truth(row) = 0;
             end
+            
+            % % Probability that the patch contains corrosion
+            % ground_truth(row) = sum(sum(patch>0)) / numel(patch);
             
             row = row + 1;
         end
