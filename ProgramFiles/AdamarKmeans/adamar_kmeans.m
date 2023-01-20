@@ -46,12 +46,12 @@ L = compute_L2(C',Gamma,Lambda,X',alpha, PiY);
 L0 = L;
 fprintf("it=%d  L=%.2f\n", 0, L0);
 learningErrors = zeros(0, maxIters); % preallocation
-myeps = 1e-3; %TODO
+myeps = 1e-6; %TODO
 
 T = size(X,1); % Number of features
 for i = 1:maxIters
     
-    disp([' - before Gamma: ' num2str(compute_L2(C',Gamma,Lambda,X',alpha, PiY))])
+    %disp([' - before Gamma: ' num2str(compute_L2(C',Gamma,Lambda,X',alpha, PiY))])
     
     %Compute Gamma
     Lambda_hat = log(max(Lambda,1e-12));
@@ -68,12 +68,12 @@ for i = 1:maxIters
        Gamma(kx,id == kx) = 1; 
     end
     
-    disp([' - after Gamma: ' num2str(compute_L2(C',Gamma,Lambda,X',alpha, PiY))])
+    %disp([' - after Gamma: ' num2str(compute_L2(C',Gamma,Lambda,X',alpha, PiY))])
     
     % Update Lambda
     Lambda = lambda_solver_jensen(Gamma, PiY);
 
-    disp([' - before C: ' num2str(compute_L2(C',Gamma,Lambda,X',alpha, PiY))])
+    %disp([' - before C: ' num2str(compute_L2(C',Gamma,Lambda,X',alpha, PiY))])
     
     % Update C
     for k = 1:K
@@ -83,7 +83,7 @@ for i = 1:maxIters
         end
     end
 
-    disp([' - L = ' num2str(compute_L2(C',Gamma,Lambda,X',alpha, PiY)) ', L_real: ' num2str(compute_fval_adamar_kmeans(C',Gamma,Lambda,X',alpha, PiY))])
+    %disp([' - L = ' num2str(compute_L2(C',Gamma,Lambda,X',alpha, PiY)) ', L_real: ' num2str(compute_fval_adamar_kmeans(C',Gamma,Lambda,X',alpha, PiY))])
     
     % Is the objective function decreasing?
     L_old = L;

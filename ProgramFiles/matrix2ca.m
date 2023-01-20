@@ -9,7 +9,7 @@ for i = 3:numel(listing)
     X_save = load([folder listing(i).name]);
     
     M.X = X_save.X;
-    M.I = i-2;
+    M.I = sscanf(listing(i).name,'X%d'); %i-3;
     ca{i-2} = M;
     
     %X = [X; X_save.X]; % Load into one matrix
@@ -17,6 +17,6 @@ for i = 3:numel(listing)
 
 end
 
-ca = ca(randperm(numel(ca))); % shuffle
+%ca = ca(randperm(numel(ca))); % shuffle
 
 end

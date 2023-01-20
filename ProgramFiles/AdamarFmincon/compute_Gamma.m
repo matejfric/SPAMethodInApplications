@@ -1,34 +1,36 @@
 function Gamma = compute_Gamma(C,Gamma,Lambda,X,alpha, PiY)
-%COMPUTE_GAMMA Summary of this function goes here
-%   Detailed explanation goes here
+%COMPUTE_GAMMA Adamar Gamma problem
+
 [K,T] = size(Gamma);
 
-lb = zeros(K,1);
+lb = zeros(K,1); % Upper bound is redundant, see equality constraints
 
 Aeq = ones(1,K);
 beq = 1;
 
-tic
-for t = 1:T
+%tic
+for t = progress(1:T)
+    % Hessian for fmincon()
     hessinterior = @(gamma,lambda) hessinterior_spg(gamma,Lambda,X(:,t),PiY(:,t),C,K,alpha,lambda);
 
     options = optimoptions(...
         'fmincon','Algorithm','interior-point',...
-        'Display','iter',...
-        'MaxFunctionEvaluations', 2.0e4, ...
-        'Display', 'none',...
-        'GradObj', 'on');
-%        'HessianFcn',hessinterior);
+        'MaxFunctionEvaluations', 1.0e3, ... % Important hyperparameter!
+        'ConstraintTolerance', 1e-4,...
+        'Display', 'none',... % 'none', 'final', 'iter' (https://www.mathworks.com/help/optim/ug/fmincon.html#input_argument_options)
+        'GradObj', 'on',...
+        'HessianFcn', hessinterior);
     
     gamma0 = Gamma(:,t);
     f = @(gamma) f_fmincon(gamma,Lambda,X(:,t),PiY(:,t),C,K,alpha);
     Gamma(:,t) = fmincon(f,gamma0,[],[],Aeq,beq,lb,[],[],options);
 end
-toc
+%toc
 
 end
 
 function [L,g] = f_fmincon(gamma,Lambda,x,piY,C,K,alpha)
+%F_FMINCON Objective function
 
 KY = size(Lambda,1);
 
@@ -62,6 +64,7 @@ g = alpha*G1 + (1-alpha)*G2;
 end
 
 function L = f_spg(gamma,Lambda,x,piY,C,K,alpha)
+%F_SPG Objective function
 
 KY = size(Lambda,1);
 
@@ -84,6 +87,7 @@ L = alpha*L1 + (1-alpha)*L2;
 end
 
 function g = g_spg(gamma,Lambda,x,piY,C,K,alpha)
+%G_SPG Gradient function
 
 KY = size(Lambda,1);
 
@@ -108,6 +112,7 @@ g = G;%reshape(G',K*T,1);
 end
 
 function H = hessinterior_spg(gamma,Lambda,x,piY,C,K,alpha,lambda)
+%HESSINTERIOR_SPG Hessian
 
 KY = size(Lambda,1);
 

@@ -14,7 +14,7 @@ for t=1:T
             L_lambda = L_lambda + PiY(ky,t) * log(max(Lambda(ky,kx),1e-12));
         end
 
-        L1 = L1 + Gamma(kx,t)*dot(X(:,t) - C(:,kx),X(:,t) - C(:,kx));
+        L1 = L1 + Gamma(kx,t) * dot(X(:,t) - C(:,kx), X(:,t) - C(:,kx));
         L2 = L2 - L_lambda; 
     end
 end

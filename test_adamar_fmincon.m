@@ -1,49 +1,52 @@
 %ADAMAR FMINCON()
 close all
+clear all
 addpath('ProgramFiles')
 addpath('ProgramFiles/TQDM') % Progress bar
 addpath('ProgramFiles/AdamarFmincon')
+addpath('ProgramFiles/SPG')
 rng(42);
 DATASET = 'Dataset';
 
-descriptors = [Descriptor.Roughness Descriptor.Color]; %TODO
+small_images = [ 172, 177, 179, 203, 209, 212, 228, 240 ];
+descriptors = [Descriptor.Roughness Descriptor.Color];
 
-if false
-    % Results in allocation error (100 GB RAM) => rescale images OR find a better algorithm
-    number_of_images = 10;
-    
-    % Load the dataset
-    ca_dataset = load_dataset(number_of_images);
-
-    % Get matrix of graycoprops descriptors with annotations
-    X = roughness_analysis(ca_dataset);
-    %ca_patches = patchify(ca_dataset{1,1}); % Uncomment to see what's going on. 
-end
-
-if true
-    % Load some (smaller!) images:
-    % Selection of images bellow gives fairly balanced training dataset 
-    % (Ones: 1138.00, Zeros: 2458.00). 
-    
-    % The more images, the lesser F-count must be set in fmincon, otherwise
-    % MATLAB will run out of memory. It is impossible to reach low learning
-    % error for multiple images.
-     
-%    smaller_images = 137;
-     smaller_images = [137, 203, 209];
-%    smaller_images = [137, 172, 228, 240];
-%    smaller_images = [ 172, 177, 179, 203];
-%    smaller_images = [ 172, 177, 179, 203, 209, 212, 228, 240 ]; % Balanced
-    ca = cell(length(smaller_images),2);
-    for i = 1 : length(smaller_images)
-        ca{i,1} = imread(sprintf('%s/Original/%d.jpg', DATASET, smaller_images(i)));
-        ca{i,2} = imread(sprintf('%s/Annotations/%d.png', DATASET, smaller_images(i)));
-    end
-    X = [roughness_analysis(ca), color_analysis(ca), get_ground_truth(ca)];
-end
+%X = matfile('X10.mat').X; % descriptors for first 10 images
+X = cell2mat({cell2mat(matrix2ca('Dataset/SmallImagesDescriptors/')).X}'); % descriptors for "smaller" images
+%X = get_descriptors(load_images(137), descriptors); % hřebík
 
 fprintf("How balanced are the labels? Ones: %.2f, Zeros: %.2f\n",...
     sum(X(:,end)), size(X(:,end), 1)-sum(X(:,end)));
 
+%ADAMAR
+alpha = 1e-4;
 K = 5; % Number of clusters
-adamar_helper(X, K, descriptors);
+maxIters = 3;
+[C, Gamma, PiX, Lambda, it, Lit, learningErrors, stats_train] = ...
+    adamar_fmincon(X, K, alpha, maxIters);
+
+disp(Lambda);
+
+%EVALUATION
+for i = 1:maxIters
+    lprecision(i) = stats_train(i).precision;
+    lrecall(i) = stats_train(i).recall;
+    lf1score(i) = stats_train(i).f1score;
+    laccuracy(i) = stats_train(i).accuracy;
+end
+     
+images = small_images;
+for i= 1:numel(images)
+    [stats_test] = adamar_predict(Lambda, C, K, [], [], images(i), descriptors);
+    
+    tprecision(i) = stats_test.precision;
+    trecall(i) = stats_test.recall;
+    tf1score(i) = stats_test.f1score;
+    taccuracy(i) = stats_test.accuracy;
+end
+
+%PLOTS
+fmincon_score_plot('Adamar K-means', 1:maxIters, 1:numel(images), ...
+        lprecision, lrecall, lf1score, laccuracy,...
+        tprecision, trecall, tf1score, taccuracy)
+

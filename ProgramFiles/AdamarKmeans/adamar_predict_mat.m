@@ -52,6 +52,13 @@ for i = 1:n
         stats_avg.f1score = stats.f1score + stats_avg.f1score;
         stats_avg.accuracy = stats.accuracy + stats_avg.accuracy;
     end
+    
+%     original_rgb{1} = imread(sprintf('Dataset2/Original/%d.jpeg', ca_Y{i}.I));
+%     annnotation{1} = imread(sprintf('Dataset2/Annotations/%d.png', ca_Y{i}.I));
+    original_rgb{1} = imread(sprintf('Dataset/Original/%d.jpg', ca_Y{i}.I));
+    annnotation{1} = imread(sprintf('Dataset/Annotations/%d.png', ca_Y{i}.I));
+    visualize(original_rgb, annnotation, Y(:,end), PiY(:,1), sprintf('Adamar K-means, K=%d', K));
+    pause(1)
 end
 
 stats_avg.precision = stats_avg.precision / n;

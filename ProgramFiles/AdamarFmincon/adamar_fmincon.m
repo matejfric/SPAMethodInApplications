@@ -1,5 +1,5 @@
 function [C, Gamma, PiX, Lambda, it, Lit, learningErrors, stats] = ...
-    adamar_fmincon(X, K, alpha, C0, Gamma0, Lambda0, PiY, trueLabels, maxIters)
+    adamar_fmincon(X, K, alpha, maxIters)
 
 %ADAMAR_FMINCON Summary of this function goes here
 % X        data
@@ -24,28 +24,11 @@ if isempty(maxIters)
 end
 myeps = 1e-4;
 
-% in this implementation I assume 1D data
-[TRows, TCols] = size(X);
-n = 1;
-
 % set initial approximations
-if isempty(C0)
-    C = zeros(n,K);
-else
-    C = C0;
-end
-
-if isempty(Gamma0)
-    Gamma = get_random(K, TRows);
-else
-    Gamma = Gamma0;
-end
-
-if isempty(Lambda0)
-    Lambda = get_random(size(PiY, 1),K);
-else
-    Lambda = Lambda0;
-end
+trueLabels = X(:,end);
+PiY = [X(:,end), 1-X(:,end)]';
+[Lambda, Gamma, C] = initial_approximation2(X, K, PiY);
+X = X(:, 1:end-1)';
 
 % initial objective function value
 L = realmax;
@@ -91,17 +74,8 @@ while it < maxIters % practical stopping criteria after computing new L (see "br
     % Computation of learning error
     PiX = round(Lambda*Gamma)'; % round => binary matrix
     learningErrors(it) = sum(abs(PiX(:,1) - trueLabels)) / length(trueLabels);
-    disp(['Learning error = ' num2str(learningErrors(it))]);
-    
     stats(it) = statistics(PiX(:,1), trueLabels); %(labels, ground_truth)
-end
-
-% Never used:
-% Random matrix <0,1> with columns that add up to 1 (non-uniform!)
-function  Lambda = get_random(KY,KX)
-Lambda = rand(KY,KX);
-Lambda = bsxfun(@times, Lambda, 1./sum(Lambda,1)); % 1./sum(Lambda,1) is a row vector with length KX
-% Equivalent: Lambda = Lambda * 1./sum(Lambda,1);
+    fprintf('F1-Score: %.2f  |  Absolute error: %.2f\n', stats(it).f1score, learningErrors(it))
 end
 
 end
