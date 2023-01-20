@@ -1,4 +1,4 @@
-function [C, Gamma, PiX, Lambda, it, Lit, learningErrors, stats] = ...
+function [C, Gamma, PiX, Lambda, it, Lit, learningErrors, stats, L] = ...
     adamar_fmincon(X, K, alpha, maxIters)
 
 %ADAMAR_FMINCON Summary of this function goes here
@@ -18,7 +18,7 @@ function [C, Gamma, PiX, Lambda, it, Lit, learningErrors, stats] = ...
 %     Lambda0 (:,:) double = get_random(K,K)
 % end
 
-disp('ADAMAR:')
+fprintf('ADAMAR, K=%d, alpha=%e\n', K, alpha);
 if isempty(maxIters)
     maxIters = 1;
 end
@@ -27,7 +27,7 @@ myeps = 1e-4;
 % set initial approximations
 trueLabels = X(:,end);
 PiY = [X(:,end), 1-X(:,end)]';
-[Lambda, Gamma, C] = initial_approximation2(X, K, PiY);
+[Lambda, Gamma, C] = initial_approximation(X, K, PiY);
 X = X(:, 1:end-1)';
 
 % initial objective function value
@@ -59,7 +59,7 @@ while it < maxIters % practical stopping criteria after computing new L (see "br
     
     % compute function value
     Lold = L;
-    L = compute_L2(C,Gamma,Lambda,X,alpha, PiY);
+    [L, L1, L2] = compute_L2(C,Gamma,Lambda,X,alpha, PiY);
     
     disp([' it=' num2str(it) ', L=' num2str(L)]);
     
@@ -77,6 +77,11 @@ while it < maxIters % practical stopping criteria after computing new L (see "br
     stats(it) = statistics(PiX(:,1), trueLabels); %(labels, ground_truth)
     fprintf('F1-Score: %.2f  |  Absolute error: %.2f\n', stats(it).f1score, learningErrors(it))
 end
+
+Ls.L = L;
+Ls.L1 = L1;
+Ls.L2 = L2;
+L = Ls;
 
 end
 

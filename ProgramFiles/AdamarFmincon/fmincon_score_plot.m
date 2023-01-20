@@ -15,7 +15,7 @@ hold on
 myplot(range,lf1score)
 hold on 
 myplot(range,laccuracy)
-xlabel('K')
+xlabel('Iteration')
 ylabel('Score')
 xticks(range)
 if max(range) >= 100
@@ -36,7 +36,7 @@ hold on
 myplot(range,tf1score)
 hold on 
 myplot(range,taccuracy)
-xlabel('K')
+xlabel('Image')
 ylabel('Score')
 xticks(range)
 if max(range) >= 100

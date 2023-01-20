@@ -51,21 +51,16 @@ fprintf("How balanced are the labels? Ones: %.2f, Zeros: %.2f\n",...
     sum(X(:,end)), size(X(:,end), 1)-sum(X(:,end)));
 
 %cluster_counts = 2:16;
-cluster_counts = [2,5,12];
-%cluster_counts = 4:2:14;
-%cluster_counts = 10:20:100; % Lambda contains values 0.5 only, only 1 state is present
-%cluster_counts = [4,10,100,1000];
-%cluster_counts = size(X,1); % Incorrect result
-maxIters = 1000;
-%alpha = 0.8; % Prioritize clustering
-%alpha = 0.5;
+%cluster_counts = [2,5,12];
+cluster_counts = 5;
 
-%alpha = 0.1:0.1:1;
-%alpha = [1e-12,1e-8, 1e-4,1e-3,1e-2];
-alpha = [1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 0.5];
+%cluster_counts = 4:2:14;
+maxIters = 1000;
+
+alpha = [1e-12,1e-8, 1e-4,1e-3,1e-2];
+%alpha = [1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 0.5];
 %alpha = [1e-8, 1e-4, 1e-2, 1e-1, 0.5, 1-1e-1, 1-1e-2, 1-1e-4, 1-1e-8];
-%alpha = 1e-2;
-alpha = 1e-4;
+%alpha = 1e-4;
 
 L1s = zeros(numel(alpha),length(cluster_counts));
 L2s = zeros(numel(alpha),length(cluster_counts));
@@ -78,8 +73,8 @@ for a = 1:numel(alpha)
         lf1score(a,k) = stats_train.f1score;
         laccuracy(a,k) = stats_train.accuracy;
 
-        L1s(k,a) = L_out.L1;
-        L2s(k,a) = L_out.L2;
+        L1s(a,k) = L_out.L1;
+        L2s(a,k) = L_out.L2;
 
      %   disp("Lambda:")
      %   disp(Lambda) % Transition matrix
