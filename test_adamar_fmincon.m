@@ -45,5 +45,5 @@ end
 fprintf("How balanced are the labels? Ones: %.2f, Zeros: %.2f\n",...
     sum(X(:,end)), size(X(:,end), 1)-sum(X(:,end)));
 
-K = 10; % Number of clusters
+K = 5; % Number of clusters
 adamar_helper(X, K, descriptors);

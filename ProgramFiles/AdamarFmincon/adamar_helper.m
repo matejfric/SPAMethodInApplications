@@ -22,7 +22,7 @@ Lambda = lambda_solver_jensen(Gamma, PiY);
 % C (K, 4), resp. (K, features)
 maxIters = 2;
 [C, Gamma, PiX, Lambda, it, Lit, learningErrors, stats_train] = ...
-    adamar_fmincon(normalize(X(:,1:end-1)'), 10, 0.5, C', Gamma, Lambda, PiY, X(:,end), maxIters);
+    adamar_fmincon(normalize(X(:,1:end-1)'), K, 1e-4, C', Gamma, Lambda, PiY, X(:,end), maxIters);
 
 disp(Lambda);
 

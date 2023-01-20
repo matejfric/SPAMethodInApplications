@@ -1,4 +1,4 @@
-function L = compute_L2(C,Gamma,Lambda,X,alpha,PiY)
+function [L,L1,L2] = compute_L2(C,Gamma,Lambda,X,alpha,PiY)
 %COMPUTE_L2 Compute objective function value, vectorized version of compute_L  
 
 [K,T] = size(Gamma);

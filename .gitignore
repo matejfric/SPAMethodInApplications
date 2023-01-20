@@ -2,12 +2,12 @@
 Dataset2/
 
 # Images
-#*.png
-#*.jpg
-#*.jpeg
+*.png
+*.jpg
+*.jpeg
 
 # Matlab matrices
-# *.mat
+*.mat
 
 # Windows default autosave extension
 *.asv
