@@ -1,4 +1,4 @@
-function [stats] = adamar_predict_mat(Lambda, C, K, a, b, ca_Y)
+function [stats] = adamar_predict_mat(Lambda, C, K, a, b, ca_Y, dataset)
 %ADAMAR_PREDICT Make a prediction based on ADAMAR model
 %   Lambda...transion matrix
 %   C........centroids
@@ -53,10 +53,14 @@ for i = 1:n
         stats_avg.accuracy = stats.accuracy + stats_avg.accuracy;
     end
     
-%     original_rgb{1} = imread(sprintf('Dataset2/Original/%d.jpeg', ca_Y{i}.I));
-%     annnotation{1} = imread(sprintf('Dataset2/Annotations/%d.png', ca_Y{i}.I));
-    original_rgb{1} = imread(sprintf('Dataset/Original/%d.jpg', ca_Y{i}.I));
-    annnotation{1} = imread(sprintf('Dataset/Annotations/%d.png', ca_Y{i}.I));
+    if strcmp(dataset, 'Dataset') 
+        original_rgb{1} = imread(sprintf('Dataset/Original/%d.jpg', ca_Y{i}.I));
+        annnotation{1} = imread(sprintf('Dataset/Annotations/%d.png', ca_Y{i}.I));
+    else
+        original_rgb{1} = imread(sprintf('Dataset2/Original/%d.jpeg', ca_Y{i}.I));
+        annnotation{1} = imread(sprintf('Dataset2/Annotations/%d.png', ca_Y{i}.I));
+    end  
+    
     visualize(original_rgb, annnotation, Y(:,end), PiY(:,1), sprintf('Adamar K-means, K=%d', K));
     pause(1)
 end

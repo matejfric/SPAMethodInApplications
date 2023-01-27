@@ -8,6 +8,8 @@ addpath('ProgramFiles/AdamarKmeans') % adamar_kmeans
 addpath('ProgramFiles/SPG') 
 rng(42);
 
+DATASET = 'Dataset2';
+
 descriptors = [Descriptor.Roughness Descriptor.Color ];
 % ca = load_images();
 % X = get_descriptors(ca, descriptors);
@@ -27,8 +29,19 @@ end
 save_X = matfile('X10.mat');
 X = save_X.X;
 
+if strcmp(DATASET, 'Dataset2')
+    ca = matrix2ca('Dataset2/Descriptors/');
+    %ca = matrix2ca('Dataset2/Descriptors512GLRLM/');
+    %ca = matrix2ca('Dataset2/DescriptorsProbability/');
+    n = numel(ca);
+    n_train = floor(n * 0.8);
+    n_test = n - n_train;
+    X = cell2mat({cell2mat(ca(1:n_train)).X}');
+    ca_Y = ca(n_train+1:n);
+end
+
 folder = 'Dataset/SmallImagesDescriptors/';
-ca_Y = matrix2ca(folder);
+%ca_Y = matrix2ca(folder);
 
 % % Normalization
 % X(:,1:end-1) = normalize(X(:,1:end-1));
@@ -58,6 +71,7 @@ cluster_counts = 5;
 maxIters = 1000;
 
 alpha = [1e-12,1e-8, 1e-4,1e-3,1e-2];
+alpha = 1e-4;
 %alpha = [1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 0.5];
 %alpha = [1e-8, 1e-4, 1e-2, 1e-1, 0.5, 1-1e-1, 1-1e-2, 1-1e-4, 1-1e-8];
 %alpha = 1e-4;
@@ -85,8 +99,8 @@ for a = 1:numel(alpha)
 
         %[stats_test] = adamar_predict(Lambda, C', K, colmin, colmax, images, descriptors);
         %[stats_test] = adamar_predict(Lambda, C', K, [], [], images, descriptors);
-        [stats_test] = adamar_predict_mat(Lambda, C', K, [], [], ca_Y);
-        %[stats_test] = adamar_predict_mat(Lambda, C', K, colmin, colmax, ca_Y);
+        [stats_test] = adamar_predict_mat(Lambda, C', K, [], [], ca_Y, DATASET);
+        %[stats_test] = adamar_predict_mat(Lambda, C', K, colmin, colmax, ca_Y, DATASET);
         tprecision(a,k) = stats_test.precision;
         trecall(a,k) = stats_test.recall;
         tf1score(a,k) = stats_test.f1score;

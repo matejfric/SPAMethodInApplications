@@ -3,6 +3,8 @@ function [] = fmincon_score_plot(mytitle, iterations, images, ...
     tprecision, trecall, tf1score, taccuracy)
 %SCORE_PLOT 
 
+hold off
+
 % Training
 range = iterations;
 figure

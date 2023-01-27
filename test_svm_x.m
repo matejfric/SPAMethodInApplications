@@ -7,25 +7,32 @@ addpath('ProgramFiles/TQDM')
 
 rng(42);
 
-ca = load_images();
-%descriptors = [Descriptor.Color];
-%descriptors = [Descriptor.Roughness];
-%descriptors = [Descriptor.RoughnessGLRL];
 descriptors = [Descriptor.Roughness Descriptor.Color];
-%descriptors = [Descriptor.Roughness Descriptor.Color Descriptor.RoughnessGLRL];
-%descriptors = [Descriptor.Roughness Descriptor.RoughnessGLRL];
-X = get_descriptors(ca, descriptors);
+
+if true %DATASET2
+    ca = matrix2ca('Dataset2/Descriptors/');
+    %ca = matrix2ca('Dataset2/Descriptors512GLRLM/');
+    %ca = matrix2ca('Dataset2/DescriptorsProbability/');
+    n = numel(ca);
+    n_train = floor(n * 0.8);
+    n_test = n - n_train;
+    X = cell2mat({cell2mat(ca(1:n_train)).X}');
+    ca_Y = ca(n_train+1:n);
+else
+    ca = load_images();
+    X = get_descriptors(ca, descriptors);
+end
     
 fprintf("How balanced are the labels? Ones: %.2f, Zeros: %.2f\n ",...
     sum(X(:,end)), size(X(:,end), 1)-sum(X(:,end)));
 
-range = 1:3; % Numbers of runs
+numbers_of_runs = 1; % Numbers of runs
 
 %testing_images = 6:10;
 testing_images = 68;
 
-for i = progress(range)
-    [stats_train, stats_test] = svm_x(X, testing_images, descriptors);
+for i = 1:numbers_of_runs
+    [stats_train, stats_test] = svm_x(X, testing_images, descriptors, ca_Y);
     
     lprecision(i) = stats_train.precision;
     lrecall(i) = stats_train.recall;
@@ -38,7 +45,7 @@ for i = progress(range)
     taccuracy(i) = stats_test.accuracy;
 end
 
-score_plot('SVM X', range, ...
+score_plot('SVM X', 1:numbers_of_runs, ...
     lprecision, lrecall, lf1score, laccuracy,...
     tprecision, trecall, tf1score, taccuracy)
 

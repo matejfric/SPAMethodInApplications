@@ -32,8 +32,8 @@ for i = 1:n
         Y(:,cols) = l + ...
             ((Y(:,cols)-a(cols))./(b(cols)-a(cols))).*(u-l);
     end
-
-    % Is the evaluation process correct???
+    
+    % Is this correct???
 
     % K-means (one step)
     dist_from_C = zeros(K, size(Y,1));

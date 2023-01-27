@@ -1,6 +1,5 @@
 function [C, Gamma, PiX, Lambda, it, Lit, learningErrors, stats, L] = ...
     adamar_fmincon(X, K, alpha, maxIters)
-
 %ADAMAR_FMINCON Summary of this function goes here
 % X        data
 % K        number of clusters
@@ -8,15 +7,12 @@ function [C, Gamma, PiX, Lambda, it, Lit, learningErrors, stats, L] = ...
 % C        model parameters on each cluster (centroids)
 % Gamma    probability indicator functions
 % it       number of iterations
-
-% arguments
-%     X (:,:) double
-%     K double
-%     alpha double
-%     C0 (:,:) double = zeros(size(X,1),K)
-%     Gamma0 (:,:) double = get_random(K,size(X,2))
-%     Lambda0 (:,:) double = get_random(K,K)
-% end
+arguments
+    X (:,:) double
+    K {mustBeInteger}
+    alpha double
+    maxIters {mustBeInteger}
+end
 
 fprintf('ADAMAR, K=%d, alpha=%e\n', K, alpha);
 if isempty(maxIters)
