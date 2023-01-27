@@ -71,6 +71,12 @@ for a = 1:numel(alpha)
         [stats_test] = adamar_predict(Lambda, C, K, [], [], test_images(i), descriptors);
         %[stats_test] = adamar_predict(Lambda, C, K, colmin, colmax, test_images(i), descriptors);
         %[stats_test] = adamar_predict_mat(Lambda, C, K, [], [], ca_Y, DATASET);
+        
+        if false % test on training data (combined)
+            ca_Y{1}.X = X;
+            ca_Y{1}.I = 1;
+            [stats_test] = adamar_predict_mat(Lambda, C, K, [], [], ca_Y, DATASET);
+        end
 
         tprecision(i) = stats_test.precision;
         trecall(i) = stats_test.recall;

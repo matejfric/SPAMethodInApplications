@@ -52,10 +52,12 @@ for i = 1:n
     if i == 1
         stats_avg = stats;
     else
-        stats_avg.precision = stats.precision + stats_avg.precision;
-        stats_avg.recall = stats.recall + stats_avg.recall;
-        stats_avg.f1score = stats.f1score + stats_avg.f1score;
-        stats_avg.accuracy = stats.accuracy + stats_avg.accuracy;
+        stats_avg.fp = stats_avg.fp + stats.fp;
+        stats_avg.fn = stats_avg.fn + stats.fn;
+        stats_avg.precision = stats_avg.precision + stats.precision;
+        stats_avg.recall = stats_avg.recall + stats.recall;
+        stats_avg.f1score = stats_avg.f1score + stats.f1score;
+        stats_avg.accuracy = stats_avg.accuracy + stats.accuracy;
     end
 end
 
