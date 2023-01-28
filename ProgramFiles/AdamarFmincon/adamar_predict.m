@@ -23,8 +23,6 @@ for i = 1:n
     
     % MinMaxScaling
     if ~isempty(a) && ~isempty(b)
-%         Y = rescale(Y,'InputMin',a,'InputMax',b); 
-        
         % Selective MinMaxScaling [-1,1]
         l = -1;
         u = 1;
@@ -33,20 +31,12 @@ for i = 1:n
             ((Y(:,cols)-a(cols))./(b(cols)-a(cols))).*(u-l);
     end
     
-    % Is this correct???
-
     % K-means (one step)
-    dist_from_C = zeros(K, size(Y,1));
-    for k=1:K
-        dist_from_C(k,:) = sum((Y(:,1:end-1)' - C(:,k)).^2,1);
-    end
-    [~,idxY] = min(dist_from_C);
-    GammaY = zeros(K,length(idxY));
-    for k = 1:K
-       GammaY(k,idxY==k) = 1; 
-    end
+    GammaY = compute_Gamma_kmeans(C,Y(:,1:end-1)');
+    
     PiY = round(Lambda*GammaY)'; % round => binary matrix
-
+    %PiY = (Lambda*GammaY)'; % round => binary matrix
+    
     % Statistics
     stats = statistics(PiY(:,1), Y(:,end));
     if i == 1

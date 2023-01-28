@@ -11,7 +11,7 @@ L1 = 0;
 for t=1:T
     L1_k = 0; % sum over k
     for k = 1:K
-        L1_k = L1_k + Gamma(k,t) * ... % * norm ( X(:,t) , C(:,k) )
+        L1_k = L1_k + (1/T)*Gamma(k,t) * ... % * norm ( X(:,t) , C(:,k) )
             dot(X(:,t) - C(:,k),X(:,t) - C(:,k)); % norm^2 = <*,*>
     end
     L1 = L1 + L1_k; % sum over t (outer sum)

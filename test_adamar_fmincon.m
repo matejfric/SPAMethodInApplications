@@ -9,11 +9,11 @@ addpath('ProgramFiles/SPG')
 %rng(42);
 DATASET = 'Dataset';
 
-small_images = [ 172, 177, 179, 203, 209, 212, 228, 240 ];
+small_images = [ 177, 172, 179, 203, 209, 212, 228, 240 ];
 descriptors = [Descriptor.Roughness Descriptor.Color];
 %descriptors = [Descriptor.Roughness Descriptor.RoughnessGLRL Descriptor.Color];
 
-train_images = [137, 177, 212, 7, 54, 79];
+train_images = 177; %[137, 177, 212, 7, 54, 79];
 test_images = [172, 240, 209, 97, 4];
 test_images = train_images;
 
@@ -45,13 +45,15 @@ if false % Selective MinMaxScaling [-1,1]
     X(:,cols) = l + ...
         ((X(:,cols)-colmin(cols))./(colmax(cols)-colmin(cols))).*(u-l);
 end
+%X(:,1:end-1) = normalize(X(:,1:end-1));
 
 %ADAMAR
 %alpha = [1e-4, 1e-3];
 %alpha = [1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 0.5, 1-1e-1, 1-1e-2, 1-1e-3];
-alpha = 1e-6;
-K = 5; % Number of clusters
-maxIters = 2;
+alpha = 0.01:0.003:0.02; %1e-4*[0.1:0.1:1];
+%alpha = 1e-6;
+K = 10; % Number of clusters
+maxIters = 100;
 
 for a = 1:numel(alpha)
     [C, Gamma, PiX, Lambda, it, Lit, learningErrors, stats_train, L] = ...
@@ -61,10 +63,17 @@ for a = 1:numel(alpha)
 
     %EVALUATION
     for i = 1:maxIters
+        if i <= it
         lprecision(i) = stats_train(i).precision;
         lrecall(i) = stats_train(i).recall;
         lf1score(i) = stats_train(i).f1score;
         laccuracy(i) = stats_train(i).accuracy;
+        else
+            lprecision(i) = NaN;
+            lrecall(i) = NaN;
+            lf1score(i) = NaN;
+            laccuracy(i) = NaN;
+        end
     end
     
     for i = 1:numel(test_images)
@@ -94,7 +103,26 @@ for k=1:length(K)
     hold on
     title(['K = ' num2str(K)])
     plot([Ls.L1], [Ls.L2],'r.-');
+    text(Ls(1).L1,Ls(1).L2,['$\alpha = ' num2str(alpha(1)) '$'],'Interpreter','latex')
+    text(Ls(end).L1,Ls(end).L2,['$\alpha = ' num2str(alpha(end)) '$'],'Interpreter','latex')
     hold off
 end
 
+figure
+subplot(1,3,1)
+hold on
+plot(alpha,[Ls.L],'r*-')
+xlabel('$\alpha$','Interpreter','latex')
+ylabel('$L$','Interpreter','latex')
+subplot(1,3,2)
+hold on
+plot(alpha,[Ls.L1],'b*-')
+xlabel('$\alpha$','Interpreter','latex')
+ylabel('$L_1$','Interpreter','latex')
+subplot(1,3,3)
+hold on
+plot(alpha,[Ls.L2],'m*-')
+xlabel('$\alpha$','Interpreter','latex')
+ylabel('$L_2$','Interpreter','latex')
+hold off
 
