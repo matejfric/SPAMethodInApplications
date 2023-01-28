@@ -57,7 +57,7 @@ if isempty(testing_matrices)
 
     visualize(ca_pred(1,1), ca_pred(1,2), Y(:,end), PiY(:,1), ["K-means Lambda K=", num2str(K)]);
 else
-    [stats_test] = adamar_predict_mat(Lambda, C', K, [], [], testing_matrices, 'Dataset2');
+    [stats_test] = adamar_predict_mat(Lambda, C', K, NaN, [], [], testing_matrices, 'Dataset2');
 end
 
 end

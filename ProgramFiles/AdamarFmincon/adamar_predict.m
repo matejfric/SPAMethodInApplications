@@ -1,4 +1,4 @@
-function [stats] = adamar_predict(Lambda, C, K, a, b, images, descriptors)
+function [stats] = adamar_predict(Lambda, C, K, alpha, a, b, images, descriptors)
 %ADAMAR_PREDICT Make a prediction based on ADAMAR model
 %   Lambda...transion matrix
 %   C........centroids
@@ -9,6 +9,10 @@ function [stats] = adamar_predict(Lambda, C, K, a, b, images, descriptors)
 if(isempty(images))
     %image_number = 137; % 137...hřebík
     images = 68;
+end
+
+if(isempty(alpha))
+    alpha = NaN;
 end
 
 n = numel(images);
@@ -58,7 +62,7 @@ stats_avg.accuracy = stats_avg.accuracy / n;
 
 stats = stats_avg;
 
-visualize(ca(1,1), ca(1,2), Y(:,end), PiY(:,1), sprintf('Adamar K-means, K=%d', K));
+visualize(ca(1,1), ca(1,2), Y(:,end), PiY(:,1), sprintf('Adamar K-means, K=%d, alpha=%.2e', K, alpha));
 pause(1)
 
 end

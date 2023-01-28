@@ -61,40 +61,42 @@ for a = 1:numel(alpha)
     disp(Lambda);
     Ls(a)=L; % Save objective function value for L-curve
 
-    %EVALUATION
-    for i = 1:maxIters
-        if i <= it
-        lprecision(i) = stats_train(i).precision;
-        lrecall(i) = stats_train(i).recall;
-        lf1score(i) = stats_train(i).f1score;
-        laccuracy(i) = stats_train(i).accuracy;
-        else
-            lprecision(i) = NaN;
-            lrecall(i) = NaN;
-            lf1score(i) = NaN;
-            laccuracy(i) = NaN;
-        end
-    end
-    
-    for i = 1:numel(test_images)
-        [stats_test] = adamar_predict(Lambda, C, K, [], [], test_images(i), descriptors);
-        %[stats_test] = adamar_predict(Lambda, C, K, colmin, colmax, test_images(i), descriptors);
-        %[stats_test] = adamar_predict_mat(Lambda, C, K, [], [], ca_Y, DATASET);
-        
-        if false % test on training data (combined)
-            ca_Y{1}.X = X;
-            ca_Y{1}.I = 1;
-            [stats_test] = adamar_predict_mat(Lambda, C, K, [], [], ca_Y, DATASET);
+    %EVALUATION   
+    evaluate = true;
+    if evaluate
+        for i = 1:maxIters
+            if i <= it
+            lprecision(i) = stats_train(i).precision;
+            lrecall(i) = stats_train(i).recall;
+            lf1score(i) = stats_train(i).f1score;
+            laccuracy(i) = stats_train(i).accuracy;
+            else
+                lprecision(i) = NaN;
+                lrecall(i) = NaN;
+                lf1score(i) = NaN;
+                laccuracy(i) = NaN;
+            end
         end
 
-        tprecision(i) = stats_test.precision;
-        trecall(i) = stats_test.recall;
-        tf1score(i) = stats_test.f1score;
-        taccuracy(i) = stats_test.accuracy;
-    end
-    
+        for i = 1:numel(test_images)
+            [stats_test] = adamar_predict(Lambda, C, K, alpha, [], [], test_images(i), descriptors);
+            %[stats_test] = adamar_predict(Lambda, C, K, alpha, colmin, colmax, test_images(i), descriptors);
+            %[stats_test] = adamar_predict_mat(Lambda, C, K, alpha, [], [], ca_Y, DATASET);
+
+            if false % test on training data (combined)
+                ca_Y{1}.X = X;
+                ca_Y{1}.I = 1;
+                [stats_test] = adamar_predict_mat(Lambda, C, K, alpha, [], [], ca_Y, DATASET);
+            end
+
+            tprecision(i) = stats_test.precision;
+            trecall(i) = stats_test.recall;
+            tf1score(i) = stats_test.f1score;
+            taccuracy(i) = stats_test.accuracy;
+        end
     %Score plot
     fmincon_score_plot('Adamar fmincon', 1:maxIters, 1:numel(test_images),lprecision, lrecall, lf1score, laccuracy, tprecision, trecall, tf1score, taccuracy)
+    end
 end
 
 % L-curve
