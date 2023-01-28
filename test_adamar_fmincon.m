@@ -50,10 +50,10 @@ end
 %ADAMAR
 %alpha = [1e-4, 1e-3];
 %alpha = [1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 0.5, 1-1e-1, 1-1e-2, 1-1e-3];
-alpha = 0.01:0.003:0.02; %1e-4*[0.1:0.1:1];
-%alpha = 1e-6;
+%alpha = 0.01:0.003:0.02; %1e-4*[0.1:0.1:1];
+alpha = 1e-6;
 K = 10; % Number of clusters
-maxIters = 100;
+maxIters = 2;
 
 for a = 1:numel(alpha)
     [C, Gamma, PiX, Lambda, it, Lit, learningErrors, stats_train, L] = ...

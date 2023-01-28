@@ -23,7 +23,7 @@ end
 L.L = Inf;
 Nrand = 5; % Number of random runs
 for nrand = 1:Nrand
-    disp(['- annealing nrand = ' num2str(nrand)])
+    disp(['- annealing run #' num2str(nrand)])
     PiY = [X(:,end), 1-X(:,end)]';
     [Lambda0, Gamma0, C0] = initial_approximation(X(:, 1:end-1), K, PiY);
     

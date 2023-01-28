@@ -117,7 +117,7 @@ g = G;%reshape(G',K*T,1);
 
 end
 
-function H = hessinterior_spg(gamma,Lambda,piY,K,alpha)
+function H = hessinterior_spg(gamma,Lambda, x, piY, C, K, alpha, lambda)
 %HESSINTERIOR_SPG Hessian
 
 KY = size(Lambda,1);
