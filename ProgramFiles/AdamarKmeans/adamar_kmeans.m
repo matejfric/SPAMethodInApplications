@@ -1,4 +1,4 @@
-function [Lambda, C, Gamma, K, stats, L_out]...
+function [Lambda, C, Gamma, stats, L, PiX]...
     = adamar_kmeans(X, K, alpha, maxIters)
 %KMEANS_ADAMAR 
 %   K........number of clusters
@@ -14,21 +14,54 @@ end
 fprintf("\nPerforming the K-means algorithm for K=%d, alpha=%d\n", K, alpha);
 
 PiY = [X(:,end)'; 1-X(:,end)']; % [P(x is corroded); P(x is not corroded)]
-ground_truth = X(:,end);
 X = X(:, 1:end-1);
-[T,~] = size(X);
-% INITIAL APPROXIMATIONS
-[Lambda, Gamma, C] = initial_approximation_plus_plus(X, K, PiY);
-C = C';
+
+%SIMULATED ANNEALING
+L.L = Inf;
+Nrand = 10; % Number of random runs
+
+for nrand = 1:Nrand
+    disp(['- annealing run #' num2str(nrand)])
+    
+    [Lambda0, Gamma0, C0] = initial_approximation_plus_plus(X, K, PiY);
+    C0=C0';
+    
+    [Lambda_temp, C_temp, Gamma_temp, PiX_temp, stats_temp, L_temp] =...
+    adamar_kmeans_one(C0, Gamma0, Lambda0, PiY, X, K, alpha, maxIters);
+
+    if L_temp.L < L.L
+        C = C_temp;
+        Gamma = Gamma_temp;
+        PiX = PiX_temp;
+        Lambda = Lambda_temp;
+        stats = stats_temp;
+        L = L_temp;
+    end
+end
+
+end
+
+% PiY = [X(:,end)'; 1-X(:,end)']; % [P(x is corroded); P(x is not corroded)]
+% ground_truth = X(:,end);
+% X = X(:, 1:end-1);
+% [T,~] = size(X);
+% % INITIAL APPROXIMATIONS
+% [Lambda, Gamma, C] = initial_approximation_plus_plus(X, K, PiY);
+% C = C';
+
+
+function [Lambda, C, Gamma, PiX, stats, L_out]...
+    = adamar_kmeans_one(C, Gamma, Lambda, PiY, X, K, alpha, maxIters)
 
 % Initial objective function value
+T = size(X,1); % Number of features
 L = compute_L2(C',Gamma,Lambda,X',alpha, PiY, T);
 L0 = L;
 fprintf("it=%d  L=%.2f\n", 0, L0);
 learningErrors = zeros(0, maxIters); % preallocation
+ground_truth = PiY(1,:);
 myeps = 1e-3; %TODO
 
-T = size(X,1); % Number of features
 for i = 1:maxIters
     
     %disp([' - before Gamma: ' num2str(compute_L2(C',Gamma,Lambda,X',alpha, PiY))])
@@ -62,6 +95,10 @@ for i = 1:maxIters
         break;
     end
     
+    if L_old < L
+        break;
+    end
+    
     if abs(L - L_old) < myeps
         break;
     end
@@ -76,7 +113,7 @@ for i = 1:maxIters
     Gamma_rec = compute_Gamma_kmeans(C',X'); % Reconstruction of Gamma
     PiX = round(Lambda*Gamma_rec)'; % Prediction (round => binary matrix)
     stats = statistics(PiX(:,1), ground_truth);
-    learningErrors(i) = sum(abs(PiX(:,1) - ground_truth)) / length(ground_truth);
+    learningErrors(i) = sum(abs(PiX(:,1) - ground_truth')) / length(ground_truth);
     fprintf("it=%d  L=%.2f  L_a=%.2f  FN=%d  FP=%d  f1score=%.3f  error:%.3f\n",...
         i, L_real, L, stats.fn, stats.fp, stats.f1score, learningErrors(i));
 end

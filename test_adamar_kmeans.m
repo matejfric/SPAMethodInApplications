@@ -77,13 +77,14 @@ maxIters = 1000;
 %alpha = [1e-8, 1e-4, 1e-2, 1e-1, 0.5, 1-1e-1, 1-1e-2, 1-1e-4, 1-1e-8];
 %alpha = [1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3];
 alpha = 1e-3:2e-3:9e-3; % 0.0010    0.0030    0.0050    0.0070    0.0090
+alpha = 1e-4:2e-4:9e-4;
 
 L1s = zeros(numel(alpha),length(K));
 L2s = zeros(numel(alpha),length(K));
 
 for a = 1:numel(alpha)
     for k = 1 : length(K)
-        [Lambda, C, Gamma, K, stats_train, L_out] = adamar_kmeans(X, K(k), alpha(a), maxIters);
+        [Lambda, C, Gamma, stats_train, L_out, PiX] = adamar_kmeans(X, K(k), alpha(a), maxIters);
         lprecision(a,k) = stats_train.precision;
         lrecall(a,k) = stats_train.recall;
         lf1score(a,k) = stats_train.f1score;
