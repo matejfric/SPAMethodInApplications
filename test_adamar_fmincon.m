@@ -48,12 +48,13 @@ end
 %X(:,1:end-1) = normalize(X(:,1:end-1));
 
 %ADAMAR
+% Solution: alpha = 1e-2
 %alpha = [1e-4, 1e-3];
 %alpha = [1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 0.5, 1-1e-1, 1-1e-2, 1-1e-3];
-%alpha = 0.01:0.003:0.02; %1e-4*[0.1:0.1:1];
-alpha = 1e-6;
+alpha = 0.01:0.002:0.02; %1e-4*[0.1:0.1:1];
+%alpha = 1e-6;
 K = 10; % Number of clusters
-maxIters = 2;
+maxIters = 100;
 
 for a = 1:numel(alpha)
     [C, Gamma, PiX, Lambda, it, Lit, learningErrors, stats_train, L] = ...
@@ -79,14 +80,14 @@ for a = 1:numel(alpha)
         end
 
         for i = 1:numel(test_images)
-            [stats_test] = adamar_predict(Lambda, C, K, alpha, [], [], test_images(i), descriptors);
-            %[stats_test] = adamar_predict(Lambda, C, K, alpha, colmin, colmax, test_images(i), descriptors);
-            %[stats_test] = adamar_predict_mat(Lambda, C, K, alpha, [], [], ca_Y, DATASET);
+            [stats_test] = adamar_predict(Lambda, C, K, alpha(a), [], [], test_images(i), descriptors);
+            %[stats_test] = adamar_predict(Lambda, C, K, alpha(a), colmin, colmax, test_images(i), descriptors);
+            %[stats_test] = adamar_predict_mat(Lambda, C, K, alpha(a), [], [], ca_Y, DATASET);
 
             if false % test on training data (combined)
                 ca_Y{1}.X = X;
                 ca_Y{1}.I = 1;
-                [stats_test] = adamar_predict_mat(Lambda, C, K, alpha, [], [], ca_Y, DATASET);
+                [stats_test] = adamar_predict_mat(Lambda, C, K, alpha(a), [], [], ca_Y, DATASET);
             end
 
             tprecision(i) = stats_test.precision;
@@ -95,7 +96,7 @@ for a = 1:numel(alpha)
             taccuracy(i) = stats_test.accuracy;
         end
     %Score plot
-    fmincon_score_plot('Adamar fmincon', 1:maxIters, 1:numel(test_images),lprecision, lrecall, lf1score, laccuracy, tprecision, trecall, tf1score, taccuracy)
+    fmincon_score_plot(sprintf('Adamar fmincon, K=%d, alpha=%.2e', K, alpha(a)), 1:maxIters, 1:numel(test_images),lprecision, lrecall, lf1score, laccuracy, tprecision, trecall, tf1score, taccuracy)
     end
 end
 
@@ -105,8 +106,11 @@ for k=1:length(K)
     hold on
     title(['K = ' num2str(K)])
     plot([Ls.L1], [Ls.L2],'r.-');
-    text(Ls(1).L1,Ls(1).L2,['$\alpha = ' num2str(alpha(1)) '$'],'Interpreter','latex')
-    text(Ls(end).L1,Ls(end).L2,['$\alpha = ' num2str(alpha(end)) '$'],'Interpreter','latex')
+    %text(Ls(1).L1,Ls(1).L2,['$\alpha = ' num2str(alpha(1)) '$'],'Interpreter','latex')
+    %text(Ls(end).L1,Ls(end).L2,['$\alpha = ' num2str(alpha(end)) '$'],'Interpreter','latex')
+    for i = 1:numel(L1s(:,k))
+        text(L1s(i),L2s(i),['$\alpha = ' num2str(alpha(i)) '$'],'Interpreter','latex')
+    end
     hold off
 end
 

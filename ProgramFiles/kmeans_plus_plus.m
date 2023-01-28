@@ -15,9 +15,6 @@ function [C] = kmeans_plus_plus(X, K)
 %       and J. Neyman, eds., vol. 1, UC Press, 1967, pp. 281-297.
 %   [2] D. Arthur and S. Vassilvitskii, "k-means++: The Advantages of
 %       Careful Seeding", Technical Report 2006-13, Stanford InfoLab, 2006.
-
-    rng(42);
-    %X = X(:,1:end-1)';
     
     L = [];
     L1 = 0;

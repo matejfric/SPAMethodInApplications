@@ -62,7 +62,7 @@ stats_avg.accuracy = stats_avg.accuracy / n;
 
 stats = stats_avg;
 
-visualize(ca(1,1), ca(1,2), Y(:,end), PiY(:,1), sprintf('Adamar K-means, K=%d, alpha=%.2e', K, alpha));
+visualize(ca(1,1), ca(1,2), Y(:,end), PiY(:,1), sprintf('Adamar, K=%d, alpha=%.2e', K, alpha));
 pause(1)
 
 end

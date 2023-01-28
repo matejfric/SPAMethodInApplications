@@ -25,7 +25,7 @@ Nrand = 5; % Number of random runs
 for nrand = 1:Nrand
     disp(['- annealing run #' num2str(nrand)])
     PiY = [X(:,end), 1-X(:,end)]';
-    [Lambda0, Gamma0, C0] = initial_approximation(X(:, 1:end-1), K, PiY);
+    [Lambda0, Gamma0, C0] = initial_approximation_plus_plus(X(:, 1:end-1), K, PiY);
     
     [C_temp, Gamma_temp, PiX_temp, Lambda_temp, it_temp, Lit_temp, learningErrors_temp, stats_temp, L_temp] =...
         adamar_fmincon_one(X, K, alpha, maxIters, Lambda0, Gamma0, C0);
@@ -54,7 +54,7 @@ PiY = [X(:,end), 1-X(:,end)]';
 X = X(:, 1:end-1)';
 T = size(X,2);
 
-myeps = 1e-4;
+myeps = 1e-3;
 
 Lambda = Lambda0;
 Gamma = Gamma0;
@@ -69,26 +69,19 @@ it = 0; % iteration counter
 
 while it < maxIters % practical stopping criteria after computing new L (see "break")
 
-    % compute C
-    %if isempty(C0)
-    disp(' - solving C problem')
-    C = compute_C(Gamma,X);
-    %end
-
     % compute Gamma
-    %if isempty(Gamma0)
     disp(' - solving Gamma problem')
     Gamma = compute_Gamma(C,Gamma,Lambda,X,alpha, PiY);
-    %end
+    
+    % compute C
+    disp(' - solving C problem')
+    C = compute_C(Gamma,X);
 
     % compute Lambda
-    %if isempty(Lambda0)
     disp(' - solving Lambda problem')
     Lambda = compute_Lambda(Gamma,PiY);
-    %end
     
-    
-    % compute function value
+    % compute objective function value
     Lold = L;
     [L, L1, L2] = compute_L2(C,Gamma,Lambda,X,alpha, PiY,T);
     
