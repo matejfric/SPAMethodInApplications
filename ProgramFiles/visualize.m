@@ -13,6 +13,7 @@ prediction = vector2image(prediction, original_rgb);
 annnotation = cell2mat(annnotation);
 annnotation(annnotation==1) = 255;   
 
+figure
 montage([original_rgb, annnotation, ground_truth, prediction],...
     "Size", [1 4], "BackgroundColor", "red", 'BorderSize', 5);
 ax = gca;
@@ -29,11 +30,12 @@ function img = vector2image(vector, original_image)
     
     for i=1:rows
         for j=1:cols
-            if vector((i-1)*cols+j) == 1
-                ca_patches{i,j} = ones(patch_size);
-            else
-                ca_patches{i,j} = zeros(patch_size);
-            end
+            ca_patches{i,j} = vector((i-1)*cols+j);
+%            if vector((i-1)*cols+j) == 1
+%                ca_patches{i,j} = ones(patch_size);
+%            else
+%                ca_patches{i,j} = zeros(patch_size);
+%            end
         end
     end
     
