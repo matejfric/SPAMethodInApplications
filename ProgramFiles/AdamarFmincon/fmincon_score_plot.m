@@ -20,9 +20,6 @@ myplot(range,laccuracy)
 xlabel('Iteration')
 ylabel('Score')
 xticks(range)
-if max(range) >= 100
-    set(gca, 'XScale', 'log')
-end
 legend('Precision','Recall', 'F1-score', 'Accuracy', 'Location','southeast')
 title('Training Phase')
 hold off
@@ -41,9 +38,6 @@ myplot(range,taccuracy)
 xlabel('Image')
 ylabel('Score')
 xticks(range)
-if max(range) >= 100
-    set(gca, 'XScale', 'log')
-end
 legend('Precision','Recall', 'F1-score', 'Accuracy', 'Location','southeast')
 title('Testing Phase')
 sgtitle(mytitle)

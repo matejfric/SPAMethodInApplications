@@ -37,7 +37,8 @@ if strcmp(DATASET, 'Dataset2')
     n_train = floor(n * 0.8);
     n_test = n - n_train;
     X = cell2mat({cell2mat(ca(1:n_train)).X}');
-    ca_Y = ca(n_train+1:n);
+    ca_Y = ca(1:n_train); % test on training data
+    %ca_Y = ca(n_train+1:n);
 end
 
 folder = 'Dataset/SmallImagesDescriptors/';
@@ -97,10 +98,10 @@ for a = 1:numel(alpha)
     %    images = smaller_images;
         images = 68;
 
-        %[stats_test] = adamar_predict(Lambda, C', K, colmin, colmax, images, descriptors);
-        %[stats_test] = adamar_predict(Lambda, C', K, [], [], images, descriptors);
-        [stats_test] = adamar_predict_mat(Lambda, C', K, [], [], ca_Y, DATASET);
-        %[stats_test] = adamar_predict_mat(Lambda, C', K, colmin, colmax, ca_Y, DATASET);
+        %[stats_test] = adamar_predict(Lambda, C', K, alpha, colmin, colmax, images, descriptors);
+        %[stats_test] = adamar_predict(Lambda, C', K, alpha, [], [], images, descriptors);
+        [stats_test] = adamar_predict_mat(Lambda, C', K, alpha, [], [], ca_Y, DATASET);
+        %[stats_test] = adamar_predict_mat(Lambda, C', K, alpha, colmin, colmax, ca_Y, DATASET);
         tprecision(a,k) = stats_test.precision;
         trecall(a,k) = stats_test.recall;
         tf1score(a,k) = stats_test.f1score;
