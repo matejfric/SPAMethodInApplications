@@ -1,5 +1,7 @@
-function [stats] = statistics(labels,ground_truth)
+function [stats] = statistics(labels, ground_truth)
 %STATISTICS Summary of this function goes here
+
+labels = round(labels);
 
 % Confusion matrix
 C = confusionmat(labels, ground_truth);

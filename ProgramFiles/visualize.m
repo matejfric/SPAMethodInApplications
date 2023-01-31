@@ -30,12 +30,7 @@ function img = vector2image(vector, original_image)
     
     for i=1:rows
         for j=1:cols
-            ca_patches{i,j} = vector((i-1)*cols+j);
-%            if vector((i-1)*cols+j) == 1
-%                ca_patches{i,j} = ones(patch_size);
-%            else
-%                ca_patches{i,j} = zeros(patch_size);
-%            end
+           ca_patches{i,j} = zeros(patch_size) + vector((i-1)*cols+j);
         end
     end
     

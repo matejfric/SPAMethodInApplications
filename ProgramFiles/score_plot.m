@@ -20,8 +20,10 @@ xticks(range)
 if max(range) >= 100
     set(gca, 'XScale', 'log')
 end
-legend('Precision','Recall', 'F1-score', 'Accuracy', 'Location','southeast')
+legend('Precision','Recall', 'F1-score', 'Accuracy',  'Location', 'southoutside')
 title('Training Phase')
+grid on;
+grid minor;
 hold off
 
 % Testing
@@ -40,9 +42,11 @@ xticks(range)
 if max(range) >= 100
     set(gca, 'XScale', 'log')
 end
-legend('Precision','Recall', 'F1-score', 'Accuracy', 'Location','southeast')
+legend('Precision','Recall', 'F1-score', 'Accuracy',  'Location', 'southoutside')
 title('Testing Phase')
 sgtitle(mytitle)
+grid on;
+grid minor;
 hold off
 
 end

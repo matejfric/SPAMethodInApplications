@@ -1,8 +1,6 @@
-function [Lambda, C, Gamma, stats, L, PiX]...
-    = adamar_kmeans(X, K, alpha, maxIters)
+function [Lambda, C, Gamma, stats, L, PiX] = adamar_kmeans(X, K, alpha, maxIters)
 %KMEANS_ADAMAR 
 %   K........number of clusters
-
 switch(nargin)
     case 2 
         alpha = 0.5;
@@ -18,7 +16,7 @@ X = X(:, 1:end-1);
 
 %SIMULATED ANNEALING
 L.L = Inf;
-Nrand = 10; % Number of random runs
+Nrand = 5; % Number of random runs
 
 for nrand = 1:Nrand
     disp(['- annealing run #' num2str(nrand)])
@@ -40,14 +38,6 @@ for nrand = 1:Nrand
 end
 
 end
-
-% PiY = [X(:,end)'; 1-X(:,end)']; % [P(x is corroded); P(x is not corroded)]
-% ground_truth = X(:,end);
-% X = X(:, 1:end-1);
-% [T,~] = size(X);
-% % INITIAL APPROXIMATIONS
-% [Lambda, Gamma, C] = initial_approximation_plus_plus(X, K, PiY);
-% C = C';
 
 
 function [Lambda, C, Gamma, PiX, stats, L_out]...
@@ -111,7 +101,8 @@ for i = 1:maxIters
         
     % Computation of learning error
     Gamma_rec = compute_Gamma_kmeans(C',X'); % Reconstruction of Gamma
-    PiX = round(Lambda*Gamma_rec)'; % Prediction (round => binary matrix)
+    %PiX = round(Lambda*Gamma_rec)'; % Prediction (round => binary matrix)
+    PiX = (Lambda*Gamma_rec)';
     stats = statistics(PiX(:,1), ground_truth);
     learningErrors(i) = sum(abs(PiX(:,1) - ground_truth')) / length(ground_truth);
     fprintf("it=%d  L=%.2f  L_a=%.2f  FN=%d  FP=%d  f1score=%.3f  error:%.3f\n",...

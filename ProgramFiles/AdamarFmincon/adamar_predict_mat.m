@@ -1,4 +1,4 @@
-function [stats] = adamar_predict_mat(Lambda, C, K, alpha, a, b, ca_Y, dataset)
+function [stats] = adamar_predict_mat(Lambda, C, K, alpha, a, b, ca_Y, dataset, display)
 %ADAMAR_PREDICT Make a prediction based on ADAMAR model
 %   Lambda...transion matrix
 %   C........centroids
@@ -6,6 +6,9 @@ function [stats] = adamar_predict_mat(Lambda, C, K, alpha, a, b, ca_Y, dataset)
 %   a........colmin of X
 %   b........colmax of X
 %   ca_Y.....matrices of descriptors in cell array
+arguments
+    Lambda, C, K, alpha, a, b, ca_Y, dataset, display = true
+end
 
 n = numel(ca_Y);
 
@@ -19,6 +22,9 @@ for i = 1:n
     % MinMaxScaling
     if ~isempty(a) && ~isempty(b)
         % Y = rescale(Y,'InputMin',a,'InputMax',b);  % [0,1]
+        
+        % % Normalization
+        %Y(:,1:end-1) = normalize(Y(:,1:end-1));
         
         % Selective MinMaxScaling [-1,1]
         l = -1;
@@ -40,7 +46,8 @@ for i = 1:n
     for k = 1:K
        GammaY(k,idxY==k) = 1; 
     end
-    PiY = round(Lambda*GammaY)'; % round => binary matrix
+    %PiY = round(Lambda*GammaY)'; % round => binary matrix
+    PiY = (Lambda*GammaY)'; % round => binary matrix
 
     % Statistics
     stats = statistics(PiY(:,1), Y(:,end));
@@ -61,8 +68,10 @@ for i = 1:n
         annnotation{1} = imread(sprintf('Dataset2/Annotations/%d.png', ca_Y{i}.I));
     end  
     
-%     visualize(original_rgb, annnotation, Y(:,end), PiY(:,1), sprintf('Adamar, K=%d, alpha=%.2e', K, alpha));
-%     pause(1)
+    if display
+        visualize(original_rgb, annnotation, Y(:,end), PiY(:,1), sprintf('Adamar, K=%d, alpha=%.2e', K, alpha));
+        pause(1)
+    end
 end
 
 stats_avg.precision = stats_avg.precision / n;
