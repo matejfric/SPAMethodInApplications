@@ -68,23 +68,25 @@ fprintf("How balanced are the labels? Ones: %.2f, Zeros: %.2f\n",...
 
 %K = 2:16;
 %K = [2,5,12];
-K = 10;
+%K = 10;
 %K = 100;
 
-%K = 4:2:14;
-maxIters = 1000;
+K = 10;%10;
+maxIters = 15;
 
-alpha = [1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 0.5];
+%alpha = [1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 0.5];
 %alpha = 1e-3.*[1:2:10];
-alpha = 1e-4.*[1:2:10];
-%alpha = 0:0.1:1;
+%alpha = 1e-4.*[1:2:10];
+alpha = 0:0.1:1;
 
 L1s = zeros(numel(alpha),length(K));
 L2s = zeros(numel(alpha),length(K));
 
+PiY = [X(:,end),1-X(:,end)];
+
 for a = 1:numel(alpha)
     for k = 1 : length(K)
-        [Lambda, C, Gamma, stats_train, L_out, PiX] = adamar_kmeans(X, K(k), alpha(a), maxIters);
+        [Lambda, C, Gamma, stats_train, L_out, PiX] = adamar_kmeans(X(:,1:end-1), PiY', K(k), alpha(a), maxIters);
         lprecision(a,k) = stats_train.precision;
         lrecall(a,k) = stats_train.recall;
         lf1score(a,k) = stats_train.f1score;
@@ -97,7 +99,7 @@ for a = 1:numel(alpha)
         %    smaller_images = [ 172, 177, 179, 203, 209, 212, 228, 240 ];
         images = 68;
         
-        [stats_test] = adamar_predict_mat(Lambda, C', K, alpha(a), [], [], ca_Y, DATASET, VISUALIZE);
+        [stats_test] = adamar_predict_mat(Lambda, C', K(k), alpha(a), [], [], ca_Y, DATASET, VISUALIZE);
         %if ~SCALING; [stats_test] = adamar_predict(Lambda, C', K, alpha(a), [], [], images, descriptors); end
         %if SCALING; [stats_test] = adamar_predict(Lambda, C', K, alpha(a), colmin, colmax, images, descriptors); end
         %if ~SCALING;[stats_test] = adamar_predict_mat(Lambda, C', K, alpha(a), [], [], ca_Y, DATASET, false); end

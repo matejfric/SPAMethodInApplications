@@ -1,5 +1,5 @@
 function [C, Gamma, PiX, Lambda, it, Lit, learningErrors, stats, L] = ...
-    adamar_fmincon(X, K, alpha, maxIters)
+    adamar_fmincon(X, PiY, K, alpha, maxIters)
 %ADAMAR_FMINCON Summary of this function goes here
 % X        data
 % K        number of clusters
@@ -9,6 +9,7 @@ function [C, Gamma, PiX, Lambda, it, Lit, learningErrors, stats, L] = ...
 % it       number of iterations
 arguments
     X (:,:) double
+    PiY (:,:) double
     K {mustBeInteger}
     alpha double
     maxIters {mustBeInteger}
@@ -24,11 +25,11 @@ L.L = Inf;
 Nrand = 5; % Number of random runs
 for nrand = 1:Nrand
     disp(['- annealing run #' num2str(nrand)])
-    PiY = [X(:,end), 1-X(:,end)]';
-    [Lambda0, Gamma0, C0] = initial_approximation_plus_plus(X(:, 1:end-1), K, PiY);
+%    PiY = [X(:,end), 1-X(:,end)]';
+    [Lambda0, Gamma0, C0] = initial_approximation_plus_plus(X, K, PiY);
     
     [C_temp, Gamma_temp, PiX_temp, Lambda_temp, it_temp, Lit_temp, learningErrors_temp, stats_temp, L_temp] =...
-        adamar_fmincon_one(X, K, alpha, maxIters, Lambda0, Gamma0, C0);
+        adamar_fmincon_one(X, PiY, K, alpha, maxIters, Lambda0, Gamma0, C0);
 
     if L_temp.L < L.L
         C = C_temp;
@@ -46,12 +47,11 @@ end
 end
 
 function [C, Gamma, PiX, Lambda, it, Lit, learningErrors, stats, L] = ...
-    adamar_fmincon_one(X, K, alpha, maxIters, Lambda0, Gamma0, C0)
+    adamar_fmincon_one(X, PiY, K, alpha, maxIters, Lambda0, Gamma0, C0)
 %ADAMAR_FMINCON_ONE One run of adamar.
 
-trueLabels = X(:,end);
-PiY = [X(:,end), 1-X(:,end)]';
-X = X(:, 1:end-1)';
+trueLabels = PiY(1,:)';
+X = X';
 T = size(X,2);
 
 myeps = 1e-3;
