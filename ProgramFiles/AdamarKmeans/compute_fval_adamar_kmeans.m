@@ -11,7 +11,7 @@ for t=1:T
     for kx = 1:KX
         L_lambda = 0;
         for ky = 1:KY
-            L_lambda = L_lambda + PiY(ky,t) * log(max(Lambda(ky,kx),1e-12));
+            L_lambda = L_lambda + PiY(ky,t) * Gamma(kx,t) * log(max(Lambda(ky,kx),1e-12));
         end
 
         L1 = L1 + (1/Tcoeff) * Gamma(kx,t) * dot(X(:,t) - C(:,kx), X(:,t) - C(:,kx));

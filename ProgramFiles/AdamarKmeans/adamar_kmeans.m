@@ -59,7 +59,7 @@ for i = 1:maxIters
     
     %disp([' - before Gamma: ' num2str(compute_L2(C',Gamma,Lambda,X',alpha, PiY))])
     %Compute Gamma
-    [Gamma] = akmeans_gamma_step(X, C, K, Lambda, PiY, alpha);
+    [Gamma] = akmeans_gamma_step(X, C, K, Lambda, PiY, alpha, T);
     %disp([' - after Gamma: ' num2str(compute_L2(C',Gamma,Lambda,X',alpha, PiY))])
     
     % Update Lambda
