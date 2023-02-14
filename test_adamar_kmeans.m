@@ -8,9 +8,11 @@ addpath('ProgramFiles/AdamarKmeans') % adamar_kmeans
 addpath('ProgramFiles/SPG') 
 rng(42);
 
-DATASET = 'Dataset2';
+DATASET = 'Dataset256'; % 'Dataset', 'Dataset2', 'Dataset256'
 SCALING = false;
-VISUALIZE = false;
+VISUALIZE = true;
+COLOR = true;
+PROBS = true;
 
 descriptors = [Descriptor.Roughness Descriptor.Color ];
 testing_images = [68, 137, 143];
@@ -29,26 +31,36 @@ end
 
 if strcmp(DATASET, 'Dataset2')
     %ca = matrix2ca('Dataset2/Descriptors/');
-    ca = matrix2ca('Dataset2/Descriptors512GLRLM/');
+    %ca = matrix2ca('Dataset2/Descriptors512GLRLM/');
     %ca = matrix2ca('Dataset2/DescriptorsProbability/');
+    ca = matrix2ca('Dataset2/DescriptorsProbabilityColorGLCMGLRL/');
     n = numel(ca);
-    n_train = floor(n * 0.8);
+    n_train = floor(n * 0.9); % Training set size
     n_test = n - n_train;
     X = cell2mat({cell2mat(ca(1:n_train)).X}');
     %ca_Y = ca(1:n_train); % test on training data
     ca_Y = ca(n_train+1:n); % test on testing data
+elseif strcmp(DATASET, 'Dataset256')
+    ca = matrix2ca('Dataset/Descriptors256/');
+    n = numel(ca);
+    %n_train = floor(n * 0.9); % Training set size
+    n_train = 100;
+    n_test = n - n_train;
+    X = cell2mat({cell2mat(ca(1:n_train)).X}');
+    %ca_Y = ca(1:n_train); % test on training data
+    %ca_Y = ca(n_train+1:n); % test on testing data
+    ca_Y = ca(n_train+1:n_train+6);
 else
-    % X = get_descriptors(load_images();, descriptors);
-    X = matfile('X10.mat').X;
+    X = get_descriptors(load_images(), descriptors, COLOR, PROBS);
+    %X = matfile('X10.mat').X;
     
     n = numel(testing_images);
     ca_Y = cell(n,1);
     for i=1:n
-        Y.X = get_descriptors(load_images(testing_images(i)), descriptors); 
+        Y.X = get_descriptors(load_images(testing_images(i)), descriptors, COLOR, PROBS); 
         Y.I = testing_images(i);
         ca_Y{i} = Y;
     end
-    [X, ca_Y] = scaling(X, ca_Y, 'none');
 end
 
 % Removal of strongly correlated columns
@@ -66,32 +78,34 @@ folder = 'Dataset/SmallImagesDescriptors/';
 fprintf("How balanced are the labels? Ones: %.2f, Zeros: %.2f\n",...
     sum(X(:,end)), size(X(:,end), 1)-sum(X(:,end)));
 
-%K = 2:16;
-%K = [2,5,12];
-%K = 10;
-%K = 100;
+%Ks = 2:16;
+%Ks = [2,5,12];
+Ks = 10;
+%Ks = 100;
 
-K = 10;%10;
-maxIters = 15;
+maxIters = 50;
 
-%alpha = [1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 0.5];
-%alpha = 1e-3.*[1:2:10];
-%alpha = 1e-4.*[1:2:10];
-alpha = 0:0.1:1;
+%alphas = [1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 0.5];
+%alphas = 1e-3.*[1:2:10];
+%alphas = 1e-4.*[1:2:10];
+alphas = 0:0.1:1;
 
-L1s = zeros(numel(alpha),length(K));
-L2s = zeros(numel(alpha),length(K));
+L1s = zeros(numel(alphas),length(Ks));
+L2s = zeros(numel(alphas),length(Ks));
 
 PiY = [X(:,end),1-X(:,end)];
 
-for a = 1:numel(alpha)
-    for k = 1 : length(K)
-        [Lambda, C, Gamma, stats_train, L_out, PiX] = adamar_kmeans(X(:,1:end-1), PiY', K(k), alpha(a), maxIters);
+nrand = 2; % Number of random runs (annealing)
+
+for a = 1:numel(alphas)
+    for k = 1 : length(Ks)
+        [Lambda, C, Gamma, stats_train, L_out, PiX] = adamar_kmeans(X(:,1:end-1), PiY', Ks(k), alphas(a), maxIters, nrand);
         lprecision(a,k) = stats_train.precision;
         lrecall(a,k) = stats_train.recall;
         lf1score(a,k) = stats_train.f1score;
         laccuracy(a,k) = stats_train.accuracy;
 
+        Ls(a,k) = L_out.L;
         L1s(a,k) = L_out.L1;
         L2s(a,k) = L_out.L2;
 
@@ -99,7 +113,7 @@ for a = 1:numel(alpha)
         %    smaller_images = [ 172, 177, 179, 203, 209, 212, 228, 240 ];
         images = 68;
         
-        [stats_test] = adamar_predict_mat(Lambda, C', K(k), alpha(a), [], [], ca_Y, DATASET, VISUALIZE);
+        [stats_test] = adamar_predict_mat(Lambda, C', Ks(k), alphas(a), [], [], ca_Y, DATASET, VISUALIZE);
         %if ~SCALING; [stats_test] = adamar_predict(Lambda, C', K, alpha(a), [], [], images, descriptors); end
         %if SCALING; [stats_test] = adamar_predict(Lambda, C', K, alpha(a), colmin, colmax, images, descriptors); end
         %if ~SCALING;[stats_test] = adamar_predict_mat(Lambda, C', K, alpha(a), [], [], ca_Y, DATASET, false); end
@@ -110,7 +124,7 @@ for a = 1:numel(alpha)
         taccuracy(a,k) = stats_test.accuracy;
     end
 
-    score_plot(sprintf('Adamar k-means, K=%d, alpha=%.2e', K, alpha(a)), K, lprecision(a,:), lrecall(a,:), lf1score(a,:), laccuracy(a,:), tprecision(a,:), trecall(a,:), tf1score(a,:), taccuracy(a,:))
+    %score_plot(sprintf('Adamar k-means, K=%d, alpha=%.2e', K, alpha(a)), K, lprecision(a,:), lrecall(a,:), lf1score(a,:), laccuracy(a,:), tprecision(a,:), trecall(a,:), tf1score(a,:), taccuracy(a,:))
 
 end
 
@@ -121,15 +135,35 @@ end
 fprintf("\nProgram finished successfully.\n");
 
 % L-curve
-for k=1:length(K)
+for k=1:length(Ks)
     figure
     hold on
-    title(sprintf('akmeans, K=%d', K))
+    title(sprintf('akmeans, K=%d', Ks))
     plot(L1s(:,k), L2s(:,k),'r-o');
     %text(L1s(1),L2s(1),['$\alpha = ' num2str(alpha(1)) '$'],'Interpreter','latex')
     %text(L1s(end),L2s(end),['$\alpha = ' num2str(alpha(end)) '$'],'Interpreter','latex')
     for i = 1:numel(L1s(:,k))
-        text(L1s(i),L2s(i),['$\alpha = ' num2str(alpha(i)) '$'],'Interpreter','latex')
+        text(L1s(i),L2s(i),['$\alpha = ' num2str(alphas(i)) '$'],'Interpreter','latex')
     end
+    hold off
+end
+
+for idx_K=1:length(Ks)
+    figure
+    subplot(1,3,1)
+    hold on
+    plot(alphas,Ls(:, idx_K),'r*-')
+    xlabel('$\alpha$','Interpreter','latex')
+    ylabel('$L$','Interpreter','latex')
+    subplot(1,3,2)
+    hold on
+    plot(alphas,L1s(:, idx_K),'b*-')
+    xlabel('$\alpha$','Interpreter','latex')
+    ylabel('$L_1$','Interpreter','latex')
+    subplot(1,3,3)
+    hold on
+    plot(alphas,L2s(:, idx_K),'m*-')
+    xlabel('$\alpha$','Interpreter','latex')
+    ylabel('$L_2$','Interpreter','latex')
     hold off
 end

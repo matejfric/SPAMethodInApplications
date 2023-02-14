@@ -1,20 +1,18 @@
-function [Lambda, C, Gamma, stats, L, PiX] = adamar_kmeans(X, PiY, K, alpha, maxIters)
+function [Lambda, C, Gamma, stats, L, PiX] = adamar_kmeans(X, PiY, K, alpha, maxIters, Nrand)
 %KMEANS_ADAMAR 
-%   K........number of clusters
-switch(nargin)
-    case 3 
-        alpha = 0.5;
-        maxIters = 10;
-    case 4
-        maxIters = 10;
+arguments
+    X               % Matrix of descriptors
+    PiY             % Ground truth
+    K               % Number of clusters
+    alpha = 0.5;    % Regularization parameter
+    maxIters = 10;  % Maximum number of iterations
+    Nrand = 5;      % Number of random runs
 end
 
 fprintf("\nPerforming the K-means algorithm for K=%d, alpha=%d\n", K, alpha);
 
 %SIMULATED ANNEALING
 L.L = Inf;
-Nrand = 5; % Number of random runs
-
 for nrand = 1:Nrand
     disp(['- annealing run #' num2str(nrand)])
     
@@ -100,15 +98,31 @@ for i = 1:maxIters
     Gamma_rec = compute_Gamma_kmeans(C',X'); % Reconstruction of Gamma
     %PiX = round(Lambda*Gamma_rec)'; % Prediction (round => binary matrix)
     PiX = (Lambda*Gamma_rec)';
-    stats = statistics(PiX(:,1), ground_truth);
-    learningErrors(i) = sum(abs(PiX(:,1) - ground_truth')) / length(ground_truth);
-    fprintf("it=%d  L=%.2f  L_a=%.2f  FN=%d  FP=%d  f1score=%.3f  error:%.3f\n",...
-        i, L, L_real, stats.fn, stats.fp, stats.f1score, learningErrors(i));
+    
+    if size(PiY, 1) > 2 % multi-class classification
+        c = size(PiY, 1); % number of classes
+        PiX = round(PiX');
+        R = PiX(:, sum(PiX,1)==0 | sum(PiX,1) > 1);
+        r = randi([1 c],1,size(R,2));
+        PiX(:, sum(PiX,1)==0 | sum(PiX,1) > 1) = bsxfun(@eq, r(:), 1:c)';
+        [prediction, ~] = find(PiX);
+        [ground_truth, ~] = find(round(PiY));
+        if length(prediction) ~= length(ground_truth)
+            keyboard
+        end
+        stats = statistics_multiclass(prediction, ground_truth);
+        fprintf("it=%d  L=%.2f  L_a=%.2f  f1score=%.3f\n",...
+            i, L, L_real, stats.f1score);
+    else % binary classification
+        stats = statistics(PiX(:,1), ground_truth);
+        learningErrors(i) = sum(abs(PiX(:,1) - ground_truth')) / length(ground_truth);
+        fprintf("it=%d  L=%.2f  L_a=%.2f  FN=%d  FP=%d  f1score=%.3f  error:%.3f\n",...
+            i, L, L_real, stats.fn, stats.fp, stats.f1score, learningErrors(i));
+    end
 
     
     if L_old < L
         keyboard
-%        break;
     end
     
     if abs(L - L_old) < myeps
@@ -116,7 +130,7 @@ for i = 1:maxIters
     end
 end
 
-L_out.L = L_real;
+L_out.L = L;
 L_out.L1 = L1;
 L_out.L2 = L2;
 
