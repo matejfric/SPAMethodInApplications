@@ -13,7 +13,7 @@ features = 4*11;
 
 X = zeros(1e5, features);
 
-for img = progress(1:images)
+for img = 1:images
     I = im2double(rgb2gray(ca_dataset{img, 1}));
     
     [ca_patches, ~] = patchify(I);

@@ -1,5 +1,9 @@
-function [ground_truth] = get_ground_truth(ca_dataset)
+function [ground_truth] = get_ground_truth(ca_dataset, PROBS)
 %GET_GROUND_TRUTH
+arguments
+    ca_dataset
+    PROBS = false;
+end
 
 [images, ~] = size(ca_dataset);
 
@@ -22,14 +26,17 @@ for img = 1:images
             patch = ca_annotatations{i,j};
             % More than half of the pixels in the patch contains corrosion
             %! (Another hyperparameter)
-            if sum(sum(patch>0)) / numel(patch) > 0.5 
-                ground_truth(row) = 1;
-            else
-                ground_truth(row) = 0;
-            end
             
-            % % Probability that the patch contains corrosion
-            % ground_truth(row) = sum(sum(patch>0)) / numel(patch);
+            if PROBS
+                % Probability that the patch contains corrosion
+                ground_truth(row) = sum(sum(patch>0)) / numel(patch);
+            else
+                if sum(sum(patch>0)) / numel(patch) > 0.5 
+                    ground_truth(row) = 1;
+                else
+                    ground_truth(row) = 0;
+                end
+            end
             
             row = row + 1;
         end
