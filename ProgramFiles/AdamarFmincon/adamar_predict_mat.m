@@ -63,6 +63,9 @@ for i = 1:n
     if strcmp(dataset, 'Dataset') 
         original_rgb{1} = imread(sprintf('Dataset/Original/%d.jpg', ca_Y{i}.I));
         annnotation{1} = imread(sprintf('Dataset/Annotations/%d.png', ca_Y{i}.I));
+    elseif strcmp(dataset, 'Dataset256')
+        original_rgb{1} = imread(sprintf('Dataset/Original256/%d.jpg', ca_Y{i}.I));
+        annnotation{1} = imread(sprintf('Dataset/Annotations256/%d.png', ca_Y{i}.I));
     else
         original_rgb{1} = imread(sprintf('Dataset2/Original/%d.jpeg', ca_Y{i}.I));
         annnotation{1} = imread(sprintf('Dataset2/Annotations/%d.png', ca_Y{i}.I));

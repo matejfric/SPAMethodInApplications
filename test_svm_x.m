@@ -7,8 +7,12 @@ addpath('ProgramFiles/TQDM')
 
 rng(42);
 
+COLOR = true;
+PROBS = false;
+
 descriptors = [Descriptor.Roughness Descriptor.Color];
-dataset = 'Dataset2';
+%descriptors = [Descriptor.Roughness Descriptor.Color Descriptor.RoughnessGLRL];
+dataset = 'Dataset';
 testing_images = [68, 137, 143];
 
 if strcmp(dataset, 'Dataset2')
@@ -24,17 +28,20 @@ if strcmp(dataset, 'Dataset2')
     %[X, ca_Y] = correlation_analysis(X, ca_Y); %~0.21
     %[X, ca_Y] = principal_component_analysis(X, ca_Y); %~0.03
 else
-    %X = get_descriptors(load_images(), descriptors);
-    X = matfile('X10.mat').X;
+    X = get_descriptors(load_images(), descriptors, COLOR, PROBS);
+    %X = matfile('X10.mat').X;
     
     n = numel(testing_images);
     ca_Y = cell(n,1);
     for i=1:n
-        Y.X = get_descriptors(load_images(testing_images(i)), descriptors); 
+        Y.X = get_descriptors(load_images(testing_images(i)), descriptors, COLOR, PROBS); 
         Y.I = testing_images(i);
         ca_Y{i} = Y;
     end
-    [X, ca_Y] = scaling(X, ca_Y, 'none');
+    
+    %[X, ca_Y] = correlation_analysis(X, ca_Y);
+    %[X, ca_Y] = principal_component_analysis(X, ca_Y); %~0.03
+    [X, ca_Y] = scaling(X, ca_Y, 'minmax');
 end
     
 fprintf("How balanced are the labels? Ones: %.2f, Zeros: %.2f\n ",...
