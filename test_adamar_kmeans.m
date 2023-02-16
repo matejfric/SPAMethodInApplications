@@ -10,7 +10,7 @@ rng(42);
 
 DATASET = 'Dataset256'; % 'Dataset', 'Dataset2', 'Dataset256'
 SCALING = false;
-VISUALIZE = true;
+VISUALIZE = false;
 COLOR = true;
 PROBS = true;
 
@@ -42,8 +42,9 @@ if strcmp(DATASET, 'Dataset2')
     ca_Y = ca(n_train+1:n); % test on testing data
 elseif strcmp(DATASET, 'Dataset256')
     ca = matrix2ca('Dataset/Descriptors256/');
+    %ca = matrix2ca('Dataset/Descriptors256_new_color/');
     n = numel(ca);
-    %n_train = floor(n * 0.9); % Training set size
+    %n_train = floor(n * 0.95); % Training set size
     n_train = 100;
     n_test = n - n_train;
     X = cell2mat({cell2mat(ca(1:n_train)).X}');
