@@ -12,6 +12,7 @@ end
 
 if ismember(Descriptor.Color, descriptors)
     X_Color = color_analysis(ca);
+    %X_Color = color_analysis_former(ca);
 else
     X_Color = [];
 end

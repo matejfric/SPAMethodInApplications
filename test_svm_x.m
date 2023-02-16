@@ -10,6 +10,8 @@ rng(42);
 COLOR = true;
 PROBS = false;
 
+%descriptors = [Descriptor.Color]; % up to 0.71 f-1score
+%descriptors = [Descriptor.Roughness]; % up to 0.5 f-1score
 descriptors = [Descriptor.Roughness Descriptor.Color];
 %descriptors = [Descriptor.Roughness Descriptor.Color Descriptor.RoughnessGLRL];
 dataset = 'Dataset';
@@ -39,7 +41,7 @@ else
         ca_Y{i} = Y;
     end
     
-    %[X, ca_Y] = correlation_analysis(X, ca_Y);
+    [X, ca_Y] = correlation_analysis(X, ca_Y);
     %[X, ca_Y] = principal_component_analysis(X, ca_Y); %~0.03
     [X, ca_Y] = scaling(X, ca_Y, 'minmax');
 end
