@@ -1,4 +1,4 @@
-function [Lambda, C, Gamma, stats, L, PiX] = adamar_kmeans(X, PiY, K, alpha, maxIters, Nrand)
+function [Lambda, C, Gamma, stats, L, PiX] = adamar_kmeans(X, PiY, K, alpha, maxIters, Nrand, scaleT)
 %KMEANS_ADAMAR 
 arguments
     X               % Matrix of descriptors
@@ -7,6 +7,7 @@ arguments
     alpha = 0.5;    % Regularization parameter
     maxIters = 10;  % Maximum number of iterations
     Nrand = 5;      % Number of random runs
+    scaleT = true;
 end
 
 fprintf("\nPerforming the K-means algorithm for K=%d, alpha=%d\n", K, alpha);
@@ -23,7 +24,7 @@ for nrand = 1:Nrand
     C0=C0';
     
     [Lambda_temp, C_temp, Gamma_temp, PiX_temp, stats_temp, L_temp] =...
-    adamar_kmeans_one(C0, Gamma0, Lambda0, PiY, X, K, alpha, maxIters);
+    adamar_kmeans_one(C0, Gamma0, Lambda0, PiY, X, K, alpha, maxIters, scaleT);
 
     if L_temp.L < L.L
         C = C_temp;
@@ -39,10 +40,15 @@ end
 
 
 function [Lambda, C, Gamma, PiX, stats, L_out]...
-    = adamar_kmeans_one(C, Gamma, Lambda, PiY, X, K, alpha, maxIters)
+    = adamar_kmeans_one(C, Gamma, Lambda, PiY, X, K, alpha, maxIters, scaleT)
+
+if scaleT
+    T = size(X,1);
+else
+    T = 1;
+end
 
 % Initial objective function value
-T = size(X,1); % Number of features
 L = compute_fval_adamar_kmeans(C',Gamma,Lambda,X',alpha, PiY, T);
 L0 = L;
 fprintf("it=%d  L=%.2f\n", 0, L0);
@@ -68,7 +74,7 @@ for i = 1:maxIters
     for k = 1:K
         ids = Gamma(k,:) == 1; % Matrix of indices of features affiliated to the k-th cluster
         if sum(ids) > 0 
-            C(k,:) = mean(X(ids,:));
+            C(k,:) = mean(X(ids,:), 1);
         end
     end
 %    disp([' - after C: ' num2str(compute_fval_adamar_kmeans(C',Gamma,Lambda,X',alpha, PiY, T))])

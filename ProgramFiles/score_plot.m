@@ -14,7 +14,11 @@ hold on
 myplot(range,lf1score)
 hold on 
 myplot(range,laccuracy)
-xlabel('K')
+if max(range) <= 1
+    xlabel('$\alpha$','Interpreter','latex')
+else
+    xlabel('K')
+end
 ylabel('Score')
 xticks(range)
 if max(range) >= 100
@@ -36,7 +40,11 @@ hold on
 myplot(range,tf1score)
 hold on 
 myplot(range,taccuracy)
-xlabel('K')
+if max(range) <= 1
+    xlabel('$\alpha$','Interpreter','latex')
+else
+    xlabel('K')
+end
 ylabel('Score')
 xticks(range)
 if max(range) >= 100

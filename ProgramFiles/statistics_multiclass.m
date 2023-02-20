@@ -6,8 +6,8 @@ function [stats] = statistics_multiclass(labels, ground_truth)
 %        20 2 4 0;
 %        12 0 0 1 ]
 
-labels = round(labels);
-ground_truth = round(ground_truth);
+% labels = round(labels);
+% ground_truth = round(ground_truth);
 
 % Confusion matrix
 CM = confusionmat(labels, ground_truth);
@@ -19,10 +19,17 @@ FPs = sum(CM,2) - TPs;
 FNs = sum(CM,1)' - TPs;
 precision = TPs./sum(CM,2);
 recall = TPs./sum(CM,1)';
-f1scores = 2*(precision.*recall)./(precision+recall);
-meanf1 = mean(f1scores);
 
-stats.f1score = meanf1;
+f1_scores = 2*(precision.*recall)./(precision+recall);
+if sum(isnan(f1_scores)) > 0
+    f1_scores(isnan(f1_scores)) = 0;
+end
+accuracy_scores = (TPs)./(TPs+FPs+FNs);
+
+stats.f1score = mean(f1_scores);
+stats.precision = mean(precision);
+stats.recall = mean(recall);
+stats.accuracy = mean(accuracy_scores);
 
 end
 
