@@ -7,7 +7,7 @@ addpath('ProgramFiles/AdamarFmincon') % adamar_predict()
 addpath('ProgramFiles/AdamarKmeans') % adamar_kmeans
 addpath('ProgramFiles/SPG') 
 
-T = 1000;
+T = 100;
 [X_true,Y_true,C_true,Gamma_true,Lambda_true] = generate_synthetic_problem(T);
 
 sigma = 0.15; % noise parameter
@@ -21,6 +21,7 @@ for i=1:nwrong
 end
 
 maxIters = 30;
+nrand = 5;
 Ks = size(C_true,2);
 
 alphas = 0:0.05:1;
@@ -35,12 +36,8 @@ for idx_alpha=1:length(alphas)
         for idx_K=1:length(Ks)
             K = Ks(idx_K);
     
-            [Lambda, C, Gamma, stats_train, L_out, PiX] = adamar_kmeans(X', Y, K, alpha, maxIters);
+            [Lambda, C, Gamma, stats_train, L_out, PiX] = adamar_kmeans(X', Y, K, alpha, maxIters, nrand);
 %            [C, Gamma, PiX, Lambda, it, Lit, learningErrors, stats, L_out] = adamar_fmincon(X', Y, K, alpha, maxIters);
-
-%             [prediction, ~] = find(round(Lambda * Gamma));
-%             [ground_truth, ~] = find(Y);
-%             fprintf("f1score: %.2f", statistics_multiclass(prediction, ground_truth).f1score);
 
             Ls(idx_alpha,idx_K)  = L_out.L;
             L1s(idx_alpha,idx_K) = L_out.L1;
