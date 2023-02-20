@@ -27,18 +27,19 @@ PiY = onehotencode(labels,2);
 T = size(meas,1);
 
 X = meas;
-[X, ~] = scaling(X, [], 'minmax');
+%[X, ~] = scaling(X, [], 'minmax');
 
 tbl = array2table(X);
 tbl.Y = PiY;
 n = length(tbl.Y);
 
+
+test_size = 0.25;
 if CROSSVAL
     KFold = 10;
     partition = cvpartition(labels,'KFold',KFold,'Stratify',true);
 else
     KFold = 1;
-    test_size = 0.25;
     partition = cvpartition(n, 'Holdout', test_size); 
 end
 
@@ -58,11 +59,13 @@ y = table2array(tblTest(:,1:4));
 Piy = tblTest.Y';
 
 %(Hyper)parameters
-maxIters = 30;
+maxIters = 100;
 nrand = 10;
-scaleT = true;
+scaleT = false;
 Ks = 3;
 alphas = 0:0.05:1;
+alphas = 0:0.01:1;
+%alphas = 0.75;
 
 %Preallocation
 Ls  = zeros(numel(alphas),length(Ks));
