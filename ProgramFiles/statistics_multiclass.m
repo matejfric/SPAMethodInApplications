@@ -6,8 +6,8 @@ function [stats] = statistics_multiclass(labels, ground_truth)
 %        20 2 4 0;
 %        12 0 0 1 ]
 
-% labels = round(labels);
-% ground_truth = round(ground_truth);
+labels = round(labels);
+ground_truth = round(ground_truth);
 
 % Confusion matrix
 CM = confusionmat(labels, ground_truth);

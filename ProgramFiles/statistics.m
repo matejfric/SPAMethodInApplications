@@ -5,7 +5,7 @@ labels = round(labels);
 ground_truth = round(ground_truth);
 
 % Confusion matrix
-C = confusionmat(labels, ground_truth);
+C = confusionmat(double(labels), double(ground_truth));
 
 TN = C(1,1);
 FP = C(1,2);
