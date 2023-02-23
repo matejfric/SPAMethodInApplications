@@ -2,7 +2,7 @@ function [Gamma] = akmeans_gamma_step(X, C, K, Lambda, PiY, alpha, Tcoeff)
 %AKMEANS_GAMMA_STEP Compute Gamma
 
 [T,~] = size(X);
-Lambda_hat = log(max(Lambda,1e-12));
+Lambda_hat = mylog(Lambda);
 expressions = zeros(T,K);
 
 for kx = 1:K

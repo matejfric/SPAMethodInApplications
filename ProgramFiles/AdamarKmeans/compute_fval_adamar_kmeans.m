@@ -8,7 +8,7 @@ for k = 1:KX
     L1 = L1 + (1/Tcoeff)*dot(Gamma(k,:),sum((X - kron(ones(1,T),C(:,k))).^2,1));
 end
 
-L2 = -sum(sum((PiY*Gamma').*log(max(Lambda,1e-12))));
+L2 = -sum(sum((PiY*Gamma').*mylog(Lambda)));
 
 L = alpha*L1 + (1-alpha)*L2;
 

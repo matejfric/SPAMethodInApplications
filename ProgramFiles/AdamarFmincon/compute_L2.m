@@ -14,7 +14,7 @@ for k = 1:KY
     PiYk = PiY(k, :); 
     L2 = L2 - dot(...
         PiYk(PiYk ~= 0),...
-        log(max(LambdaGamma(k,PiYk ~= 0),1e-12)./ PiYk(PiYk ~= 0)));
+        mylog(LambdaGamma(k,PiYk ~= 0))./ PiYk(PiYk ~= 0));
 end
 
 L = alpha*L1 + (1-alpha)*L2;

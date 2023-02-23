@@ -60,7 +60,7 @@ end
 for ky = 1:KY
     PiYk = piY(ky);
     if PiYk ~= 0
-        L2 = L2 - PiYk*log(max(LambdaGamma(ky),1e-12));
+        L2 = L2 - PiYk*mylog(LambdaGamma(ky));
     end
 end
 
@@ -84,7 +84,7 @@ LambdaGamma = Lambda*gamma;
 for k = 1:KY
     PiYk = piY(k);
     if PiYk ~= 0
-        L2 = L2 - PiYk*log(max(LambdaGamma(k),1e-12));
+        L2 = L2 - PiYk*mylog(LambdaGamma(k));
     end
 end
 
