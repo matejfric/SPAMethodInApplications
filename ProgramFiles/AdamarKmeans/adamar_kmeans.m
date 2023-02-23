@@ -1,16 +1,15 @@
-function [Lambda, C, Gamma, stats, L, PiX] = adamar_kmeans(X, PiY, K, alpha, maxIters, Nrand, scaleT)
+function [Lambda, C, Gamma, stats, L, PiX] = adamar_kmeans(X, PiY, K, myeps, maxIters, Nrand)
 %KMEANS_ADAMAR 
 arguments
     X               % Matrix of descriptors
     PiY             % Ground truth
     K               % Number of clusters
-    alpha = 0.5;    % Regularization parameter
+    myeps = 1e-4;    % Regularization parameter
     maxIters = 10;  % Maximum number of iterations
     Nrand = 5;      % Number of random runs
-    scaleT = true;
 end
 
-fprintf("\nPerforming the K-means algorithm for K=%d, alpha=%d\n", K, alpha);
+fprintf("\nPerforming the K-means algorithm for K=%d, epsilon=%d\n", K, myeps);
 
 %SIMULATED ANNEALING
 L.L = Inf;
@@ -24,7 +23,7 @@ for nrand = 1:Nrand
     C0=C0';
     
     [Lambda_temp, C_temp, Gamma_temp, PiX_temp, stats_temp, L_temp] =...
-    adamar_kmeans_one(C0, Gamma0, Lambda0, PiY, X, K, alpha, maxIters, scaleT);
+    adamar_kmeans_one(C0, Gamma0, Lambda0, PiY, X, K, myeps, maxIters);
 
     if L_temp.L < L.L
         C = C_temp;
@@ -40,51 +39,51 @@ end
 
 
 function [Lambda, C, Gamma, PiX, stats, L_out]...
-    = adamar_kmeans_one(C, Gamma, Lambda, PiY, X, K, alpha, maxIters, scaleT)
-
-if scaleT
-    T = size(X,1);
-else
-    T = 1;
-end
+    = adamar_kmeans_one(C, Gamma, Lambda, PiY, X, K, myeps, maxIters)
 
 % Initial objective function value
-L = compute_fval_adamar_kmeans(C',Gamma,Lambda,X',alpha, PiY, T);
+T = size(X,1);
+L = compute_fval_adamar_kmeans(C',Gamma,Lambda,X',myeps, PiY, T);
 L0 = L;
 fprintf("it=%d  L=%.2f\n", 0, L0);
 learningErrors = zeros(0, maxIters); % preallocation
 ground_truth = PiY(1,:);
-myeps = 1e-4; %TODO
+myepsL = 1e-12; %TODO
 
 for i = 1:maxIters
+
+%    C = X([3,1,4,2],:);
+%    C = X;
     
     %Compute Gamma
-%    disp([' - before Gamma: ' num2str(compute_fval_adamar_kmeans(C',Gamma,Lambda,X',alpha, PiY, T))])
-    [Gamma] = akmeans_gamma_step(X, C, K, Lambda, PiY, alpha, T);
-%    disp([' - after Gamma: ' num2str(compute_fval_adamar_kmeans(C',Gamma,Lambda,X',alpha, PiY, T))])
-    
-    % Update Lambda
-%    disp([' - before Lambda: ' num2str(compute_fval_adamar_kmeans(C',Gamma,Lambda,X',alpha, PiY, T))])
-    Lambda = lambda_solver_jensen(Gamma, PiY);
-%    disp([' - after Lambda: ' num2str(compute_fval_adamar_kmeans(C',Gamma,Lambda,X',alpha, PiY, T))])
+%    disp([' - before Gamma: ' num2str(compute_fval_adamar_kmeans(C',Gamma,Lambda,X',myeps, PiY, T))])
+    [Gamma] = akmeans_gamma_step(X, C, K, Lambda, PiY, myeps, T);
+ 
+ %   [~,~,~,Gamma,~] = generate_synthetic_problem(4);
 
-    %disp([' - before C: ' num2str(compute_L2(C',Gamma,Lambda,X',alpha, PiY))])
+%    disp([' - after Gamma: ' num2str(compute_fval_adamar_kmeans(C',Gamma,Lambda,X',myeps, PiY, T))])
+
     % Update C
-%    disp([' - before C: ' num2str(compute_fval_adamar_kmeans(C',Gamma,Lambda,X',alpha, PiY, T))])
+%    disp([' - before C: ' num2str(compute_fval_adamar_kmeans(C',Gamma,Lambda,X',myeps, PiY, T))])
     for k = 1:K
         ids = Gamma(k,:) == 1; % Matrix of indices of features affiliated to the k-th cluster
         if sum(ids) > 0 
-            C(k,:) = mean(X(ids,:), 1);
+            C(k,:) = mean(X(ids,:),1);
         end
     end
-%    disp([' - after C: ' num2str(compute_fval_adamar_kmeans(C',Gamma,Lambda,X',alpha, PiY, T))])
+%    disp([' - after C: ' num2str(compute_fval_adamar_kmeans(C',Gamma,Lambda,X',myeps, PiY, T))])
+
+    % Update Lambda
+%    disp([' - before Lambda: ' num2str(compute_fval_adamar_kmeans(C',Gamma,Lambda,X',myeps, PiY, T))])
+    Lambda = lambda_solver_jensen(Gamma, PiY);
+%    disp([' - after Lambda: ' num2str(compute_fval_adamar_kmeans(C',Gamma,Lambda,X',myeps, PiY, T))])
 
     %disp([' - L = ' num2str(compute_L2(C',Gamma,Lambda,X',alpha, PiY)) ', L_real: ' num2str(compute_fval_adamar_kmeans(C',Gamma,Lambda,X',alpha, PiY))])
     % Is the objective function decreasing?
     L_old = L;
 
-    [L,L1,L2] = compute_fval_adamar_kmeans(C',Gamma,Lambda,X',alpha, PiY, T);
-    [L_real,L1_real,L2_real] = compute_L2(C',Gamma,Lambda,X',alpha,PiY,T);
+    [L,L1,L2] = compute_fval_adamar_kmeans(C',Gamma,Lambda,X',myeps, PiY, T);
+    [L_real,L1_real,L2_real] = compute_L2(C',Gamma,Lambda,X',myeps,PiY,T);
 
     if isnan(L) % Only one state is present in Lambda!
         fprintf("\nObjective function value is NaN!\n")
@@ -131,7 +130,7 @@ for i = 1:maxIters
         keyboard
     end
     
-    if abs(L - L_old) < myeps
+    if abs(L - L_old) < myepsL
         break;
     end
 end

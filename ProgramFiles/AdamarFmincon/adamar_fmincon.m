@@ -1,5 +1,5 @@
 function [C, Gamma, PiX, Lambda, it, Lit, learningErrors, stats, L] = ...
-    adamar_fmincon(X, PiY, K, alpha, maxIters)
+    adamar_fmincon(X, PiY, K, myeps, maxIters)
 %ADAMAR_FMINCON Summary of this function goes here
 % X        data
 % K        number of clusters
@@ -11,11 +11,11 @@ arguments
     X (:,:) double
     PiY (:,:) double
     K {mustBeInteger}
-    alpha double
+    myeps double
     maxIters {mustBeInteger}
 end
 
-fprintf('ADAMAR, K=%d, alpha=%.2e\n', K, alpha);
+fprintf('ADAMAR, K=%d, alpha=%.2e\n', K, myeps);
 if isempty(maxIters)
     maxIters = 1;
 end
@@ -29,7 +29,7 @@ for nrand = 1:Nrand
     [Lambda0, Gamma0, C0] = initial_approximation_plus_plus(X, K, PiY);
     
     [C_temp, Gamma_temp, PiX_temp, Lambda_temp, it_temp, Lit_temp, learningErrors_temp, stats_temp, L_temp] =...
-        adamar_fmincon_one(X, PiY, K, alpha, maxIters, Lambda0, Gamma0, C0);
+        adamar_fmincon_one(X, PiY, K, myeps, maxIters, Lambda0, Gamma0, C0);
 
     if L_temp.L < L.L
         C = C_temp;
@@ -47,14 +47,14 @@ end
 end
 
 function [C, Gamma, PiX, Lambda, it, Lit, learningErrors, stats, L] = ...
-    adamar_fmincon_one(X, PiY, K, alpha, maxIters, Lambda0, Gamma0, C0)
+    adamar_fmincon_one(X, PiY, K, myeps, maxIters, Lambda0, Gamma0, C0)
 %ADAMAR_FMINCON_ONE One run of adamar.
 
 trueLabels = PiY(1,:)';
 X = X';
 T = size(X,2);
 
-myeps = 1e-3;
+myepsL = 1e-3;
 
 Lambda = Lambda0;
 Gamma = Gamma0;
@@ -71,7 +71,7 @@ while it < maxIters % practical stopping criteria after computing new L (see "br
 
     % compute Gamma
     disp(' - solving Gamma problem')
-    Gamma = compute_Gamma(C,Gamma,Lambda,X,alpha, PiY);
+    Gamma = compute_Gamma(C,Gamma,Lambda,X,myeps, PiY);
     
     % compute C
     disp(' - solving C problem')
@@ -83,7 +83,7 @@ while it < maxIters % practical stopping criteria after computing new L (see "br
     
     % compute objective function value
     Lold = L;
-    [L, L1, L2] = compute_L2(C,Gamma,Lambda,X,alpha, PiY,T);
+    [L, L1, L2] = compute_L2(C,Gamma,Lambda,X,myeps, PiY,T);
     
     disp([' it=' num2str(it) ', L=' num2str(L)]);
     
@@ -91,7 +91,7 @@ while it < maxIters % practical stopping criteria after computing new L (see "br
 %        keyboard
     end
         
-    if abs(L - Lold) < myeps
+    if abs(L - Lold) < myepsL
         break; % stop outer cycle
     end
     

@@ -7,41 +7,45 @@ addpath('ProgramFiles/AdamarFmincon') % adamar_predict()
 addpath('ProgramFiles/AdamarKmeans') % adamar_kmeans
 addpath('ProgramFiles/SPG') 
 
-T = 100;
+T = 4;
 [X_true,Y_true,C_true,Gamma_true,Lambda_true] = generate_synthetic_problem(T);
 
-sigma = 0.15; % noise parameter
+sigma = 10.1; % noise parameter
 X = X_true + sigma * randn(size(X_true));
 
 Y = Y_true;
-nwrong = floor(0.05*T); % wrong labels
+nwrong = floor(0.0*T); % wrong labels
 idx = randperm(T);
 for i=1:nwrong
   Y(1:2,idx(i)) = Y(2:-1:1,idx(i));
 end
 
-maxIters = 30;
-nrand = 5;
-Ks = size(C_true,2);
+maxIters = 5e2;
+Ks = 4;%size(C_true,2);
 
-alphas = 0:0.05:1;
-alphas = 0.05:0.05:0.95;
-Ls  = zeros(numel(alphas),length(Ks));
-L1s = zeros(numel(alphas),length(Ks));
-L2s = zeros(numel(alphas),length(Ks));
+myepss = 10.^[-1:0.1:6];
+%alphas = 0.9:0.01:1;
+%alphas = 0.05:0.05:0.95;
+Ls  = zeros(numel(myepss),length(Ks));
+L1s = zeros(numel(myepss),length(Ks));
+L2s = zeros(numel(myepss),length(Ks));
 
-for idx_alpha=1:length(alphas)
-    alpha = alphas(idx_alpha);
+for idx_myeps=1:length(myepss)
+    myeps = myepss(idx_myeps);
     
         for idx_K=1:length(Ks)
             K = Ks(idx_K);
     
-            [Lambda, C, Gamma, stats_train, L_out, PiX] = adamar_kmeans(X', Y, K, alpha, maxIters, nrand);
-%            [C, Gamma, PiX, Lambda, it, Lit, learningErrors, stats, L_out] = adamar_fmincon(X', Y, K, alpha, maxIters);
+            [Lambda, C, Gamma, stats_train, L_out, PiX] = adamar_kmeans(X', Y, K, myeps, maxIters,1e1);
+%            [C, Gamma, PiX, Lambda, it, Lit, learningErrors, stats, L_out] = adamar_fmincon(X', Y, K, myeps, maxIters);
+            
+%             [prediction, ~] = find(round(Lambda * Gamma));
+%             [ground_truth, ~] = find(Y_true);
+%             fprintf("f1score: %.2f", statistics_multiclass(prediction, ground_truth).f1score);
 
-            Ls(idx_alpha,idx_K)  = L_out.L;
-            L1s(idx_alpha,idx_K) = L_out.L1;
-            L2s(idx_alpha,idx_K) = L_out.L2;
+            Ls(idx_myeps,idx_K)  = L_out.L;
+            L1s(idx_myeps,idx_K) = L_out.L1;
+            L2s(idx_myeps,idx_K) = L_out.L2;
         end
 end
 
@@ -54,7 +58,7 @@ for idx_K=1:length(Ks)
     %text(L1s(1),L2s(1),['$\alpha = ' num2str(alpha(1)) '$'],'Interpreter','latex')
     %text(L1s(end),L2s(end),['$\alpha = ' num2str(alpha(end)) '$'],'Interpreter','latex')
     for i = 1:numel(L1s(:,idx_K))
-        text(L1s(i),L2s(i),['$\alpha = ' num2str(alphas(i)) '$'],'Interpreter','latex')
+        text(L1s(i),L2s(i),['$\epsilon = ' num2str(myepss(i)) '$'],'Interpreter','latex')
     end
     xlabel('$L_1$','Interpreter','latex')
     ylabel('$L_2$','Interpreter','latex')
@@ -65,18 +69,18 @@ for idx_K=1:length(Ks)
     figure
     subplot(1,3,1)
     hold on
-    plot(alphas,Ls(:, idx_K),'r*-')
-    xlabel('$\alpha$','Interpreter','latex')
+    plot(myepss,Ls(:, idx_K),'r*-')
+    xlabel('$\epsilon$','Interpreter','latex')
     ylabel('$L$','Interpreter','latex')
     subplot(1,3,2)
     hold on
-    plot(alphas,L1s(:, idx_K),'b*-')
-    xlabel('$\alpha$','Interpreter','latex')
+    plot(myepss,L1s(:, idx_K),'b*-')
+    xlabel('$\epsilon$','Interpreter','latex')
     ylabel('$L_1$','Interpreter','latex')
     subplot(1,3,3)
     hold on
-    plot(alphas,L2s(:, idx_K),'m*-')
-    xlabel('$\alpha$','Interpreter','latex')
+    plot(myepss,L2s(:, idx_K),'m*-')
+    xlabel('$\epsilon$','Interpreter','latex')
     ylabel('$L_2$','Interpreter','latex')
     hold off
 end
