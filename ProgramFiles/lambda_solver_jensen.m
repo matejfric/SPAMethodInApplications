@@ -16,8 +16,6 @@ for i=1:KY
     Lambda(i,sumLambda ~= 0) = Lambda(i,sumLambda ~= 0)./sumLambda(sumLambda ~= 0);
 end
 Lambda(:,sumLambda == 0) = 1/KY;
-%Lambda(:,sumLambda == 0) = 0;
-
 
 end
 
