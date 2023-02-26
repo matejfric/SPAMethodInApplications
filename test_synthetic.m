@@ -3,8 +3,7 @@ close all
 
 addpath('ProgramFiles')
 addpath('ProgramFiles/TQDM') % Progress bar
-addpath('ProgramFiles/AdamarFmincon') % adamar_predict()
-addpath('ProgramFiles/AdamarKmeans') % adamar_kmeans
+addpath('ProgramFiles/Adamar')
 addpath('ProgramFiles/SPG') 
 
 T = 100;

@@ -3,66 +3,15 @@ close all
 clear all
 addpath('ProgramFiles')
 addpath('ProgramFiles/TQDM') % Progress bar
-addpath('ProgramFiles/AdamarFmincon') % adamar_predict()
-addpath('ProgramFiles/AdamarKmeans') % adamar_kmeans
+addpath('ProgramFiles/Adamar')
 addpath('ProgramFiles/SPG') 
+
 rng(42);
 
 DATASET = 'Dataset256'; % 'Dataset', 'Dataset2', 'Dataset256'
-SCALING = false;
 VISUALIZE = false;
-COLOR = true;
-PROBS = true;
 
-descriptors = [Descriptor.Roughness Descriptor.Color ];
-testing_images = [68, 137, 143];
-
-if false % Save matrix X
-    ca = load_images([ 172, 177, 179, 203, 209, 212, 228, 240 ]); % Processing of 25 images ~ 410 seconds
-    %descriptors = [Descriptor.Color];
-    %descriptors = [Descriptor.Roughness];
-    %descriptors = [Descriptor.Roughness Descriptor.RoughnessGLRL Descriptor.Color ];
-    tic
-    X = get_descriptors(ca, descriptors);
-    toc
-    
-    save('X__.mat','X');
-end
-
-if strcmp(DATASET, 'Dataset2')
-    %ca = matrix2ca('Dataset2/Descriptors/');
-    %ca = matrix2ca('Dataset2/Descriptors512GLRLM/');
-    %ca = matrix2ca('Dataset2/DescriptorsProbability/');
-    ca = matrix2ca('Dataset2/DescriptorsProbabilityColorGLCMGLRL/');
-    n = numel(ca);
-    n_train = floor(n * 0.9); % Training set size
-    n_test = n - n_train;
-    X = cell2mat({cell2mat(ca(1:n_train)).X}');
-    %ca_Y = ca(1:n_train); % test on training data
-    ca_Y = ca(n_train+1:n); % test on testing data
-elseif strcmp(DATASET, 'Dataset256')
-    ca = matrix2ca('Dataset/Descriptors256/');
-    %ca = matrix2ca('Dataset/Descriptors256_new_color/');
-    n = numel(ca);
-    %n_train = floor(n * 0.95); % Training set size
-    n_train = 100;
-    n_test = n - n_train;
-    X = cell2mat({cell2mat(ca(1:n_train)).X}');
-    %ca_Y = ca(1:n_train); % test on training data
-    %ca_Y = ca(n_train+1:n); % test on testing data
-    ca_Y = ca(n_train+1:n_train+6);
-else
-    X = get_descriptors(load_images(), descriptors, COLOR, PROBS);
-    %X = matfile('X10.mat').X;
-    
-    n = numel(testing_images);
-    ca_Y = cell(n,1);
-    for i=1:n
-        Y.X = get_descriptors(load_images(testing_images(i)), descriptors, COLOR, PROBS); 
-        Y.I = testing_images(i);
-        ca_Y{i} = Y;
-    end
-end
+[X, ca_Y] = get_train_test_data(DATASET);
 
 % Removal of strongly correlated columns
 [X, ca_Y] = correlation_analysis(X, ca_Y);
@@ -70,11 +19,8 @@ end
 % Scaling
 %[X, ca_Y] = scaling(X, ca_Y, 'minmax');
 
-% Perform PCA
+% PCA
 %[X, ca_Y] = principal_component_analysis(X, ca_Y);
-
-folder = 'Dataset/SmallImagesDescriptors/';
-%ca_Y = matrix2ca(folder);
 
 fprintf("How balanced are the labels? Ones: %.2f, Zeros: %.2f\n",...
     sum(X(:,end)), size(X(:,end), 1)-sum(X(:,end)));
@@ -94,7 +40,7 @@ alphas = 0:0.1:1;
 L1s = zeros(numel(alphas),length(Ks));
 L2s = zeros(numel(alphas),length(Ks));
 
-PiY = [X(:,end),1-X(:,end)];
+PiY = [X(:,end),1-X(:,end)]; % Ground truth
 
 nrand = 2; % Number of random runs (annealing)
 
@@ -111,8 +57,8 @@ for a = 1:numel(alphas)
         L2s(a,k) = L_out.L2;
 
         disp("Lambda:"); disp(Lambda); % Transition matrix
-        %    smaller_images = [ 172, 177, 179, 203, 209, 212, 228, 240 ];
-        images = 68;
+        %smaller_images = [ 172, 177, 179, 203, 209, 212, 228, 240 ];
+        %images = 68;
         
         [stats_test] = adamar_predict_mat(Lambda, C', Ks(k), alphas(a), [], [], ca_Y, DATASET, VISUALIZE);
         %if ~SCALING; [stats_test] = adamar_predict(Lambda, C', K, alpha(a), [], [], images, descriptors); end
@@ -135,36 +81,4 @@ end
 
 fprintf("\nProgram finished successfully.\n");
 
-% L-curve
-for k=1:length(Ks)
-    figure
-    hold on
-    title(sprintf('akmeans, K=%d', Ks))
-    plot(L1s(:,k), L2s(:,k),'r-o');
-    %text(L1s(1),L2s(1),['$\alpha = ' num2str(alpha(1)) '$'],'Interpreter','latex')
-    %text(L1s(end),L2s(end),['$\alpha = ' num2str(alpha(end)) '$'],'Interpreter','latex')
-    for i = 1:numel(L1s(:,k))
-        text(L1s(i),L2s(i),['$\alpha = ' num2str(alphas(i)) '$'],'Interpreter','latex')
-    end
-    hold off
-end
-
-for idx_K=1:length(Ks)
-    figure
-    subplot(1,3,1)
-    hold on
-    plot(alphas,Ls(:, idx_K),'r*-')
-    xlabel('$\alpha$','Interpreter','latex')
-    ylabel('$L$','Interpreter','latex')
-    subplot(1,3,2)
-    hold on
-    plot(alphas,L1s(:, idx_K),'b*-')
-    xlabel('$\alpha$','Interpreter','latex')
-    ylabel('$L_1$','Interpreter','latex')
-    subplot(1,3,3)
-    hold on
-    plot(alphas,L2s(:, idx_K),'m*-')
-    xlabel('$\alpha$','Interpreter','latex')
-    ylabel('$L_2$','Interpreter','latex')
-    hold off
-end
+plot_L_curves(Ls, L1s, L2s, Ks, alphas);

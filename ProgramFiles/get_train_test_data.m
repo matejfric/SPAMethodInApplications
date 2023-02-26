@@ -1,0 +1,51 @@
+function [X, ca_Y] = get_train_test_data(DATASET, descriptors, testing_images, color, probabilities)
+%GET_TRAIN_TEST_DATA 
+
+arguments
+    DATASET {string};
+    descriptors = [Descriptor.Roughness Descriptor.Color ];
+    testing_images = [68, 137, 143];
+    color = true;
+    probabilities = false;
+end
+
+if strcmp(DATASET, 'Dataset2')
+    %ca = matrix2ca('Dataset2/Descriptors/');
+    %ca = matrix2ca('Dataset2/Descriptors512GLRLM/');
+    %ca = matrix2ca('Dataset2/DescriptorsProbability/');
+    ca = matrix2ca('Dataset2/DescriptorsProbabilityColorGLCMGLRL/');
+    n = numel(ca);
+    n_train = floor(n * 0.9); % Training set size
+    n_test = n - n_train;
+    X = cell2mat({cell2mat(ca(1:n_train)).X}');
+    %ca_Y = ca(1:n_train); % test on training data
+    ca_Y = ca(n_train+1:n); % test on testing data
+    
+elseif strcmp(DATASET, 'Dataset256')
+    ca = matrix2ca('Dataset/Descriptors256/');
+    %ca = matrix2ca('Dataset/Descriptors256_new_color/');
+    n = numel(ca);
+    %n_train = floor(n * 0.95); % Training set size
+    n_train = 5;
+    n_test = n - n_train;
+    X = cell2mat({cell2mat(ca(1:n_train)).X}');
+    %ca_Y = ca(1:n_train); % test on training data
+    %ca_Y = ca(n_train+1:n); % test on testing data
+    ca_Y = ca(n_train+1:n_train+5);
+    
+else
+    X = get_descriptors(load_images(), descriptors, color, probabilities);
+    %X = matfile('X10.mat').X;
+    
+    n = numel(testing_images);
+    ca_Y = cell(n,1);
+    
+    for i=1:n
+        Y.X = get_descriptors(load_images(testing_images(i)), descriptors, color, probabilities); 
+        Y.I = testing_images(i);
+        ca_Y{i} = Y;
+    end
+end
+
+end
+
