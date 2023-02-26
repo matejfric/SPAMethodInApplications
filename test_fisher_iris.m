@@ -61,10 +61,10 @@ Piy = tblTest.Y';
 %(Hyper)parameters
 maxIters = 100;
 nrand = 10;
-scaleT = false;
-Ks = 3;
-alphas = 0:0.05:1;
-alphas = 0:0.01:1;
+scaleT = true;
+Ks = 50;
+%alphas = 0:0.05:1;
+alphas = 0.999:0.0002:1;
 %alphas = 0.75;
 
 %Preallocation
@@ -79,22 +79,23 @@ for idx_alpha=1:length(alphas)
         for idx_K=1:length(Ks)
             K = Ks(idx_K);
     
-            [Lambda, C, Gamma, stats_train, L_out, PiX] = adamar_kmeans(X, PiY, K, alpha, maxIters, nrand, scaleT);
-            %[C, Gamma, PiX, Lambda, it, Lit, learningErrors, stats, L_out] = adamar_fmincon(X', PiY, K, alpha, maxIters);
+%            [Lambda, C, Gamma, stats_train, L_out, PiX] = adamar_kmeans(X, PiY, K, alpha, maxIters, nrand, scaleT);
+            [C, Gamma, PiX, Lambda, it, Lit, learningErrors, stats_train, L_out] = adamar_fmincon(X, PiY, K, alpha, maxIters);
             lprecision(idx_alpha,idx_K) = stats_train.precision;
             lrecall(idx_alpha,idx_K) = stats_train.recall;
             lf1score(idx_alpha,idx_K, idx_fold) = stats_train.f1score;
             laccuracy(idx_alpha,idx_K) = stats_train.accuracy;
             
-            if stats_train.f1score > best_fscore{1}
-                best_fscore = {stats_train.f1score, alpha, K};
-            end
+%            if stats_train.f1score > best_fscore{1}
+%                best_fscore = {stats_train.f1score, alpha, K};
+%            end
             
             Ls(idx_alpha,idx_K)  = L_out.L;
             L1s(idx_alpha,idx_K) = L_out.L1;
             L2s(idx_alpha,idx_K) = L_out.L2;
             
-            [stats_test] = adamar_validate_fisher_iris(Lambda, C', y, Piy, classes);
+%            [stats_test] = adamar_validate_fisher_iris(Lambda, C', y, Piy, classes);
+            [stats_test] = adamar_validate_fisher_iris(Lambda, C, y, Piy, classes);
             tprecision(idx_alpha,idx_K) = stats_test.precision;
             trecall(idx_alpha,idx_K) = stats_test.recall;
             tf1score(idx_alpha,idx_K, idx_fold) = stats_test.f1score;

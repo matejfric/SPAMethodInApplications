@@ -3,34 +3,29 @@ function Gamma = compute_Gamma(C,Gamma,Lambda,X,alpha, PiY)
 
 [K,T] = size(Gamma);
 
-lb = zeros(K,1); % Upper bound is redundant, see equality constraints
-
-Aeq = ones(1,K);
-beq = 1;
+spgoptions = spgOptions();
+spgoptions.maxit = 5e2;
+spgoptions.debug = false;
+spgoptions.myeps = 1e-8;
+spgoptions.alpha_min = 1e-6;
+spgoptions.alpha_max = 1e6;
 
 for t = progress(1:T)
-    % Hessian for fmincon()
-    hessinterior = @(gamma,lambda) hessinterior_spg(gamma,Lambda,X(:,t),PiY(:,t),C,K,alpha,lambda);
-
-    options = optimoptions(...
-        'fmincon','Algorithm','interior-point',...
-        'MaxFunctionEvaluations', 1.0e3, ... % Important hyperparameter!
-        'ConstraintTolerance', 1e-4,...
-        'Display', 'none',... % 'none', 'final', 'iter' (https://www.mathworks.com/help/optim/ug/fmincon.html#input_argument_options)
-        'GradObj', 'on',...
-        'HessianFcn', hessinterior);
     
     gamma0 = Gamma(:,t);
-    f = @(gamma) f_fmincon(gamma,Lambda,X(:,t),PiY(:,t),C,K,alpha,T);
-    
-    fold = f(Gamma(:,t));
-    Gamma(:,t) = fmincon(f,gamma0,[],[],Aeq,beq,lb,[],[],options);
-    fnew = f(Gamma(:,t));
 
-    if fnew > fold
-        %TODO: hotfix
-        Gamma(:,t) = gamma0;
+    f2 = @(gamma) f_spg(gamma,Lambda,X(:,t),PiY(:,t),C,K,alpha,T);
+    g2 = @(gamma) g_spg(gamma,Lambda,X(:,t),PiY(:,t),C,K,alpha,T);
+    p2 = @(gamma) projection_simplex(gamma);
+    
+    f_old = f2(gamma0);
+    [Gamma(:,t),it_in] = spg(@(gamma) f2(gamma),@(gamma) g2(gamma),@(gamma) p2(gamma),gamma0,spgoptions);
+    f_new = f2(Gamma(:,t));
+
+    if and(f_new > f_old, abs(f_new - f_old) > 1e-4)
+        keyboard
     end
+
 end
 
 end
@@ -49,7 +44,7 @@ G2 = zeros(K,1);
 for kx = 1:K
     L1 = L1 + (1/Tcoeff)*gamma(kx)*sum((x - C(:,kx)).^2);
     G1(kx,:) = (1/Tcoeff)*sum((x - C(:,kx)).^2,1);
-
+    
     myval = 0;
     for ky = 1:KY
         myval = myval + (piY(ky)*Lambda(ky,kx))/max(Lambda(ky,:)*gamma,1e-12);
@@ -69,22 +64,23 @@ g = alpha*G1 + (1-alpha)*G2;
 
 end
 
-function L = f_spg(gamma,Lambda,x,piY,C,K,alpha)
+function L = f_spg(gamma,Lambda,x,piY,C,K,alpha,Tcoeff)
 %F_SPG Objective function
 
 KY = size(Lambda,1);
 
 L1 = 0;
 L2 = 0;
-for k = 1:K
-    L1 = L1 + gamma(k)*sum((x - C(:,k)).^2);
+LambdaGamma = Lambda*gamma;
+
+for kx = 1:K
+    L1 = L1 + (1/Tcoeff)*gamma(kx)*sum((x - C(:,kx)).^2);
 end
 
-LambdaGamma = Lambda*gamma;
-for k = 1:KY
-    PiYk = piY(k);
+for ky = 1:KY
+    PiYk = piY(ky);
     if PiYk ~= 0
-        L2 = L2 - PiYk*mylog(LambdaGamma(k));
+        L2 = L2 - PiYk*mylog(LambdaGamma(ky));
     end
 end
 
@@ -92,28 +88,25 @@ L = alpha*L1 + (1-alpha)*L2;
 
 end
 
-function g = g_spg(gamma,Lambda,x,piY,C,K,alpha)
+function g = g_spg(gamma,Lambda,x,piY,C,K,alpha,Tcoeff)
 %G_SPG Gradient function
 
 KY = size(Lambda,1);
 
 G1 = zeros(K,1);
-for kx = 1:K
-    G1(kx,:) = sum((x - C(:,kx)).^2,1);
-end
-
 G2 = zeros(K,1);
+
 for kx = 1:K
+    G1(kx,:) = (1/Tcoeff)*sum((x - C(:,kx)).^2,1);
+    
     myval = 0;
-    for m = 1:KY
-        myval = myval + (piY(m)*Lambda(m,kx))/max(Lambda(m,:)*gamma,1e-12);
+    for ky = 1:KY
+        myval = myval + (piY(ky)*Lambda(ky,kx))/max(Lambda(ky,:)*gamma,1e-12);
     end
     G2(kx) = -myval;
 end
 
-G = alpha*G1 + (1-alpha)*G2;
-
-g = G;%reshape(G',K*T,1);
+g = alpha*G1 + (1-alpha)*G2;
 
 end
 

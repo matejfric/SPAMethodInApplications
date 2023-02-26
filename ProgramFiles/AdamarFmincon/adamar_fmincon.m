@@ -25,12 +25,12 @@ L.L = Inf;
 Nrand = 5; % Number of random runs
 for nrand = 1:Nrand
     disp(['- annealing run #' num2str(nrand)])
-%    PiY = [X(:,end), 1-X(:,end)]';
+    %    PiY = [X(:,end), 1-X(:,end)]';
     [Lambda0, Gamma0, C0] = initial_approximation_plus_plus(X, K, PiY);
     
     [C_temp, Gamma_temp, PiX_temp, Lambda_temp, it_temp, Lit_temp, learningErrors_temp, stats_temp, L_temp] =...
         adamar_fmincon_one(X, PiY, K, alpha, maxIters, Lambda0, Gamma0, C0);
-
+    
     if L_temp.L < L.L
         C = C_temp;
         Gamma = Gamma_temp;
@@ -50,7 +50,6 @@ function [C, Gamma, PiX, Lambda, it, Lit, learningErrors, stats, L] = ...
     adamar_fmincon_one(X, PiY, K, alpha, maxIters, Lambda0, Gamma0, C0)
 %ADAMAR_FMINCON_ONE One run of adamar.
 
-trueLabels = PiY(1,:)';
 X = X';
 T = size(X,2);
 
@@ -68,7 +67,7 @@ learningErrors = zeros(0, maxIters); % preallocation
 it = 0; % iteration counter
 
 while it < maxIters % practical stopping criteria after computing new L (see "break")
-
+    
     % compute Gamma
     disp(' - solving Gamma problem')
     Gamma = compute_Gamma(C,Gamma,Lambda,X,alpha, PiY);
@@ -76,11 +75,12 @@ while it < maxIters % practical stopping criteria after computing new L (see "br
     % compute C
     disp(' - solving C problem')
     C = compute_C(Gamma,X);
-
+    
     % compute Lambda
     disp(' - solving Lambda problem')
-    Lambda = compute_Lambda(Gamma,PiY);
-    
+    Lambda = compute_Lambda(Gamma,Lambda,PiY);
+%    Lambda = lambda_solver_jensen(Gamma, PiY);
+
     % compute objective function value
     Lold = L;
     [L, L1, L2] = compute_L2(C,Gamma,Lambda,X,alpha, PiY,T);
@@ -88,9 +88,9 @@ while it < maxIters % practical stopping criteria after computing new L (see "br
     disp([' it=' num2str(it) ', L=' num2str(L)]);
     
     if L > Lold
-%        keyboard
+        %        keyboard
     end
-        
+    
     if abs(L - Lold) < myeps
         break; % stop outer cycle
     end
@@ -103,10 +103,15 @@ while it < maxIters % practical stopping criteria after computing new L (see "br
     % PiX = round(Lambda*Gamma)'; % round => binary matrix
     Gamma_rec = compute_Gamma_kmeans(C,X); % Reconstruction of Gamma
     PiX = round(Lambda*Gamma_rec)';
-    learningErrors(it) = sum(abs(PiX(:,1) - trueLabels)) / length(trueLabels);
-    stats(it) = statistics(PiX(:,1), trueLabels); %(labels, ground truth)
-    fprintf('F1-Score: %.2f  |  Absolute error: %.2f\n', stats(it).f1score, learningErrors(it))
 
+    [stats(it)] = compute_stats(PiY, PiX);
+
+%    learningErrors(it) = sum(abs(PiX(:,1) - trueLabels)) / length(trueLabels);
+    %    stats(it) = statistics(PiX(:,1), trueLabels); %(labels, ground truth)
+    
+%    fprintf('F1-Score: %.2f  |  Absolute error: %.2f\n', stats(it).f1score, learningErrors(it))
+    fprintf('F1-Score: %.2f\n', stats(it).f1score)
+    
 end
 
 Ls.L = L;
@@ -116,3 +121,29 @@ L = Ls;
 
 end
 
+function [stats] = compute_stats(PiY, PiX)
+
+%if size(PiY,1) == 1
+%    trueLabels = PiY(1,:)';
+%end
+
+if size(PiY, 1) > 2 % multi-class classification
+    c = size(PiY, 1); % number of classes
+    PiX = round(PiX');
+    R = PiX(:, sum(PiX,1)==0 | sum(PiX,1) > 1);
+    r = randi([1 c],1,size(R,2));
+    PiX(:, sum(PiX,1)==0 | sum(PiX,1) > 1) = bsxfun(@eq, r(:), 1:c)';
+    [prediction, ~] = find(PiX);
+    [ground_truth, ~] = find(round(PiY));
+    if length(prediction) ~= length(ground_truth)
+        keyboard
+    end
+    stats = statistics_multiclass(prediction, ground_truth);
+    
+else % binary classification
+    ground_truth = PiY(1,:)';
+    stats = statistics(PiX(:,1), ground_truth);
+%    learningErrors(i) = sum(abs(PiX(:,1) - ground_truth')) / length(ground_truth);
+end
+
+end

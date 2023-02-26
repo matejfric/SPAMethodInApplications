@@ -9,8 +9,9 @@ L2 = 0;
 for k = 1:K
     L1 = L1 + (1/Tcoeff)*dot(Gamma(k,:),sum((X - kron(ones(1,T),C(:,k))).^2,1));
 end
+
+LambdaGamma = Lambda*Gamma;
 for k = 1:KY
-    LambdaGamma = Lambda*Gamma;
     PiYk = PiY(k, :); 
     L2 = L2 - dot(...
         PiYk(PiYk ~= 0),...
