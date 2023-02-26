@@ -15,23 +15,24 @@ if strcmp(DATASET, 'Dataset2')
     %ca = matrix2ca('Dataset2/DescriptorsProbability/');
     ca = matrix2ca('Dataset2/DescriptorsProbabilityColorGLCMGLRL/');
     n = numel(ca);
-    n_train = floor(n * 0.9); % Training set size
-    n_test = n - n_train;
-    X = cell2mat({cell2mat(ca(1:n_train)).X}');
-    %ca_Y = ca(1:n_train); % test on training data
-    ca_Y = ca(n_train+1:n); % test on testing data
-    
-elseif strcmp(DATASET, 'Dataset256')
-    ca = matrix2ca('Dataset/Descriptors256/');
-    %ca = matrix2ca('Dataset/Descriptors256_new_color/');
-    n = numel(ca);
-    %n_train = floor(n * 0.95); % Training set size
-    n_train = 5;
-    n_test = n - n_train;
+    n_train = floor(n * 0.75); % Training set size
     X = cell2mat({cell2mat(ca(1:n_train)).X}');
     %ca_Y = ca(1:n_train); % test on training data
     %ca_Y = ca(n_train+1:n); % test on testing data
-    ca_Y = ca(n_train+1:n_train+5);
+    ca_Y = ca(n_train+1:n_train+5); % test on testing data
+    
+elseif strcmp(DATASET, 'Dataset256')
+    %ca = matrix2ca('Dataset/Descriptors256/'); % probability
+    %ca = matrix2ca('Dataset/Descriptors256_new_color/'); % probability
+    %ca = matrix2ca('Dataset/SmallImagesDescriptors/');
+    ca = matrix2ca('Dataset/Descriptors256_binary/');
+    n = numel(ca);
+    %n_train = floor(n * 0.75); % Training set size
+    n_train = 10;
+    X = cell2mat({cell2mat(ca(1:n_train)).X}');
+    %ca_Y = ca(1:n_train); % test on training data
+    %ca_Y = ca(n_train+1:n); % test on testing data
+    ca_Y = ca(n_train+1:n_train+5); % test on testing data
     
 else
     X = get_descriptors(load_images(), descriptors, color, probabilities);
