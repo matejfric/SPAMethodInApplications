@@ -58,49 +58,39 @@ myeps = 1e-4; %TODO
 
 for i = 1:maxIters
     
-    %Compute Gamma
-%    disp([' - before Gamma: ' num2str(compute_fval_adamar_kmeans(C',Gamma,Lambda,X',alpha, PiY, T))])
+    % Compute Gamma %
+    %disp([' - before Gamma: ' num2str(compute_fval_adamar_kmeans(C',Gamma,Lambda,X',alpha, PiY, T))])
     [Gamma] = akmeans_gamma_step(X, C, K, Lambda, PiY, alpha, T);
-%    disp([' - after Gamma: ' num2str(compute_fval_adamar_kmeans(C',Gamma,Lambda,X',alpha, PiY, T))])
+    %disp([' - after Gamma: ' num2str(compute_fval_adamar_kmeans(C',Gamma,Lambda,X',alpha, PiY, T))])
     
-    % Update Lambda
-%    disp([' - before Lambda: ' num2str(compute_fval_adamar_kmeans(C',Gamma,Lambda,X',alpha, PiY, T))])
+    % Update Lambda %
+    %disp([' - before Lambda: ' num2str(compute_fval_adamar_kmeans(C',Gamma,Lambda,X',alpha, PiY, T))])
     Lambda = lambda_solver_jensen(Gamma, PiY);
-%    disp([' - after Lambda: ' num2str(compute_fval_adamar_kmeans(C',Gamma,Lambda,X',alpha, PiY, T))])
+    %disp([' - after Lambda: ' num2str(compute_fval_adamar_kmeans(C',Gamma,Lambda,X',alpha, PiY, T))])
 
-    %disp([' - before C: ' num2str(compute_L2(C',Gamma,Lambda,X',alpha, PiY))])
-    % Update C
-%    disp([' - before C: ' num2str(compute_fval_adamar_kmeans(C',Gamma,Lambda,X',alpha, PiY, T))])
+    % Update C %
+    %disp([' - before C: ' num2str(compute_fval_adamar_kmeans(C',Gamma,Lambda,X',alpha, PiY, T))])
     for k = 1:K
         ids = Gamma(k,:) == 1; % Matrix of indices of features affiliated to the k-th cluster
         if sum(ids) > 0 
             C(k,:) = mean(X(ids,:), 1);
         end
     end
-%    disp([' - after C: ' num2str(compute_fval_adamar_kmeans(C',Gamma,Lambda,X',alpha, PiY, T))])
-
-    %disp([' - L = ' num2str(compute_L2(C',Gamma,Lambda,X',alpha, PiY)) ', L_real: ' num2str(compute_fval_adamar_kmeans(C',Gamma,Lambda,X',alpha, PiY))])
-    % Is the objective function decreasing?
+    %disp([' - after C: ' num2str(compute_fval_adamar_kmeans(C',Gamma,Lambda,X',alpha, PiY, T))])
+    
     L_old = L;
 
     [L,L1,L2] = compute_fval_adamar_kmeans(C',Gamma,Lambda,X',alpha, PiY, T);
     [L_real,L1_real,L2_real] = compute_L2(C',Gamma,Lambda,X',alpha,PiY,T);
 
-    if isnan(L) % Only one state is present in Lambda!
+    if isnan(L)
         fprintf("\nObjective function value is NaN!\n")
-        
         keyboard
-        
         stats = statistics(zeros(numel(ground_truth),1), ground_truth);
         pause(0.1)
         break;
     end
-    
-%    if isnan(L_real)
-%        keyboard
-%    end
         
-    % Computation of learning error
     Gamma_rec = compute_Gamma_kmeans(C',X'); % Reconstruction of Gamma
     %PiX = round(Lambda*Gamma_rec)'; % Prediction (round => binary matrix)
     PiX = (Lambda*Gamma_rec)';

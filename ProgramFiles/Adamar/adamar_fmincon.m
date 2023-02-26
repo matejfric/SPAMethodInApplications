@@ -1,5 +1,5 @@
 function [C, Gamma, PiX, Lambda, it, Lit, learningErrors, stats, L] = ...
-    adamar_fmincon(X, PiY, K, alpha, maxIters)
+    adamar_fmincon(X, PiY, K, alpha, maxIters, Nrand)
 %ADAMAR_FMINCON Summary of this function goes here
 % X        data
 % K        number of clusters
@@ -12,7 +12,8 @@ arguments
     PiY (:,:) double
     K {mustBeInteger}
     alpha double
-    maxIters {mustBeInteger}
+    maxIters {mustBeInteger} = 100;
+    Nrand {mustBeInteger} = 5; % Number of random runs
 end
 
 fprintf('ADAMAR, K=%d, alpha=%.2e\n', K, alpha);
@@ -22,7 +23,6 @@ end
 
 %SIMULATED ANNEALING
 L.L = Inf;
-Nrand = 5; % Number of random runs
 for nrand = 1:Nrand
     disp(['- annealing run #' num2str(nrand)])
     %    PiY = [X(:,end), 1-X(:,end)]';
@@ -50,6 +50,8 @@ function [C, Gamma, PiX, Lambda, it, Lit, learningErrors, stats, L] = ...
     adamar_fmincon_one(X, PiY, K, alpha, maxIters, Lambda0, Gamma0, C0)
 %ADAMAR_FMINCON_ONE One run of adamar.
 
+bugfix = false;
+
 X = X';
 T = size(X,2);
 
@@ -68,27 +70,39 @@ it = 0; % iteration counter
 
 while it < maxIters % practical stopping criteria after computing new L (see "break")
     
-    % compute Gamma
-    disp(' - solving Gamma problem')
+    % GAMMA
+    if ~bugfix; disp(' - solving Gamma problem'); end
+    if bugfix; fprintf(' - before Gamma:    %.2f\n', compute_L2(C,Gamma,Lambda,X,alpha, PiY,T)); end
+    
     Gamma = compute_Gamma(C,Gamma,Lambda,X,alpha, PiY);
     
-    % compute C
-    disp(' - solving C problem')
+    if bugfix; fprintf(' - after Gamma:     %.2f\n', compute_L2(C,Gamma,Lambda,X,alpha, PiY,T)); end
+    
+    % C
+    if ~bugfix; disp(' - solving C problem'); end
+    if bugfix; fprintf(' - before C:        %.2f\n', compute_L2(C,Gamma,Lambda,X,alpha, PiY,T)); end
+    
     C = compute_C(Gamma,X);
     
-    % compute Lambda
-    disp(' - solving Lambda problem')
-    Lambda = compute_Lambda(Gamma,Lambda,PiY);
-%    Lambda = lambda_solver_jensen(Gamma, PiY);
+    if bugfix; fprintf(' - after C:         %.2f\n', compute_L2(C,Gamma,Lambda,X,alpha, PiY,T)); end
+    
+    % LAMBDA
+    if ~bugfix; disp(' - solving Lambda problem'); end
+    if bugfix; fprintf(' - before Lambda:   %.2f\n', compute_L2(C,Gamma,Lambda,X,alpha, PiY,T)); end
+    
+    %Lambda = compute_Lambda(Gamma,Lambda,PiY);
+    Lambda = lambda_solver_jensen(Gamma, PiY);
+    
+    if bugfix; fprintf(' - after Lambda:    %.2f\n', compute_L2(C,Gamma,Lambda,X,alpha, PiY,T)); end
 
-    % compute objective function value
+    % Compute objective function value
     Lold = L;
     [L, L1, L2] = compute_L2(C,Gamma,Lambda,X,alpha, PiY,T);
     
     disp([' it=' num2str(it) ', L=' num2str(L)]);
     
     if L > Lold
-        %        keyboard
+        if bugfix; keyboard; end
     end
     
     if abs(L - Lold) < myeps
@@ -99,17 +113,10 @@ while it < maxIters % practical stopping criteria after computing new L (see "br
     
     Lit(it) = L; % for postprocessing
     
-    % Computation of learning error
     % PiX = round(Lambda*Gamma)'; % round => binary matrix
     Gamma_rec = compute_Gamma_kmeans(C,X); % Reconstruction of Gamma
     PiX = round(Lambda*Gamma_rec)';
-
     [stats(it)] = compute_stats(PiY, PiX);
-
-%    learningErrors(it) = sum(abs(PiX(:,1) - trueLabels)) / length(trueLabels);
-    %    stats(it) = statistics(PiX(:,1), trueLabels); %(labels, ground truth)
-    
-%    fprintf('F1-Score: %.2f  |  Absolute error: %.2f\n', stats(it).f1score, learningErrors(it))
     fprintf('F1-Score: %.2f\n', stats(it).f1score)
     
 end
@@ -122,10 +129,6 @@ L = Ls;
 end
 
 function [stats] = compute_stats(PiY, PiX)
-
-%if size(PiY,1) == 1
-%    trueLabels = PiY(1,:)';
-%end
 
 if size(PiY, 1) > 2 % multi-class classification
     c = size(PiY, 1); % number of classes
@@ -143,7 +146,7 @@ if size(PiY, 1) > 2 % multi-class classification
 else % binary classification
     ground_truth = PiY(1,:)';
     stats = statistics(PiX(:,1), ground_truth);
-%    learningErrors(i) = sum(abs(PiX(:,1) - ground_truth')) / length(ground_truth);
+%   learningErrors(i) = sum(abs(PiX(:,1) - ground_truth')) / length(ground_truth);
 end
 
 end
