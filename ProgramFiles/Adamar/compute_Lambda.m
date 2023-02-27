@@ -1,4 +1,4 @@
-function Lambda = compute_Lambda(Gamma,Lambda,PiY)
+function Lambda = compute_Lambda(Gamma,Lambda,PiY, Dcoeff)
 %COMPUTE_LAMBDA
 
 FMINCON = false;
@@ -18,7 +18,7 @@ if FMINCON
 
     lambda0 = reshape(Lambda,KY*KX,1);
 
-    f = @(lambda) f_fmincon(reshape(lambda,KY,KX),Gamma,PiY);
+    f = @(lambda) f_fmincon(reshape(lambda,KY,KX),Gamma,PiY,Dcoeff);
 
     tic
     f_old = f(lambda0);
@@ -36,8 +36,8 @@ else % SPG
     spgoptions.alpha_min = 1e-6;
     spgoptions.alpha_max = 1e6;
 
-    f2 = @(Lambda) f_fmincon(Lambda,Gamma,PiY);
-    g2 = @(Lambda) g_spg(Lambda,Gamma,PiY);
+    f2 = @(Lambda) f_fmincon(Lambda,Gamma,PiY,Dcoeff);
+    g2 = @(Lambda) g_spg(Lambda,Gamma,PiY,Dcoeff);
     p2 = @(Lambda) projection_simplex(Lambda);
 
     %tic
@@ -53,7 +53,7 @@ end
 
 end
 
-function L2 = f_fmincon(Lambda,Gamma,PiY)
+function L2 = f_fmincon(Lambda,Gamma,PiY,Dcoeff)
 
 KY = size(PiY,1);
 
@@ -65,13 +65,14 @@ for k = 1:KY
         PiYk(PiYk ~= 0),...
         mylog(LambdaGamma(k,PiYk ~= 0)));
 end
+L2 = (1/Dcoeff) * L2;
 
 end
 
-function G = g_spg(Lambda,Gamma,PiY)
+function G = g_spg(Lambda,Gamma,PiY,Dcoeff)
 
 LambdaGamma = Lambda*Gamma;
-G = -(PiY.*myinv(LambdaGamma))*Gamma';
+G = (1/Dcoeff) * -(PiY.*myinv(LambdaGamma))*Gamma';
 
 end
 

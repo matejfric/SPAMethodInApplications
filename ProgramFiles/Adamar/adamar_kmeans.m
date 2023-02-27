@@ -43,13 +43,14 @@ function [Lambda, C, Gamma, PiX, stats, L_out]...
     = adamar_kmeans_one(C, Gamma, Lambda, PiY, X, K, alpha, maxIters, scaleT)
 
 if scaleT
-    T = size(X,1);
+   [T, D] = size(X);
 else
     T = 1;
+    D = 1;
 end
 
 % Initial objective function value
-L = compute_fval_adamar_kmeans(C',Gamma,Lambda,X',alpha, PiY, T);
+L = compute_fval_adamar_kmeans(C',Gamma,Lambda,X',alpha, PiY, T, D);
 L0 = L;
 fprintf("it=%d  L=%.2f\n", 0, L0);
 learningErrors = zeros(0, maxIters); % preallocation
@@ -60,7 +61,7 @@ for i = 1:maxIters
     
     % Compute Gamma %
     %disp([' - before Gamma: ' num2str(compute_fval_adamar_kmeans(C',Gamma,Lambda,X',alpha, PiY, T))])
-    [Gamma] = akmeans_gamma_step(X, C, K, Lambda, PiY, alpha, T);
+    [Gamma] = akmeans_gamma_step(X, C, K, Lambda, PiY, alpha, T, D);
     %disp([' - after Gamma: ' num2str(compute_fval_adamar_kmeans(C',Gamma,Lambda,X',alpha, PiY, T))])
     
     % Update Lambda %
@@ -80,8 +81,8 @@ for i = 1:maxIters
     
     L_old = L;
 
-    [L,L1,L2] = compute_fval_adamar_kmeans(C',Gamma,Lambda,X',alpha, PiY, T);
-    [L_real,L1_real,L2_real] = compute_L2(C',Gamma,Lambda,X',alpha,PiY,T);
+    [L,L1,L2] = compute_fval_adamar_kmeans(C',Gamma,Lambda,X',alpha, PiY,T,D);
+    [L_real,L1_real,L2_real] = compute_L2(C',Gamma,Lambda,X',alpha,PiY,T,D);
 
     if isnan(L)
         fprintf("\nObjective function value is NaN!\n")

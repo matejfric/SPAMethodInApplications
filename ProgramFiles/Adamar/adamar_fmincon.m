@@ -50,10 +50,10 @@ function [C, Gamma, PiX, Lambda, it, Lit, learningErrors, stats, L] = ...
     adamar_fmincon_one(X, PiY, K, alpha, maxIters, Lambda0, Gamma0, C0)
 %ADAMAR_FMINCON_ONE One run of adamar.
 
-bugfix = false;
+bugfix = true;
 
+[T, D] = size(X);
 X = X';
-T = size(X,2);
 
 myeps = 1e-3;
 
@@ -72,37 +72,39 @@ while it < maxIters % practical stopping criteria after computing new L (see "br
     
     % GAMMA
     if ~bugfix; disp(' - solving Gamma problem'); end
-    if bugfix; fprintf(' - before Gamma:    %.2f\n', compute_L2(C,Gamma,Lambda,X,alpha, PiY,T)); end
+    if bugfix; fprintf(' - before Gamma:    %.2f\n', compute_L2(C,Gamma,Lambda,X,alpha, PiY,T,D)); end
     
-    Gamma = compute_Gamma(C,Gamma,Lambda,X,alpha, PiY);
+    Gamma = compute_Gamma(C,Gamma,Lambda,X,alpha,PiY);
     
-    if bugfix; fprintf(' - after Gamma:     %.2f\n', compute_L2(C,Gamma,Lambda,X,alpha, PiY,T)); end
+    if bugfix; fprintf(' - after Gamma:     %.2f\n', compute_L2(C,Gamma,Lambda,X,alpha, PiY,T,D)); end
     
     % C
     if ~bugfix; disp(' - solving C problem'); end
-    if bugfix; fprintf(' - before C:        %.2f\n', compute_L2(C,Gamma,Lambda,X,alpha, PiY,T)); end
+    if bugfix; fprintf(' - before C:        %.2f\n', compute_L2(C,Gamma,Lambda,X,alpha, PiY,T,D)); end
     
     C = compute_C(Gamma,X);
     
-    if bugfix; fprintf(' - after C:         %.2f\n', compute_L2(C,Gamma,Lambda,X,alpha, PiY,T)); end
+    if bugfix; fprintf(' - after C:         %.2f\n', compute_L2(C,Gamma,Lambda,X,alpha, PiY,T,D)); end
     
     % LAMBDA
     if ~bugfix; disp(' - solving Lambda problem'); end
-    if bugfix; fprintf(' - before Lambda:   %.2f\n', compute_L2(C,Gamma,Lambda,X,alpha, PiY,T)); end
+    if bugfix; fprintf(' - before Lambda:   %.2f\n', compute_L2(C,Gamma,Lambda,X,alpha, PiY,T,D)); end
     
-    %Lambda = compute_Lambda(Gamma,Lambda,PiY);
-    Lambda = lambda_solver_jensen(Gamma, PiY);
+    Lambda = compute_Lambda(Gamma,Lambda,PiY,D);
+    %Lambda = lambda_solver_jensen(Gamma, PiY);
     
-    if bugfix; fprintf(' - after Lambda:    %.2f\n', compute_L2(C,Gamma,Lambda,X,alpha, PiY,T)); end
+    if bugfix; fprintf(' - after Lambda:    %.2f\n', compute_L2(C,Gamma,Lambda,X,alpha, PiY,T,D)); end
 
     % Compute objective function value
     Lold = L;
-    [L, L1, L2] = compute_L2(C,Gamma,Lambda,X,alpha, PiY,T);
+    [L, L1, L2] = compute_L2(C,Gamma,Lambda,X,alpha,PiY,T,D);
     
     disp([' it=' num2str(it) ', L=' num2str(L)]);
     
     if L > Lold
-        if bugfix; keyboard; end
+        if bugfix
+            keyboard
+        end
     end
     
     if abs(L - Lold) < myeps
