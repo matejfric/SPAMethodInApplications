@@ -61,9 +61,9 @@ L2 = 0;
 for k = 1:KY
     LambdaGamma = Lambda*Gamma;
     PiYk = PiY(k, :);
-    L2 = L2 - dot(...
-        PiYk(PiYk ~= 0),...
-        mylog(LambdaGamma(k,PiYk ~= 0)));
+    L2 = L2 - dot(PiYk(PiYk ~= 0),...
+        mylog(LambdaGamma(k,PiYk ~= 0))); 
+    %mylog(LambdaGamma(k,PiYk ~= 0))./ PiYk(PiYk ~= 0));
 end
 L2 = (1/Dcoeff) * L2;
 
@@ -72,7 +72,7 @@ end
 function G = g_spg(Lambda,Gamma,PiY,Dcoeff)
 
 LambdaGamma = Lambda*Gamma;
-G = (1/Dcoeff) * -(PiY.*myinv(LambdaGamma))*Gamma';
+G = (1/Dcoeff) * -(PiY.*myinv(LambdaGamma))*Gamma'; %LG*myinv(PiY)
 
 end
 
