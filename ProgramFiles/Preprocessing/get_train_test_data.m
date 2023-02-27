@@ -23,16 +23,16 @@ if strcmp(DATASET, 'Dataset2')
     
 elseif strcmp(DATASET, 'Dataset256')
     %ca = matrix2ca('Dataset/Descriptors256/'); % probability
-    %ca = matrix2ca('Dataset/Descriptors256_new_color/'); % probability
+    ca = matrix2ca('Dataset/Descriptors256_new_color/'); % probability
     %ca = matrix2ca('Dataset/SmallImagesDescriptors/');
-    ca = matrix2ca('Dataset/Descriptors256_binary/');
+    %ca = matrix2ca('Dataset/Descriptors256_binary/'); %binary
     n = numel(ca);
     %n_train = floor(n * 0.75); % Training set size
-    n_train = 10;
+    n_train = 5;
     X = cell2mat({cell2mat(ca(1:n_train)).X}');
     %ca_Y = ca(1:n_train); % test on training data
     %ca_Y = ca(n_train+1:n); % test on testing data
-    ca_Y = ca(n_train+1:n_train+5); % test on testing data
+    ca_Y = ca(n_train+1:n_train+10); % test on testing data
     
 else
     X = get_descriptors(load_images(), descriptors, color, probabilities);

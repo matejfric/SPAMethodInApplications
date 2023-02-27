@@ -1,10 +1,6 @@
 clear all
 close all
-
-addpath('ProgramFiles')
-addpath('ProgramFiles/TQDM') % Progress bar
-addpath('ProgramFiles/Adamar')
-addpath('ProgramFiles/SPG') 
+addpath(genpath(pwd));
 
 T = 100;
 [X_true,Y_true,C_true,Gamma_true,Lambda_true] = generate_synthetic_problem(T);

@@ -1,4 +1,4 @@
-function [] = plot_correlation(E)
+function [E] = plot_correlation(E)
 %PLOT_CORRELATION
 
 figure;

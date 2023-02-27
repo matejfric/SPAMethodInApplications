@@ -1,10 +1,6 @@
 clear all
 close all
-
-addpath('ProgramFiles')
-addpath('ProgramFiles/TQDM') % Progress bar
-addpath('ProgramFiles/Adamar')
-addpath('ProgramFiles/SPG') 
+addpath(genpath(pwd));
 
 rng(42); %For reproducibility
 
@@ -110,10 +106,15 @@ if SVM
 end
 
 if VISUALIZE
-    score_plot(sprintf('Adamar k-means, K=%d', K),...
+    if SPG
+        title = sprintf('Adamar SPG, K=%d', K);
+    else
+        title = sprintf('Adamar K-means, K=%d', K);
+    end
+    score_plot(title,...
          alphas, lprecision(:,idx_K), lrecall(:,idx_K), lf1score(:,idx_K), laccuracy(:,idx_K),...
-         tprecision(:,idx_K), trecall(:,idx_K), tf1score(:,idx_K), taccuracy(:,idx_K))
-    plot_L_curves(Ls, L1s, L2s, Ks, alphas)
+         tprecision(:,idx_K), trecall(:,idx_K), tf1score(:,idx_K), taccuracy(:,idx_K));
+    plot_L_curves(Ls, L1s, L2s, Ks, alphas, title);
 end
 
 end

@@ -1,4 +1,4 @@
-function [Lambda, Gamma, C] = initial_approximation_plus_plus(X, K, PiY)
+function [Lambda0, Gamma, C] = initial_approximation_plus_plus(X, K, PiY)
 %INITIAL_APPROXIMATION 
 
 C = kmeans_plus_plus(X',K);
@@ -18,8 +18,9 @@ for k = 1:K
     Gamma(k,idx == k) = 1; % random Gamma
 end
 
-Lambda = lambda_solver_jensen(Gamma, PiY);
-
+Lambda0 = lambda_solver_jensen(Gamma, PiY);
+% Lambda = compute_Lambda(Gamma,Lambda0,PiY);
+% fprintf('||Lambda - Lambda0|| = %.2e\n', norm(Lambda - Lambda0, 'fro'))
 
 end
 

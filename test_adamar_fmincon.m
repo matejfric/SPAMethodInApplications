@@ -1,10 +1,7 @@
 %ADAMAR FMINCON()
 close all
 clear all
-addpath('ProgramFiles')
-addpath('ProgramFiles/TQDM') % Progress bar
-addpath('ProgramFiles/Adamar')
-addpath('ProgramFiles/SPG')
+addpath(genpath(pwd));
 
 rng(42);
 
@@ -14,7 +11,9 @@ VISUALIZE = false;
 [X, ca_Y] = get_train_test_data(DATASET);
 
 % Removal of strongly correlated columns
+%E_before = plot_correlation(corr(X));
 [X, ca_Y] = correlation_analysis(X, ca_Y);
+%E_after = plot_correlation(corr(X));
 
 % Scaling
 %[X, ca_Y] = scaling(X, ca_Y, 'minmax');
@@ -31,7 +30,7 @@ X = X(:,1:end-1);
 %alphas = [1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 0.5, 1-1e-1, 1-1e-2, 1-1e-3];
 alphas = 0.01:0.003:0.02;
 Ks = 25; % Number of clusters
-maxIters = 10;
+maxIters = 25;
 nrand = 3;
 
 for a = 1:numel(alphas)

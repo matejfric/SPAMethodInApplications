@@ -1,10 +1,7 @@
 %ADAMAR K-MEANS
 close all
 clear all
-addpath('ProgramFiles')
-addpath('ProgramFiles/TQDM') % Progress bar
-addpath('ProgramFiles/Adamar')
-addpath('ProgramFiles/SPG') 
+addpath(genpath(pwd));
 
 rng(42);
 
@@ -17,7 +14,7 @@ VISUALIZE = false;
 [X, ca_Y] = correlation_analysis(X, ca_Y);
 
 % Scaling
-%[X, ca_Y] = scaling(X, ca_Y, 'minmax');
+[X, ca_Y] = scaling(X, ca_Y, 'minmax');
 
 % PCA
 %[X, ca_Y] = principal_component_analysis(X, ca_Y);
@@ -25,24 +22,22 @@ VISUALIZE = false;
 fprintf("How balanced are the labels? Ones: %.2f, Zeros: %.2f\n",...
     sum(X(:,end)), size(X(:,end), 1)-sum(X(:,end)));
 
-%Ks = 2:16;
 %Ks = [2,5,12];
 Ks = 10;
 %Ks = 100;
 
-maxIters = 50;
+maxIters = 100;
 
 %alphas = [1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 0.5];
-%alphas = 1e-3.*[1:2:10];
-%alphas = 1e-4.*[1:2:10];
 alphas = 0:0.1:1;
+alphas = 0.8:0.03:1;
 
 L1s = zeros(numel(alphas),length(Ks));
 L2s = zeros(numel(alphas),length(Ks));
 
 PiY = [X(:,end),1-X(:,end)]; % Ground truth
 
-nrand = 2; % Number of random runs (annealing)
+nrand = 5; % Number of random runs (annealing)
 
 for a = 1:numel(alphas)
     for k = 1 : length(Ks)
@@ -57,14 +52,8 @@ for a = 1:numel(alphas)
         L2s(a,k) = L_out.L2;
 
         disp("Lambda:"); disp(Lambda); % Transition matrix
-        %smaller_images = [ 172, 177, 179, 203, 209, 212, 228, 240 ];
-        %images = 68;
         
         [stats_test] = adamar_predict_mat(Lambda, C', Ks(k), alphas(a), [], [], ca_Y, DATASET, VISUALIZE);
-        %if ~SCALING; [stats_test] = adamar_predict(Lambda, C', K, alpha(a), [], [], images, descriptors); end
-        %if SCALING; [stats_test] = adamar_predict(Lambda, C', K, alpha(a), colmin, colmax, images, descriptors); end
-        %if ~SCALING;[stats_test] = adamar_predict_mat(Lambda, C', K, alpha(a), [], [], ca_Y, DATASET, false); end
-        %if SCALING; [stats_test] = adamar_predict_mat(Lambda, C', K, alpha(a), colmin, colmax, ca_Y, DATASET, false); end
         tprecision(a,k) = stats_test.precision;
         trecall(a,k) = stats_test.recall;
         tf1score(a,k) = stats_test.f1score;
@@ -75,10 +64,9 @@ for a = 1:numel(alphas)
 
 end
 
-% regularization_plot(sprintf('Adamar K-means, k=%d', K), alpha, ...
-%     lprecision, lrecall, lf1score, laccuracy,...
-%     tprecision, trecall, tf1score, taccuracy)
+regularization_plot(sprintf('Adamar K-means, k=%d', Ks), alphas,lprecision, lrecall, lf1score, laccuracy,tprecision, trecall, tf1score, taccuracy)
+
+plot_L_curves(Ls, L1s, L2s, Ks, alphas);
 
 fprintf("\nProgram finished successfully.\n");
 
-plot_L_curves(Ls, L1s, L2s, Ks, alphas);
