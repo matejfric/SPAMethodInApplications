@@ -101,14 +101,14 @@ while it < maxIters % practical stopping criteria after computing new L (see "br
     
     disp([' it=' num2str(it) ', L=' num2str(L)]);
     
-    if L > Lold
-        if bugfix
-            keyboard
-        end
-    end
-    
     if abs(L - Lold) < myeps
         break; % stop outer cycle
+    end
+    
+    if L > Lold
+       if bugfix
+            keyboard
+        end
     end
     
     it = it + 1;
