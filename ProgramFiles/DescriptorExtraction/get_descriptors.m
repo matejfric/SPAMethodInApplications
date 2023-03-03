@@ -11,7 +11,8 @@ if isempty(descriptors)
 end
 
 if ismember(Descriptor.Color, descriptors)
-    X_Color = color_analysis(ca);
+    %X_Color = color_analysis(ca);´
+    X_Color = color_analysis_wo_range(ca);
     %X_Color = color_analysis_former(ca);
 else
     X_Color = [];
@@ -28,13 +29,19 @@ if ismember(Descriptor.RoughnessGLRL, descriptors)
 else
     X_GLRLM = [];    
 end
+
+if ismember(Descriptor.LBP, descriptors)
+    X_LBP = lbp_analysis(ca);
+else
+    X_LBP = [];    
+end
   
 % X_GLCM = roughness_analysis(ca);
 % X_GLRLM = roughness_analysis_glrl(ca);
 % X_Color = color_analysis(ca);
 X_True = get_ground_truth(ca, PROBS);
 
-X = [X_GLCM, X_GLRLM, X_Color, X_True];
+X = [X_GLCM, X_GLRLM, X_LBP, X_Color, X_True];
 
 %Normalization?
 %X(:,1:end-1) = normalize(X(:,1:end-1));
