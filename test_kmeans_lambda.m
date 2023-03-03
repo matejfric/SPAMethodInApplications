@@ -1,9 +1,7 @@
 % TEST K-MEANS + KL-JENSEN (LAMBDA SOLVER) 
 close all
 clear all
-
-addpath('ProgramFiles')
-addpath('ProgramFiles/TQDM') % Progress bar
+addpath(genpath(pwd));
 
 rng(42);
 

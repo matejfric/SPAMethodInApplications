@@ -10,9 +10,10 @@ rng(42);
 COLOR = true;
 PROBS = false;
 
-%descriptors = [Descriptor.Color]; % up to 0.71 f-1score
+descriptors = [Descriptor.Color]; % up to 0.71 f-1score
 %descriptors = [Descriptor.Roughness]; % up to 0.5 f-1score
-descriptors = [Descriptor.Roughness Descriptor.Color];
+%descriptors = [Descriptor.Roughness Descriptor.Color];
+%descriptors = [Descriptor.LBP];
 %descriptors = [Descriptor.Roughness Descriptor.Color Descriptor.RoughnessGLRL];
 dataset = 'Dataset';
 testing_images = [68, 137, 143];
@@ -31,7 +32,7 @@ if strcmp(dataset, 'Dataset2')
     %[X, ca_Y] = principal_component_analysis(X, ca_Y); %~0.03
 else
     X = get_descriptors(load_images(), descriptors, COLOR, PROBS);
-    %X = matfile('X10.mat').X;
+    %X = matfile('X_LBP.mat').X;
     
     n = numel(testing_images);
     ca_Y = cell(n,1);

@@ -99,7 +99,7 @@ for idx_alpha=1:length(alphas)
 end
 
 if SVM
-    SVMModel = fitcecoc(X, PiY');
+    SVMModel = fitcsvm(X, PiY');
     %SVMModel = fitcecoc(X, PiY, 'OptimizeHyperparameters', 'all');
     [labels_train,~] = predict(SVMModel,X);
     SVM_stats_train(idx_fold) = statistics(labels_train, PiY');
