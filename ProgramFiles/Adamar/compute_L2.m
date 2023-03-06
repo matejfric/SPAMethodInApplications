@@ -15,7 +15,7 @@ for k = 1:KY
     PiYk = PiY(k, :); 
     L2 = L2 - dot(...
         PiYk(PiYk ~= 0),...
-        mylog(LambdaGamma(k,PiYk ~= 0))./ PiYk(PiYk ~= 0));
+        mylog(LambdaGamma(k,PiYk ~= 0)./ PiYk(PiYk ~= 0)));
 end
 L2 = (1/Dcoeff) * L2;
 
