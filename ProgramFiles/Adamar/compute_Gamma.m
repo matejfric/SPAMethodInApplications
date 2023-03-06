@@ -1,4 +1,4 @@
-function Gamma = compute_Gamma(C,Gamma,Lambda,X,alpha, PiY)
+function [Gamma,it_in] = compute_Gamma(C,Gamma,Lambda,X,alpha, PiY)
 %COMPUTE_GAMMA Adamar Gamma problem
 
 [K,T] = size(Gamma);
@@ -11,6 +11,7 @@ spgoptions.myeps = 1e-8;
 spgoptions.alpha_min = 1e-6;
 spgoptions.alpha_max = 1e6;
 
+it_in = 0;
 for t = progress(1:T)
     
     gamma0 = Gamma(:,t);
@@ -20,13 +21,14 @@ for t = progress(1:T)
     p2 = @(gamma) projection_simplex(gamma);
     
     f_old = f2(gamma0);
-    [Gamma(:,t),it_in] = spg(@(gamma) f2(gamma),@(gamma) g2(gamma),@(gamma) p2(gamma),gamma0,spgoptions);
+    [Gamma(:,t),it_in2] = spg(@(gamma) f2(gamma),@(gamma) g2(gamma),@(gamma) p2(gamma),gamma0,spgoptions);
     f_new = f2(Gamma(:,t));
 
     if and(f_new > f_old, abs(f_new - f_old) > 1e-4)
         keyboard
     end
 
+    it_in = max(it_in2,it_in);
 end
 
 end

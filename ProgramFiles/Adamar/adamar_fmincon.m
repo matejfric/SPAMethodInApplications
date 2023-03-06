@@ -50,7 +50,7 @@ function [C, Gamma, PiX, Lambda, it, Lit, learningErrors, stats, L] = ...
     adamar_fmincon_one(X, PiY, K, alpha, maxIters, Lambda0, Gamma0, C0)
 %ADAMAR_FMINCON_ONE One run of adamar.
 
-bugfix = true;
+bugfix = false;
 
 [T, D] = size(X);
 X = X';
@@ -74,7 +74,16 @@ while it < maxIters % practical stopping criteria after computing new L (see "br
     if ~bugfix; disp(' - solving Gamma problem'); end
     if bugfix; fprintf(' - before Gamma:    %.2f\n', compute_L2(C,Gamma,Lambda,X,alpha, PiY,T,D)); end
     
-    Gamma = compute_Gamma(C,Gamma,Lambda,X,alpha,PiY);
+    Gamma0 = Gamma;
+    tic
+    [Gamma,it1] = compute_Gamma_vec(C,Gamma0,Lambda,X,alpha,PiY);
+    time1 = toc
+    
+%    tic
+%    [Gamma2,it2] = compute_Gamma(C,Gamma0,Lambda,X,alpha,PiY);
+%    time2 = toc;
+    
+    keyboard
     
     if bugfix; fprintf(' - after Gamma:     %.2f\n', compute_L2(C,Gamma,Lambda,X,alpha, PiY,T,D)); end
     
