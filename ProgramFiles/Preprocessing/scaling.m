@@ -1,4 +1,4 @@
-function [X, ca_Y, method] = scaling(X, ca_Y, method)
+function [X, ca_Y, method] = scaling(X, ca_Y, method, methodType)
 % SCALING Scale training matrix and testing dataset.
 %--------------------------------------------------------------------------
 % Results for SVM_X, training on X10 (first 10 images in 'Dataset'),
@@ -17,28 +17,40 @@ function [X, ca_Y, method] = scaling(X, ca_Y, method)
 % 'minmax' ~0.40
 % 'none' ~0.35
 %--------------------------------------------------------------------------
+arguments
+    X, ca_Y, method, methodType = []
+end
 
-    if strcmp(method, 'none')
-        return;
-    elseif strcmp(method, 'minmax')
-        colmin = min(X); % a
-        colmax = max(X); % b
-        u = 1;
-        l = 0;
-        cols = colmax > 1; % Select columns to be scaled
-        X(:,cols) = l + ((X(:,cols)-colmin(cols))./(colmax(cols)-colmin(cols))).*(u-l);
-        n = numel(ca_Y);
-        for i = 1:n
-            Y = ca_Y{i}.X;
-            Y(:,cols) = l + ((Y(:,cols)-colmin(cols))./(colmax(cols)-colmin(cols))).*(u-l);
-            ca_Y{i}.X = Y;
-        end
+if strcmp(method, 'none')
+    return;
+elseif strcmp(method, 'minmax')
+    colmin = min(X); % a
+    colmax = max(X); % b
+    u = 1;
+    l = 0;
+    cols = colmax > 1; % Select columns to be scaled
+    X(:,cols) = l + ((X(:,cols)-colmin(cols))./(colmax(cols)-colmin(cols))).*(u-l);
+    n = numel(ca_Y);
+    for i = 1:n
+        Y = ca_Y{i}.X;
+        Y(:,cols) = l + ((Y(:,cols)-colmin(cols))./(colmax(cols)-colmin(cols))).*(u-l);
+        ca_Y{i}.X = Y;
+    end
+else
+    if isempty(methodType)
+        X = normalize(X, method);
     else
-        X(:,1:end-1)=normalize(X(:,1:end-1), method);
-        n = numel(ca_Y);
-        for i = 1:n
-            ca_Y{i}.X(:,1:end-1)=normalize(ca_Y{i}.X(:,1:end-1), method);
+        X = normalize(X, method, methodType);
+    end
+    n = numel(ca_Y);
+    for i = 1:n
+        if isempty(methodType)
+            ca_Y{i}.X = normalize(ca_Y{i}.X, method);
+        else
+            ca_Y{i}.X = normalize(ca_Y{i}.X, method, methodType);
         end
     end
+end
+
 end
 

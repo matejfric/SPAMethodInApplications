@@ -11,9 +11,10 @@ VISUALIZE = false;
 [X, ca_Y] = get_train_test_data(DATASET);
 
 % Removal of strongly correlated columns
-%E_before = plot_correlation(corr(X));
 [X, ca_Y] = correlation_analysis(X, ca_Y);
-%E_after = plot_correlation(corr(X));
+
+PiY = [X(:,end), 1-X(:,end)]';
+X = X(:,1:end-1);
 
 % Scaling
 %[X, ca_Y] = scaling(X, ca_Y, 'minmax');
@@ -25,8 +26,6 @@ fprintf("How balanced are the labels? Ones: %.2f, Zeros: %.2f\n",...
     sum(X(:,end)), size(X(:,end), 1)-sum(X(:,end)));
 
 %ADAMAR
-PiY = [X(:,end), 1-X(:,end)]';
-X = X(:,1:end-1);
 %alphas = [1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 0.5, 1-1e-1, 1-1e-2, 1-1e-3];
 alphas = 0.01:0.003:0.02;
 Ks = 25; % Number of clusters

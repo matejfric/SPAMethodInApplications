@@ -75,15 +75,13 @@ while it < maxIters % practical stopping criteria after computing new L (see "br
     if bugfix; fprintf(' - before Gamma:    %.2f\n', compute_L2(C,Gamma,Lambda,X,alpha, PiY,T,D)); end
     
     Gamma0 = Gamma;
-    tic
-    [Gamma,it1] = compute_Gamma_vec(C,Gamma0,Lambda,X,alpha,PiY);
-    time1 = toc
+    %tic
+    [Gamma,~] = compute_Gamma_vec(C,Gamma0,Lambda,X,alpha,PiY);
+    %time1 = toc
     
-%    tic
-%    [Gamma2,it2] = compute_Gamma(C,Gamma0,Lambda,X,alpha,PiY);
-%    time2 = toc;
-    
-    keyboard
+%     tic
+%     [Gamma2,it2] = compute_Gamma(C,Gamma0,Lambda,X,alpha,PiY);
+%     time2 = toc;
     
     if bugfix; fprintf(' - after Gamma:     %.2f\n', compute_L2(C,Gamma,Lambda,X,alpha, PiY,T,D)); end
     
@@ -117,7 +115,7 @@ while it < maxIters % practical stopping criteria after computing new L (see "br
     if L > Lold
        if bugfix
             keyboard
-        end
+       end
     end
     
     it = it + 1;
