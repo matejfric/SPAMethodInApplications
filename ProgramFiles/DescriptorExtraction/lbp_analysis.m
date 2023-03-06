@@ -5,7 +5,7 @@ function [X, features] = lbp_analysis(ca_dataset)
 
 [images, ~] = size(ca_dataset);
 
-X = zeros(1e5, 36); %TODO
+X = zeros(1e5, 256); %TODO
 
 row = 1;
 
@@ -32,7 +32,9 @@ for img = 1:images
 %             binsRange = 0:16:255;
 %             x=hist(single( effLBP(:) ), binsRange);
 %             y=hist(single( effRILBP(:) ), binsRange);
-            h=hist(single( effTightRILBP(:) ), tightValsRILBP);
+            %h=hist(single( effTightRILBP(:) ), tightValsRILBP);
+            
+            h = histcounts(effRILBP,16,'Normalization', 'probability');
             
 %             nbins = 16;
 %             [xx] = histcounts(effLBP(:),nbins);

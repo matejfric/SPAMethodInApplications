@@ -1,19 +1,18 @@
 % TEST SVM ON RAW DATA
 close all
 clear all
+addpath(genpath(pwd));
 
-addpath('ProgramFiles')
-addpath('ProgramFiles/TQDM')
 
 rng(42);
 
 COLOR = true;
 PROBS = false;
 
-descriptors = [Descriptor.Color]; % up to 0.71 f-1score
+%descriptors = [Descriptor.Color]; % up to 0.71 f-1score
 %descriptors = [Descriptor.Roughness]; % up to 0.5 f-1score
 %descriptors = [Descriptor.Roughness Descriptor.Color];
-%descriptors = [Descriptor.LBP];
+descriptors = [Descriptor.LBP];
 %descriptors = [Descriptor.Roughness Descriptor.Color Descriptor.RoughnessGLRL];
 dataset = 'Dataset';
 testing_images = [68, 137, 143];
