@@ -7,24 +7,22 @@ rng(42); %For reproducibility
 VISUALIZE = true;
 SVM = true;
 CROSSVAL = false;
-SPG = false;
+SPG = true;
 
 %Fisher's Iris Data
 load ionosphere
 X(:,2) = [];
 
 labels = categorical(Y);
-
-%Order of the categories.
 classes = categories(labels);
+PiY = onehotencode(labels,2);
+[X, ~] = scaling(X, [], 'minmax');
+%[X, ~] = scaling(X, [], 'norm');
+%[X, ~] = scaling(X, [], 'zscore', 'std');
+%[X, ~] = scaling(X, [], 'zscore', 'robust');
 
-PiY = zeros(length(labels),1);
-PiY(labels=='g') = 1;
-T = size(X,1);
 
-%[X, ~] = scaling(X, [], 'minmax');
-
-tbl = array2table(X);
+tbl = array2table(X(:,1:end-1));
 tbl.Y = PiY;
 n = length(tbl.Y);
 
@@ -34,8 +32,9 @@ maxIters = 100;
 nrand = 5;
 scaleT = true;
 Ks = 25;
-alphas = 0:0.1:1;
-%alphas = 0.99:0.002:1;
+%alphas = 0:0.1:1;
+%alphas = 0.9:0.01:1;
+alphas = 0.99:0.001:1;
 test_size = 0.2;
 
 if CROSSVAL
@@ -87,9 +86,9 @@ for idx_alpha=1:length(alphas)
             L2s(idx_alpha,idx_K) = L_out.L2;
             
             if SPG
-                [stats_test] = adamar_validate_ionosphere(Lambda, C, y, Piy);
+                [stats_test] = adamar_validate_fisher_iris(Lambda, C, y, Piy, classes);
             else
-                [stats_test] = adamar_validate_ionosphere(Lambda, C', y, Piy); 
+                [stats_test] = adamar_validate_fisher_iris(Lambda, C', y, Piy, classes); 
             end
             tprecision(idx_alpha,idx_K) = stats_test.precision;
             trecall(idx_alpha,idx_K) = stats_test.recall;
@@ -99,12 +98,12 @@ for idx_alpha=1:length(alphas)
 end
 
 if SVM
-    SVMModel = fitcsvm(X, PiY');
-    %SVMModel = fitcecoc(X, PiY, 'OptimizeHyperparameters', 'all');
+    SVMModel = fitcecoc(X, onehotdecode(PiY',classes,2));
+    %SVMModel = fitcecoc(X, onehotdecode(PiY',classes,2), 'OptimizeHyperparameters', 'all');
     [labels_train,~] = predict(SVMModel,X);
-    SVM_stats_train(idx_fold) = statistics(labels_train, PiY');
+    SVM_stats_train(idx_fold) = statistics_multiclass(labels_train, onehotdecode(PiY',classes,2));
     [labels_test,~] = predict(SVMModel,y);
-    SVM_stats_test(idx_fold) = statistics(labels_test, Piy');
+    SVM_stats_test(idx_fold) = statistics_multiclass(labels_test, onehotdecode(Piy',classes,2));
 end
 
 if VISUALIZE
