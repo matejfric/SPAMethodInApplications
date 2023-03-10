@@ -5,7 +5,7 @@ function [X, features] = lbp_analysis(ca_dataset)
 
 [images, ~] = size(ca_dataset);
 
-X = zeros(1e5, 256); %TODO
+X = zeros(1e5, 16); %TODO
 
 row = 1;
 

@@ -1,9 +1,7 @@
 function [X, features] = roughness_analysis_glrl(ca_dataset)
 %ROUGHNESS_ANALYSIS Extract GLRL statistics per patch
 
-addpath('ProgramFiles/GLRL');
-
-warning('off')
+%warning('off')
 
 [images, ~] = size(ca_dataset);
 

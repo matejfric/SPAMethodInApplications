@@ -34,6 +34,10 @@ elseif strcmp(DATASET, 'Dataset256')
     %ca_Y = ca(n_train+1:n); % test on testing data
     ca_Y = ca(n_train+1:n_train+10); % test on testing data
     
+elseif strcmp(DATASET, 'Segmentation')
+    X = get_descriptors(load_images(68), descriptors, color);
+    ca_Y = [];
+    
 else
     X = get_descriptors(load_images(), descriptors, color, probabilities);
     %X = matfile('X10.mat').X;

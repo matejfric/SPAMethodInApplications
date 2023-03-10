@@ -3,14 +3,14 @@ function [X, ca_Y] = principal_component_analysis(X, ca_Y, num_of_dimensions)
 %Inspired by: https://www.maskaravivek.com/post/principal-component-analysis-in-matlab/
 arguments
     X (:,:) double
-    ca_Y
-    num_of_dimensions = 15 % No of dimensions to keep
+    ca_Y = []
+    num_of_dimensions = 6 % No of dimensions to keep
 end
 
 ground_truth = X(:,end);
 
 % Normalize the feature matrix
-X = normalize(X(:,1:end-1)); 
+X = normalize(X, 'zscore'); 
 
 % De-mean
 X = bsxfun(@minus,X,mean(X));
@@ -20,7 +20,7 @@ X = bsxfun(@minus,X,mean(X));
 
 reduced_dimension = COEFF(:,1:num_of_dimensions);
 X_reduced = X * reduced_dimension;
-X_reduced(:,end+1) = ground_truth;
+%X_reduced(:,end+1) = ground_truth;
 
 [X] = X_reduced;     
 
