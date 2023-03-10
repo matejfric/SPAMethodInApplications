@@ -17,7 +17,6 @@ labels = categorical(Y);
 classes = categories(labels);
 PiY = onehotencode(labels,2);
 [X, ~] = scaling(X, [], 'minmax');
-%[X, ~] = scaling(X, [], 'norm');
 %[X, ~] = scaling(X, [], 'zscore', 'std');
 %[X, ~] = scaling(X, [], 'zscore', 'robust');
 
@@ -32,9 +31,9 @@ maxIters = 100;
 nrand = 5;
 scaleT = true;
 Ks = 25;
-%alphas = 0:0.1:1;
-%alphas = 0.9:0.01:1;
-alphas = 0.99:0.001:1;
+alphas = 0:0.1:1;
+alphas = 0.9:0.01:1;
+%alphas = 0.99:0.001:1;
 test_size = 0.2;
 
 if CROSSVAL

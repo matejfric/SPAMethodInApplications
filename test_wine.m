@@ -14,7 +14,7 @@
 % for first testing of a new classifier, but not very challenging.
 
 clear all
-%close all
+close all
 addpath(genpath(pwd));
 
 rng(42); %For reproducibility
@@ -39,6 +39,8 @@ PiY = onehotencode(labels,2);
 %[X, ~] = scaling(table2array(DS(:,1:end-1)), [], 'zscore');
 [X, ~] = scaling(table2array(DS(:,1:end-1)), [], 'minmax');
 
+%[X, ca_Y] = principal_component_analysis(table2array(DS(:,1:end-1)));
+
 tbl = array2table(X);
 tbl.Y = PiY;
 n = length(tbl.Y);
@@ -52,6 +54,7 @@ Ks = 100;
 %alphas = 0.95:0.01:1;
 %alphas = 0.99:0.001:1;
 alphas = 0.999:0.0001:1;
+alphas = 0.9996;
 %alphas = 0.9999:0.00001:1;
 test_size = 0.20;
 
@@ -113,8 +116,11 @@ for idx_alpha=1:length(alphas)
 end
 
 if SVM
-    SVMModel = fitcecoc(X, onehotdecode(PiY',classes,2));
-    %SVMModel = fitcecoc(X, onehotdecode(PiY',classes,2), 'OptimizeHyperparameters', 'all');
+    template = templateSVM('KernelFunction', 'gaussian', 'PolynomialOrder', [], ...
+        'KernelScale', 0.33289, 'BoxConstraint', 10.868, 'Standardize', true);
+    SVMModel = fitcecoc(X, onehotdecode(PiY',classes,2), 'Learners', template, 'Coding', 'onevsall');
+    %[SVMModel,HyperparameterOptimizationResults] = fitcecoc(X, onehotdecode(PiY',classes,2), 'OptimizeHyperparameters', 'all');
+
     [labels_train,~] = predict(SVMModel,X);
     SVM_stats_train(idx_fold) = statistics_multiclass(labels_train, onehotdecode(PiY',classes,2));
     [labels_test,~] = predict(SVMModel,y);

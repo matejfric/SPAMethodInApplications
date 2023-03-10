@@ -1,5 +1,5 @@
 clear all
-close all
+%close all
 addpath(genpath(pwd));
 
 rng(42); %For reproducibility
@@ -23,7 +23,10 @@ PiY = onehotencode(labels,2);
 T = size(meas,1);
 
 X = meas;
+%[X, ~] = scaling(X, [], 'zscore-robust');
+%[X, ~] = scaling(X, [], 'zscore');
 %[X, ~] = scaling(X, [], 'minmax');
+
 
 tbl = array2table(X);
 tbl.Y = PiY;
@@ -36,8 +39,8 @@ nrand = 10;
 scaleT = true;
 Ks = 3;
 %alphas = 0:0.05:1;
-alphas = 0.99:0.002:1;
-test_size = 0.25;
+alphas = 0.98:0.002:1;
+test_size = 0.5;
 
 if CROSSVAL
     KFold = 10;

@@ -17,7 +17,7 @@ PiY = [X(:,end), 1-X(:,end)]; % Ground truth
 X = X(:,1:end-1);
 
 % Scaling
-%[X, ca_Y] = scaling(X, ca_Y, 'minmax');
+[X, ca_Y] = scaling(X, ca_Y, 'minmax');
 
 % PCA
 %[X, ca_Y] = principal_component_analysis(X, ca_Y);
@@ -32,9 +32,8 @@ Ks = 25;
 maxIters = 100;
 
 %alphas = [1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 0.5];
-alphas = 0:0.1:1;
+%alphas = 0:0.1:1;
 alphas = 0.8:0.03:1;
-alphas = 0.01:0.003:0.02;
 
 L1s = zeros(numel(alphas),length(Ks));
 L2s = zeros(numel(alphas),length(Ks));

@@ -17,7 +17,7 @@ PiY = [X(:,end), 1-X(:,end)]';
 X = X(:,1:end-1);
 
 % Scaling
-%[X, ca_Y] = scaling(X, ca_Y, 'minmax');
+[X, ca_Y] = scaling(X, ca_Y, 'minmax');
 
 % PCA
 %[X, ca_Y] = principal_component_analysis(X, ca_Y);
@@ -27,7 +27,8 @@ fprintf("How balanced are the labels? Ones: %.2f, Zeros: %.2f\n",...
 
 %ADAMAR
 %alphas = [1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 0.5, 1-1e-1, 1-1e-2, 1-1e-3];
-alphas = 0.01:0.003:0.02;
+%alphas = 0.001:0.0003:0.002;
+alphas = 0:0.25:1;
 Ks = 25; % Number of clusters
 maxIters = 25;
 nrand = 3;
