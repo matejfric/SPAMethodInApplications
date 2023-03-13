@@ -1,4 +1,4 @@
-function [stats] = adamar_predict(Lambda, C, K, alpha, ca_Y, dataset, display)
+function [stats_test] = adamar_predict(Lambda, C, K, alpha, ca_Y, dataset, display)
 %ADAMAR_PREDICT Make a prediction based on ADAMAR model
 %   Lambda...transion matrix
 %   C........centroids
@@ -64,7 +64,7 @@ stats_avg.recall = stats_avg.recall / n;
 stats_avg.f1score = stats_avg.f1score / n;
 stats_avg.accuracy = stats_avg.accuracy / n;
 
-stats = stats_avg;
+stats_test = stats_avg;
 
 end
 

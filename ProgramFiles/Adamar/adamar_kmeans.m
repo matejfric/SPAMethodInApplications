@@ -1,4 +1,4 @@
-function [Lambda, C, Gamma, stats, L, PiX] = adamar_kmeans(X, PiY, K, alpha, maxIters, Nrand, scaleT)
+function [C, Gamma, PiX, Lambda, it, stats, L] = adamar_kmeans(X, PiY, K, alpha, maxIters, Nrand, scaleT)
 %KMEANS_ADAMAR 
 arguments
     X               % Matrix of descriptors
@@ -23,7 +23,7 @@ for nrand = 1:Nrand
     %[Lambda0, Gamma0, C0] = initial_approximation3(X, K, PiY);
     C0=C0';
     
-    [Lambda_temp, C_temp, Gamma_temp, PiX_temp, stats_temp, L_temp] =...
+    [C_temp, Gamma_temp, PiX_temp, Lambda_temp, it_temp, stats_temp, L_temp] =...
     adamar_kmeans_one(C0, Gamma0, Lambda0, PiY, X, K, alpha, maxIters, scaleT);
 
     if L_temp.L < L.L
@@ -31,6 +31,7 @@ for nrand = 1:Nrand
         Gamma = Gamma_temp;
         PiX = PiX_temp;
         Lambda = Lambda_temp;
+        it = it_temp;
         stats = stats_temp;
         L = L_temp;
     end
@@ -39,7 +40,7 @@ end
 end
 
 
-function [Lambda, C, Gamma, PiX, stats, L_out]...
+function [C, Gamma, PiX, Lambda, it, stats, L_out]...
     = adamar_kmeans_one(C, Gamma, Lambda, PiY, X, K, alpha, maxIters, scaleT)
 
 if scaleT
@@ -57,7 +58,7 @@ learningErrors = zeros(0, maxIters); % preallocation
 ground_truth = PiY(1,:);
 myeps = 1e-4; %TODO
 
-for i = 1:maxIters
+for it = 1:maxIters
     
     % Compute Gamma %
     %disp([' - before Gamma: ' num2str(compute_fval_adamar_kmeans(C',Gamma,Lambda,X',alpha, PiY, T))])
@@ -109,12 +110,12 @@ for i = 1:maxIters
         end
         stats = statistics_multiclass(prediction, ground_truth);
         fprintf("it=%d  L=%.2f  L_a=%.2f  f1score=%.3f\n",...
-            i, L, L_real, stats.f1score);
+            it, L, L_real, stats.f1score);
     else % binary classification
         stats = statistics(PiX(:,1), ground_truth);
-        learningErrors(i) = sum(abs(PiX(:,1) - ground_truth')) / length(ground_truth);
+        learningErrors(it) = sum(abs(PiX(:,1) - ground_truth')) / length(ground_truth);
         fprintf("it=%d  L=%.2f  L_a=%.2f  FN=%d  FP=%d  f1score=%.3f  error:%.3f\n",...
-            i, L, L_real, stats.fn, stats.fp, stats.f1score, learningErrors(i));
+            it, L, L_real, stats.fn, stats.fp, stats.f1score, learningErrors(it));
     end
 
     

@@ -1,4 +1,4 @@
-function [C, Gamma, PiX, Lambda, it, Lit, learningErrors, stats, L] = ...
+function [C, Gamma, PiX, Lambda, it, stats, L] = ...
     adamar_fmincon(X, PiY, K, alpha, maxIters, Nrand)
 %ADAMAR_FMINCON Summary of this function goes here
 % X        data
@@ -28,7 +28,7 @@ for nrand = 1:Nrand
     %    PiY = [X(:,end), 1-X(:,end)]';
     [Lambda0, Gamma0, C0] = initial_approximation_plus_plus(X, K, PiY);
     
-    [C_temp, Gamma_temp, PiX_temp, Lambda_temp, it_temp, Lit_temp, learningErrors_temp, stats_temp, L_temp] =...
+    [C_temp, Gamma_temp, PiX_temp, Lambda_temp, it_temp, stats_temp, L_temp] =...
         adamar_fmincon_one(X, PiY, K, alpha, maxIters, Lambda0, Gamma0, C0);
     
     if L_temp.L < L.L
@@ -37,8 +37,6 @@ for nrand = 1:Nrand
         PiX = PiX_temp;
         Lambda = Lambda_temp;
         it = it_temp;
-        Lit = Lit_temp;
-        learningErrors = learningErrors_temp;
         stats = stats_temp;
         L = L_temp;
     end
@@ -46,7 +44,7 @@ end
 
 end
 
-function [C, Gamma, PiX, Lambda, it, Lit, learningErrors, stats, L] = ...
+function [C, Gamma, PiX, Lambda, it, stats, L] = ...
     adamar_fmincon_one(X, PiY, K, alpha, maxIters, Lambda0, Gamma0, C0)
 %ADAMAR_FMINCON_ONE One run of adamar.
 
@@ -64,8 +62,6 @@ C = C0;
 % initial objective function value
 L = realmax;
 
-Lit = zeros(0, maxIters); % preallocation
-learningErrors = zeros(0, maxIters); % preallocation
 it = 0; % iteration counter
 
 while it < maxIters % practical stopping criteria after computing new L (see "break")
@@ -75,13 +71,7 @@ while it < maxIters % practical stopping criteria after computing new L (see "br
     if bugfix; fprintf(' - before Gamma:    %.2f\n', compute_L2(C,Gamma,Lambda,X,alpha, PiY,T,D)); end
     
     Gamma0 = Gamma;
-    %tic
     [Gamma,~] = compute_Gamma_vec(C,Gamma0,Lambda,X,alpha,PiY);
-    %time1 = toc
-    
-%     tic
-%     [Gamma2,it2] = compute_Gamma(C,Gamma0,Lambda,X,alpha,PiY);
-%     time2 = toc;
     
     if bugfix; fprintf(' - after Gamma:     %.2f\n', compute_L2(C,Gamma,Lambda,X,alpha, PiY,T,D)); end
     
@@ -98,7 +88,6 @@ while it < maxIters % practical stopping criteria after computing new L (see "br
     if bugfix; fprintf(' - before Lambda:   %.2f\n', compute_L2(C,Gamma,Lambda,X,alpha, PiY,T,D)); end
     
     Lambda = compute_Lambda(Gamma,Lambda,PiY,D);
-    %Lambda = lambda_solver_jensen(Gamma, PiY);
     
     if bugfix; fprintf(' - after Lambda:    %.2f\n', compute_L2(C,Gamma,Lambda,X,alpha, PiY,T,D)); end
 
@@ -113,20 +102,16 @@ while it < maxIters % practical stopping criteria after computing new L (see "br
     end
     
     if L > Lold
-       if bugfix
-            keyboard
-       end
+       keyboard
     end
     
     it = it + 1;
     
-    Lit(it) = L; % for postprocessing
-    
     % PiX = round(Lambda*Gamma)'; % round => binary matrix
     Gamma_rec = compute_Gamma_kmeans(C,X); % Reconstruction of Gamma
     PiX = round(Lambda*Gamma_rec)';
-    [stats(it)] = compute_stats(PiY, PiX);
-    fprintf('F1-Score: %.2f\n', stats(it).f1score)
+    [stats] = compute_stats(PiY, PiX);
+    fprintf('F1-Score: %.2f\n', stats.f1score)
     
 end
 
