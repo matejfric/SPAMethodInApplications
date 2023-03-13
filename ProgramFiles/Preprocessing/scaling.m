@@ -45,9 +45,9 @@ else
     n = numel(ca_Y);
     for i = 1:n
         if isempty(methodType)
-            ca_Y{i}.X = normalize(ca_Y{i}.X, method);
+            ca_Y{i}.X(:,1:end-1) = normalize(ca_Y{i}.X(:,1:end-1), method);
         else
-            ca_Y{i}.X = normalize(ca_Y{i}.X, method, methodType);
+            ca_Y{i}.X(:,1:end-1) = normalize(ca_Y{i}.X(:,1:end-1), method, methodType);
         end
     end
 end
