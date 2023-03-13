@@ -1,5 +1,5 @@
-function [S, Gamma, PiX, Lambda, it, Lit, learningErrors, stats, L] = ...
-    spa(X, PiY, K, alpha, maxIters, Nrand)
+function [S, Gamma, PiX, Lambda, it, stats, L] = ...
+    adamar_spa(X, PiY, K, alpha, maxIters, Nrand)
 %SPA Summary of this function goes here
 % X        data
 % K        number of clusters
@@ -28,7 +28,7 @@ for nrand = 1:Nrand
     %    PiY = [X(:,end), 1-X(:,end)]';
     [Lambda0, Gamma0, C0] = spa_initial_approximation(X, K, PiY);
     
-    [S_temp, Gamma_temp, PiX_temp, Lambda_temp, it_temp, Lit_temp, learningErrors_temp, stats_temp, L_temp] =...
+    [S_temp, Gamma_temp, PiX_temp, Lambda_temp, it_temp, stats_temp, L_temp] =...
         spa_one(X, PiY, K, alpha, maxIters, Lambda0, Gamma0, C0);
     
     if L_temp.L < L.L
@@ -37,8 +37,6 @@ for nrand = 1:Nrand
         PiX = PiX_temp;
         Lambda = Lambda_temp;
         it = it_temp;
-        Lit = Lit_temp;
-        learningErrors = learningErrors_temp;
         stats = stats_temp;
         L = L_temp;
     end
@@ -46,7 +44,7 @@ end
 
 end
 
-function [S, Gamma, PiX, Lambda, it, Lit, learningErrors, stats, L] = ...
+function [S, Gamma, PiX, Lambda, it, stats, L] = ...
     spa_one(X, PiY, K, alpha, maxIters, Lambda0, Gamma0, S0)
 %SPA_FMINCON_ONE One run of adamar.
 
@@ -64,8 +62,6 @@ S = S0;
 % initial objective function value
 L = realmax;
 
-Lit = zeros(0, maxIters); % preallocation
-learningErrors = zeros(0, maxIters); % preallocation
 it = 0; % iteration counter
 
 while it < maxIters % practical stopping criteria after computing new L (see "break")
@@ -122,13 +118,11 @@ while it < maxIters % practical stopping criteria after computing new L (see "br
     
     it = it + 1;
     
-    Lit(it) = L; % for postprocessing
-    
     % PiX = round(Lambda*Gamma)'; % round => binary matrix
     Gamma_rec = compute_Gamma_kmeans(S,X); % Reconstruction of Gamma
     PiX = round(Lambda*Gamma_rec)';
-    [stats(it)] = compute_stats(PiY, PiX);
-    fprintf('F1-Score: %.2f\n', stats(it).f1score)
+    [stats] = compute_stats(PiY, PiX);
+    fprintf('F1-Score: %.2f\n', stats.f1score)
     
 end
 
