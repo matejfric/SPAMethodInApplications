@@ -11,7 +11,7 @@ myplot(range,lprecision)
 hold on 
 myplot(range,lrecall)
 hold on 
-myplot(range,lf1score)
+myfplot(range,lf1score)
 hold on 
 myplot(range,laccuracy)
 if max(range) <= 1
@@ -37,7 +37,7 @@ myplot(range,tprecision)
 hold on 
 myplot(range,trecall)
 hold on 
-myplot(range,tf1score)
+myfplot(range,tf1score)
 hold on 
 myplot(range,taccuracy)
 if max(range) <= 1
@@ -60,6 +60,12 @@ hold off
 end
 
 function [] = myplot(x, y)
+
+plot(x, y, 'o--' , 'LineWidth', 2);
+
+end
+
+function [] = myfplot(x, y)
 
 plot(x, y, 'o-' , 'LineWidth', 2);
 
