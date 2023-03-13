@@ -36,10 +36,8 @@ labels = categorical(quality);
 classes = categories(labels);
 PiY = onehotencode(labels,2);
 
-%[X, ~] = scaling(table2array(DS(:,1:end-1)), [], 'zscore');
-[X, ~] = scaling(table2array(DS(:,1:end-1)), [], 'minmax');
-
-%[X, ca_Y] = principal_component_analysis(table2array(DS(:,1:end-1)));
+[X, ~] = scaling(table2array(DS(:,1:end-1)), [], 'zscore', 'robust');
+%[X, ~] = scaling(table2array(DS(:,1:end-1)), [], 'minmax');
 
 tbl = array2table(X);
 tbl.Y = PiY;
@@ -50,11 +48,11 @@ maxIters = 100;
 nrand = 5;
 scaleT = true;
 Ks = 100;
-%alphas = 0:0.05:1;
+alphas = 0:0.05:1;
 %alphas = 0.95:0.01:1;
 %alphas = 0.99:0.001:1;
-alphas = 0.999:0.0001:1;
-alphas = 0.9996;
+%alphas = 0.999:0.0001:1;
+%alphas = 0.9996;
 %alphas = 0.9999:0.00001:1;
 test_size = 0.20;
 
@@ -93,8 +91,13 @@ for idx_alpha=1:length(alphas)
         for idx_K=1:length(Ks)
             K = Ks(idx_K);
             
-            if SPG; [C, Gamma, PiX, Lambda, it, Lit, learningErrors, stats_train, L_out] = adamar_fmincon(X, PiY, K, alpha, maxIters, nrand);
-            else; [Lambda, C, Gamma, stats_train, L_out, PiX] = adamar_kmeans(X, PiY, K, alpha, maxIters, nrand, scaleT); end 
+            if SPG
+                [C, Gamma, PiX, Lambda, it, stats_train, L_out] = ...
+                    adamar_fmincon(X, PiY, K, alpha, maxIters, nrand);
+            else
+                [C, Gamma, PiX, Lambda, it, stats_train, L_out] = ...
+                    adamar_kmeans(X, PiY, K, alpha, maxIters, nrand, scaleT); 
+            end
             lprecision(idx_alpha,idx_K) = stats_train.precision;
             lrecall(idx_alpha,idx_K) = stats_train.recall;
             lf1score(idx_alpha,idx_K, idx_fold) = stats_train.f1score;

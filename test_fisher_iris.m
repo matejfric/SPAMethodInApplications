@@ -35,11 +35,12 @@ n = length(tbl.Y);
 
 %(Hyper)parameters
 maxIters = 100;
-nrand = 10;
+nrand = 5;
 scaleT = true;
 Ks = 3;
-%alphas = 0:0.05:1;
-alphas = 0.98:0.002:1;
+alphas = 0:0.2:1;
+alphas = 0.1:0.2:0.9;
+%alphas = 0.98:0.002:1;
 test_size = 0.5;
 
 if CROSSVAL
@@ -77,14 +78,17 @@ for idx_alpha=1:length(alphas)
         for idx_K=1:length(Ks)
             K = Ks(idx_K);
             
-            if SPG; [C, Gamma, PiX, Lambda, it, Lit, learningErrors, stats_train, L_out] = adamar_fmincon(X, PiY, K, alpha, maxIters, nrand);
-            else; [Lambda, C, Gamma, stats_train, L_out, PiX] = adamar_kmeans(X, PiY, K, alpha, maxIters, nrand, scaleT); end 
+            if SPG
+                [C, Gamma, PiX, Lambda, it, stats_train, L_out] = ...
+                    adamar_fmincon(X, PiY, K, alpha, maxIters, nrand);
+            else
+                [C, Gamma, PiX, Lambda, it, stats_train, L_out] = ...
+                    adamar_kmeans(X, PiY, K, alpha, maxIters, nrand, scaleT)
+            end
             lprecision(idx_alpha,idx_K) = stats_train.precision;
             lrecall(idx_alpha,idx_K) = stats_train.recall;
             lf1score(idx_alpha,idx_K, idx_fold) = stats_train.f1score;
             laccuracy(idx_alpha,idx_K) = stats_train.accuracy;
-            
-            %if stats_train.f1score > best_fscore{1}; best_fscore = {stats_train.f1score, alpha, K}; end
             
             Ls(idx_alpha,idx_K)  = L_out.L;
             L1s(idx_alpha,idx_K) = L_out.L1;
