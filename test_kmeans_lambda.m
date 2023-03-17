@@ -32,7 +32,7 @@ X = X(:,1:end-1);
 %[X, ca_Y] = scaling(X, ca_Y, 'zscore', 'robust');
 
 % PCA
-[X, ca_Y, explained] = mypca(X, ca_Y);
+[X, ca_Y, explained] = mypca(X, ca_Y, onehotdecode(PiY',[1,2],2));
     
 fprintf("How balanced are the labels? Ones: %.2f, Zeros: %.2f\n ", sum(PiY(1,:)), sum(PiY(2,:)));
 
