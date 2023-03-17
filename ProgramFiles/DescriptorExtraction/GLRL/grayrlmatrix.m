@@ -120,6 +120,9 @@ function [GLRLMS,SI]= grayrlmatrix(varargin)
 %   multi-dim arrays
 % 2.Add support for inputs checking inspired by MATLAB style
 % 
+
+warning('off');
+
 [I, Offset, NL, GL] = ParseInputs(varargin{:});
 
 % Scale I so that it contains integers between 1 and NL.

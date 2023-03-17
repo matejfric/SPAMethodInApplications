@@ -1,21 +1,22 @@
-function [X, features] = color_analysis_former(ca_dataset)
+function [X, features] = color_analysis_rgb(ca_dataset)
 %COLOR_ANALYSIS Extract color features per patch 
 
 %fprintf("Performing color analysis...\n");
 
 [images, ~] = size(ca_dataset);
 
-features = 3*6; % 6 features for each color channel
+nchannels = 3; % RGB
+features = nchannels * 6; % 6 features for each color channel
 X = zeros(1e5, features);
 
 row = 1;
 
 for img = 1:images
-    I = ca_dataset{img, 1};
+    I = im2double(ca_dataset{img, 1}); % RGB
     
-    % Patches for each color channel + ground truth
-    ca_patches = cell(1,3);
-    for c = 1:3
+    % Patches for each color channel
+    ca_patches = cell(1, nchannels);
+    for c = 1:nchannels
         [ca_patches{c}, ~] = patchify(I(:,:,c));
     end
     
@@ -23,9 +24,9 @@ for img = 1:images
     
     for i=1:rows
         for j=1:cols
-            Xc = cell(1,3);
-            for c=1:3
-                mypatch = double(ca_patches{c}{i,j});
+            Xc = cell(1,nchannels);
+            for c=1:nchannels
+                mypatch = ca_patches{c}{i,j};
                 [patch_hist,intensity] = compute_histogram(mypatch);
                 
                 mu = dot(patch_hist,intensity); % Mean
@@ -37,11 +38,11 @@ for img = 1:images
                 myrange = max(max(mypatch)) - min(min(mypatch)); % Range
                 
                 % Patch descriptor for channel 'c'
-                Xc{c} = [mu;sigma;delta;nu;rho;myrange];
+                Xc{c} = [mu, sigma, delta, nu, rho, myrange];
             end
             
             % Patch color descriptor
-            X(row,1:features) = [Xc{1};Xc{2};Xc{3}];
+            X(row,1:features) = cell2mat(Xc(1:nchannels));
             
             row = row + 1;
         end
@@ -55,20 +56,8 @@ X(isnan(X))=0; % NaN => 0
 end
 
 function [myhist,intensity] = compute_histogram(mypatch)
-    nbins = 256; % TODO
-    edges = 0:256/nbins:256;
-    [h,w] = size(mypatch);
-
-    myhist = zeros(1,nbins);
-    intensity = zeros(1,nbins);
-    for i = 1:nbins
-        if i==1
-            myhist(i) = sum(sum(and(mypatch >= edges(i),mypatch <= edges(i+1))));
-        else
-            myhist(i) = sum(sum(and(mypatch > edges(i),mypatch <= edges(i+1))));
-        end
-        intensity(i) = 0.5*(edges(i) + edges(i+1));
-    end
-    myhist = myhist/(h*w);
+    nbins = 256;
+    [N,edges] = histcounts(mypatch,nbins);
+    myhist = N/sum(N);
+    intensity = 0.5 * (edges(1:end-1) + edges(2:end));
 end
-
