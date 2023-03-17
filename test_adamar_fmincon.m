@@ -5,7 +5,7 @@ addpath(genpath(pwd));
 
 rng(42);
 
-DATASET = 'Dataset256'; % 'Dataset', 'Dataset2', 'Dataset256'
+DATASET = 'DatasetSelection'; % 'Dataset', 'Dataset2', 'Dataset256', 'DatasetSelection'
 VISUALIZE = false;
 
 [X, ca_Y] = get_train_test_data(DATASET);

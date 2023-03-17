@@ -5,7 +5,7 @@ addpath(genpath(pwd));
 
 rng(42);
 
-DATASET = 'Dataset256'; % 'Dataset', 'Dataset2', 'Dataset256'
+DATASET = 'DatasetSelection'; % 'Dataset', 'Dataset2', 'Dataset256'
 VISUALIZE = false;
 
 [X, ca_Y] = get_train_test_data(DATASET);
@@ -17,8 +17,8 @@ PiY = [X(:,end), 1-X(:,end)]; % Ground truth
 X = X(:,1:end-1);
 
 % Scaling
-%[X, ca_Y] = scaling(X, ca_Y, 'minmax');
-[X, ca_Y] = scaling(X, ca_Y, 'zscore', 'robust');
+[X, ca_Y] = scaling(X, ca_Y, 'minmax');
+%[X, ca_Y] = scaling(X, ca_Y, 'zscore', 'robust');
 
 % PCA
 %[X, ca_Y] = principal_component_analysis(X, ca_Y);

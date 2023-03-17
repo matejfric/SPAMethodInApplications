@@ -13,12 +13,19 @@ prediction = vector2image(prediction, original_rgb);
 annnotation = cell2mat(annnotation);
 annnotation(annnotation==1) = 255;   
 
-figure
-montage([original_rgb, annnotation, ground_truth, prediction],...
-    "Size", [1 4], "BackgroundColor", "red", 'BorderSize', 5);
-ax = gca;
-ax.PositionConstraint = "outerposition";
-title(caption);
+[width, height] = get_screen_resolution();
+
+figure('Renderer', 'painters', 'Position', [width/4 height/4 width/2 height/2])
+sgtitle(caption) 
+subplot(2,2,1)
+imshow(cell2mat(original_rgb))
+subplot(2,2,2)
+imshow(annnotation, [])
+subplot(2,2,3)
+imshow(ground_truth, [])
+subplot(2,2,4)
+imshow(prediction, [])
+colorbar
 
 end
 
@@ -37,3 +44,10 @@ function img = vector2image(vector, original_image)
     img = cell2mat(ca_patches);
 end
 
+function [width, height] = get_screen_resolution()
+    set(0,'units','pixels')
+    res = get(0,'ScreenSize');
+    res = res(3:4);
+    width = res(1);
+    height = res(2);
+end

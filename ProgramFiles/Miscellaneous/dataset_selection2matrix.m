@@ -1,7 +1,6 @@
 addpath(genpath(pwd))
 
 DATASET = 'Dataset';
-COLOR = true;
 PROBABILITIES = false;
 RESIZE = true;
 
@@ -24,8 +23,7 @@ for i = 3:numel(listing)
 %     figure; imshow(ca{i-2,2}, []);
 end
 
-descriptors = [Descriptor.Roughness Descriptor.Color];
-%descriptors = [Descriptor.Roughness Descriptor.Color Descriptor.RoughnessGLRL];
+descriptors = [Descriptor.StatMomHSV];
 
 n = size(ca, 1);
 for i = progress(1:n)
@@ -39,7 +37,7 @@ for i = progress(1:n)
 %         imwrite(ca{i,1},sprintf('%s%s.jpg', [folder '/Original256/'], ca{i,3}))
 %         imwrite(mat2gray(ca{i,2}),sprintf('%s%s.png', [folder '/Annotations256/'], ca{i,3}))
     end
-    X = get_descriptors(ca(i,1:2), descriptors, COLOR, PROBABILITIES);
+    X = get_descriptors(ca(i,1:2), descriptors, PROBABILITIES);
     %TODO: X = get_GLCM_pixel_value
-    save(sprintf('%sX%s.mat', [folder '/Descriptors/'], ca{i,3}),'X');
+    save(sprintf('%sX%s.mat', [folder '/Descriptors/StatMomHSV34/'], ca{i,3}),'X');
 end

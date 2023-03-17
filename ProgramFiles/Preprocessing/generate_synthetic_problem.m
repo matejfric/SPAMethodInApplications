@@ -1,8 +1,6 @@
 function [X,Y,C_true,Gamma_true,Lambda_true] = generate_synthetic_problem(T)
 %GENERATE_PROBLEM
 
-rng(42);
-
 C_true = ...
     [ 1 0 1 0; ...
       0 2 3 -2; ...
@@ -33,11 +31,25 @@ for k = 1:K
     Gamma_true(k,idx == k) = 1; % random Gamma
 end
 
-Lambda_true = [1 0 0 1;...
-               0 1 0 0; ...
-               0 0 1 0];
+Lambda_true = [0.8 0   0   0.5;...
+               0   1   0   0.4; ...
+               0   0   0.7 0; ...
+               0.2 0   0.3 0.1];
 
-Y = Lambda_true*Gamma_true; % PiY
+Yprob = Lambda_true*Gamma_true; % PiY
+
+edges = cumsum([zeros(1,T);Yprob],1);
+uniform = rand(1, T);
+
+idx = zeros(1,T);
+for i = 1:size(Yprob,1)
+    idx(uniform >= edges(i,:)) = idx(uniform >= edges(i,:)) + 1;
+end
+
+Y = zeros(size(Yprob));
+for i = 1:size(Y,1)
+    Y(i,idx == i) = 1;
+end
 
 X = C_true*Gamma_true;
            

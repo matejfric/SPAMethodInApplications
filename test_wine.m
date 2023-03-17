@@ -21,6 +21,7 @@ rng(42); %For reproducibility
 
 VISUALIZE = true;
 SVM = true;
+NB = true;
 CROSSVAL = false;
 SPG = false;
 
@@ -130,6 +131,14 @@ if SVM
     SVM_stats_test(idx_fold) = statistics_multiclass(labels_test, onehotdecode(Piy',classes,2));
 end
 
+if NB
+    NBModel = fitcnb(X, onehotdecode(PiY',classes,2));
+    [labels_train,~] = predict(NBModel,X);
+    NB_stats_train(idx_fold) = statistics_multiclass(labels_train, onehotdecode(PiY',classes,2));
+    [labels_test,~] = predict(NBModel,y);
+    NB_stats_test(idx_fold) = statistics_multiclass(labels_test, onehotdecode(Piy',classes,2));
+end
+
 if VISUALIZE
     if SPG
         title = sprintf('Adamar SPG, K=%d', K);
@@ -147,4 +156,7 @@ end
 fprintf("Adamar -> Mean learning F1-score: %.2f | Mean testing F1-score: %.2f\n", mean(lf1score), mean(tf1score));
 if SVM
     fprintf("SVM ----> Mean learning F1-score: %.2f | Mean SVM testing F1-score: %.2f\n",mean([SVM_stats_train.f1score]), mean([SVM_stats_test.f1score]));
+end
+if SVM
+    fprintf("NB -----> Mean learning F1-score: %.2f | Mean SVM testing F1-score: %.2f\n",mean([NB_stats_train.f1score]), mean([NB_stats_test.f1score]));
 end

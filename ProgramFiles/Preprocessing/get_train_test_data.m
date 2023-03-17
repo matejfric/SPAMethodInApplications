@@ -39,21 +39,41 @@ elseif strcmp(DATASET, 'Segmentation')
     X = get_descriptors(load_images(68), descriptors, color);
     ca_Y = [];
     
-elseif strcmp(DATASET, 'DatasetSelection')
-    folder = 'DatasetSelection/Descriptors/';
-    listing = dir(folder);
-    ca = cell(numel(listing)-2, 1);
-    for i = 3:numel(listing)
-        X_save = load([folder listing(i).name]);
-        M.X = X_save.X;
-        M.I = sscanf(listing(i).name,'X%d'); %i-3;
-        ca{i-2} = M;
+elseif strcmp(DATASET, 'DatasetSelection')    
+    patch_size = 'Descriptors'; % Descriptors (16), Descriptors8
+    % Ground truth
+    str_gt = 'GroundTruthBinary'; % GroundTruthBinary, GroundTruthProbability
+    gt_ca = descriptor2ca(sprintf('DatasetSelection/%s/%s/',patch_size, str_gt));
+    gt = cellfun(@(x) x.X, gt_ca, 'UniformOutput', false);
+    idxs = cellfun(@(x) x.I, gt_ca, 'UniformOutput', false);
+    
+    % Descriptor(s)
+    str_descriptor = 'StatMomHSV34'; % StatMomHSV, StatMomHSV34, StatMomRGB, GLCM_HSV, GLCM_RGB, GLRLM, GLCMGray1, GLCMGray7
+    desc1 = descriptor2ca(sprintf('DatasetSelection/%s/%s/', patch_size, str_descriptor));
+    desc1 = cellfun(@(x) x.X, desc1, 'UniformOutput', false);
+%     str_descriptor = 'GLCM_HSV';
+%     desc2 = descriptor2ca(sprintf('DatasetSelection/%s/%s/', patch_size, str_descriptor));
+%     desc2 = cellfun(@(x) x.X, desc2, 'UniformOutput', false);
+    
+    % Concatenate ground truth with descriptor(s)
+    ca_hcat = horzcat(desc1, gt);
+    X = cellfun(@(x,y) [x,y], ca_hcat(:,1), ca_hcat(:,2), 'UniformOutput', false);
+%     ca_hcat = horzcat(desc1, desc2, gt);
+%     X = cellfun(@(x,y,z) [x,y,z], ca_hcat(:,1), ca_hcat(:,2), ca_hcat(:,3), 'UniformOutput', false);
+    
+    % Convert to universal format "cell(struct(X,I))"
+    n = numel(X);
+    ca = cell(n,1);
+    for idx = 1:n
+        img.X = X{idx};
+        img.I = idxs{idx};
+        ca{idx} = img;
     end
     ca = ca(randperm(numel(ca))); % shuffle
     
+    % Train-Test Split
     n = numel(ca);
-    n_train = floor(n * 0.75); % Training set size
-    %n_train = 10;
+    n_train = floor(n * 0.7); % Training set size
     X = cell2mat({cell2mat(ca(1:n_train)).X}');
     %ca_Y = ca(1:n_train); % test on training data
     ca_Y = ca(n_train+1:n); % test on testing data
@@ -73,5 +93,16 @@ else
     end
 end
 
+end
+
+function ca = descriptor2ca(folder)
+    listing = dir(folder);
+    ca = cell(numel(listing)-2, 1);
+    for i = 3:numel(listing)
+        X_save = load([folder listing(i).name]);
+        M.X = X_save.X;
+        M.I = sscanf(listing(i).name,'X%d'); %i-3;
+        ca{i-2} = M;
+    end
 end
 
