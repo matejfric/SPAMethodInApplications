@@ -79,11 +79,15 @@ for idx_alpha=1:length(alphas)
             K = Ks(idx_K);
             
             if SPG
+                %[C, Gamma, PiX, Lambda, it, stats_train, L_out] = ...
+                %    adamar_fmincon(X, PiY, K, alpha, maxIters, nrand);
                 [C, Gamma, PiX, Lambda, it, stats_train, L_out] = ...
-                    adamar_fmincon(X, PiY, K, alpha, maxIters, nrand);
+                    adamar_spa(X, PiY, K, alpha, maxIters, nrand);
             else
                 [C, Gamma, PiX, Lambda, it, stats_train, L_out] = ...
-                    adamar_kmeans(X, PiY, K, alpha, maxIters, nrand, scaleT)
+                    adamar_kmeans(X, PiY, K, alpha, maxIters, nrand, scaleT);
+                %[C, Gamma, PiX, Lambda, it, stats_train, L_out] = ...
+                %    kmeans_lambda(X, PiY, K, alpha);
             end
             lprecision(idx_alpha,idx_K) = stats_train.precision;
             lrecall(idx_alpha,idx_K) = stats_train.recall;

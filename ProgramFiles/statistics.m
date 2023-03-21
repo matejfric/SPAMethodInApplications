@@ -1,8 +1,12 @@
 function [stats] = statistics(labels, ground_truth)
 %STATISTICS Summary of this function goes here
 
-labels = round(labels);
-ground_truth = round(ground_truth);
+if isnumeric(labels) 
+    labels = round(labels); 
+end
+if isnumeric(ground_truth) 
+    ground_truth = round(ground_truth); 
+end
 
 % Confusion matrix
 C = confusionmat(labels, ground_truth);
@@ -38,6 +42,25 @@ end
 % ACCURACY
 stats.accuracy = (TP + TN) / ( TP + TN + FP + FN );
 
+% MEAN ABSOLUTE ERROR (MAE)
+% https://en.wikipedia.org/wiki/Mean_absolute_error
+if size(labels, 2) > size(labels, 1)
+    labels = labels'; 
+end
+if ~isnumeric(labels) 
+    labels = onehotencode(labels,2); 
+end
+if size(ground_truth, 2) > size(ground_truth, 1)
+    ground_truth = ground_truth'; 
+end
+if ~isnumeric(ground_truth) 
+    ground_truth = onehotencode(ground_truth,2); 
+end
+stats.mae = sum(abs(labels(:,1) - ground_truth(:,1))) / size(ground_truth,1);
+
+% MEAN SQUARED ERROR (MSE)
+% https://en.wikipedia.org/wiki/Mean_squared_error
+stats.mse = sum((labels(:,1) - ground_truth(:,1)).^2) / size(ground_truth,1);
 
 end
 

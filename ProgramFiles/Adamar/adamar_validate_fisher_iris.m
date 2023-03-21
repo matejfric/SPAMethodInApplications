@@ -18,7 +18,11 @@ for i = 1:n
     % Statistics
     labels = onehotdecode(PiY,classes,2);
     ground_truth = onehotdecode(PiY_true',classes,2);
-    [stats] = statistics_multiclass(labels, ground_truth);
+    if numel(classes) > 2
+        [stats] = statistics_multiclass(labels, ground_truth);
+    else
+        [stats] = statistics(labels, ground_truth);
+    end
     if i == 1
         stats_avg = stats;
     else

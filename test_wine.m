@@ -49,7 +49,7 @@ maxIters = 100;
 nrand = 5;
 scaleT = true;
 Ks = 100;
-alphas = 0:0.05:1;
+alphas = 0:0.1:1;
 %alphas = 0.95:0.01:1;
 %alphas = 0.99:0.001:1;
 %alphas = 0.999:0.0001:1;
@@ -126,17 +126,17 @@ if SVM
     %[SVMModel,HyperparameterOptimizationResults] = fitcecoc(X, onehotdecode(PiY',classes,2), 'OptimizeHyperparameters', 'all');
 
     [labels_train,~] = predict(SVMModel,X);
-    SVM_stats_train(idx_fold) = statistics_multiclass(labels_train, onehotdecode(PiY',classes,2));
+    SVM_stats_train(idx_fold) = statistics(labels_train, onehotdecode(PiY',classes,2));
     [labels_test,~] = predict(SVMModel,y);
-    SVM_stats_test(idx_fold) = statistics_multiclass(labels_test, onehotdecode(Piy',classes,2));
+    SVM_stats_test(idx_fold) = statistics(labels_test, onehotdecode(Piy',classes,2));
 end
 
 if NB
     NBModel = fitcnb(X, onehotdecode(PiY',classes,2));
     [labels_train,~] = predict(NBModel,X);
-    NB_stats_train(idx_fold) = statistics_multiclass(labels_train, onehotdecode(PiY',classes,2));
+    NB_stats_train(idx_fold) = statistics(labels_train, onehotdecode(PiY',classes,2));
     [labels_test,~] = predict(NBModel,y);
-    NB_stats_test(idx_fold) = statistics_multiclass(labels_test, onehotdecode(Piy',classes,2));
+    NB_stats_test(idx_fold) = statistics(labels_test, onehotdecode(Piy',classes,2));
 end
 
 if VISUALIZE

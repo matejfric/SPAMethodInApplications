@@ -16,7 +16,7 @@ X(:,2) = [];
 labels = categorical(Y);
 classes = categories(labels);
 PiY = onehotencode(labels,2);
-[X, ~] = scaling(X, [], 'minmax');
+%[X, ~] = scaling(X, [], 'minmax');
 %[X, ~] = scaling(X, [], 'zscore', 'std');
 %[X, ~] = scaling(X, [], 'zscore', 'robust');
 
@@ -106,9 +106,9 @@ if SVM
     SVMModel = fitcecoc(X, onehotdecode(PiY',classes,2));
     %SVMModel = fitcecoc(X, onehotdecode(PiY',classes,2), 'OptimizeHyperparameters', 'all');
     [labels_train,~] = predict(SVMModel,X);
-    SVM_stats_train(idx_fold) = statistics_multiclass(labels_train, onehotdecode(PiY',classes,2));
+    SVM_stats_train(idx_fold) = statistics(labels_train, onehotdecode(PiY',classes,2));
     [labels_test,~] = predict(SVMModel,y);
-    SVM_stats_test(idx_fold) = statistics_multiclass(labels_test, onehotdecode(Piy',classes,2));
+    SVM_stats_test(idx_fold) = statistics(labels_test, onehotdecode(Piy',classes,2));
 end
 
 if VISUALIZE
