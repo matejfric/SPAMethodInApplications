@@ -1,8 +1,12 @@
 function [stats] = statistics(labels, ground_truth)
 %STATISTICS Summary of this function goes here
 
+[TPR,FPR,T,AUC] = perfcurve(ground_truth,labels,1);
+
 if isnumeric(labels) 
     labels = round(labels); 
+%     labels(labels<=0.35) = 0; 
+%     labels(labels>0.35) = 1; 
 end
 if isnumeric(ground_truth) 
     ground_truth = round(ground_truth); 
@@ -61,6 +65,15 @@ stats.mae = sum(abs(labels(:,1) - ground_truth(:,1))) / size(ground_truth,1);
 % MEAN SQUARED ERROR (MSE)
 % https://en.wikipedia.org/wiki/Mean_squared_error
 stats.mse = sum((labels(:,1) - ground_truth(:,1)).^2) / size(ground_truth,1);
+
+stats.auc = AUC;
+
+%{
+figure
+plot(TPR,FPR)
+hold on
+yline(AUC)
+%}
 
 end
 
