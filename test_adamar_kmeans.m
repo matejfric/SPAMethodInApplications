@@ -5,13 +5,15 @@ addpath(genpath(pwd));
 
 rng(42);
 
-DATASET = 'DatasetSelection'; % 'Dataset', 'Dataset2', 'Dataset256'
+DATASET = 'DatasetSelection'; % 'Dataset', 'Dataset2', 'Dataset256', 'DatasetSelection'
 VISUALIZE = false;
 
-[X, ca_Y] = get_train_test_data(DATASET);
+[X, ca_Y] = get_train_test_data(DATASET, 0.8);
 
 % Removal of strongly correlated columns
 %[X, ca_Y] = correlation_analysis(X, ca_Y);
+
+%[X, ca_Y] = my_umap();
 
 PiY = [X(:,end), 1-X(:,end)]; % Ground truth
 X = X(:,1:end-1);
@@ -21,21 +23,28 @@ X = X(:,1:end-1);
 %[X, ca_Y] = scaling(X, ca_Y, 'zscore', 'robust');
 
 % PCA
-%[X, ca_Y] = principal_component_analysis(X, ca_Y);
 [X, ca_Y, explained] = mypca(X, ca_Y);
 
-fprintf("How balanced are the labels? Ones: %.2f, Zeros: %.2f\n",...
-    sum(X(:,end)), size(X(:,end), 1)-sum(X(:,end)));
+fprintf("How balanced are the labels? Ones: %.2f, Zeros: %.2f\n ", sum(PiY(:,1)), sum(PiY(:,2)));
+
 
 %Ks = [2,5,12];
+%Ks = 25;
+%Ks = [2,4,8,16,32,64];
 Ks = 25;
-%Ks = 100;
 
-maxIters = 100;
+
+maxIters = 1000;
 
 %alphas = [1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 0.5];
-alphas = 0:0.1:1;
-%alphas = 0.8:0.03:1;
+%alphas = 0:0.1:1;
+%alphas = 0.9:0.01:1;
+%alphas = 0.99:0.001:1;
+%alphas = 0.999:0.0002:1;
+%alphas = 0.9999:0.00002:1; % tady se ten algoritmus chová hezky
+%alphas = 0.99999:0.000002:1; % až 83% f1-skóre na testovací mže
+%alphas = 0.999999:0.0000002:1; % tady už nic moc, možná už to naráží na numerické chyby?
+alphas = 0.99996;
 
 L1s = zeros(numel(alphas),length(Ks));
 L2s = zeros(numel(alphas),length(Ks));
@@ -67,9 +76,25 @@ for a = 1:numel(alphas)
 
 end
 
-regularization_plot(sprintf('Adamar K-means, k=%d', Ks), alphas,lprecision, lrecall, lf1score, laccuracy,tprecision, trecall, tf1score, taccuracy)
+% Ks plot
+if false
+    figure 
+    subplot(1,2,1)
+    hold on
+    plot(Ks, laccuracy, 'o-' , 'LineWidth', 2);
+    plot(Ks, lf1score, 'o-' , 'LineWidth', 2);
+    hold off
+    subplot(1,2,2)
+    hold on
+    plot(Ks, tf1score, 'o-' , 'LineWidth', 2);
+    plot(Ks, taccuracy, 'o-' , 'LineWidth', 2);
+    hold off
+    legend('F1-score', 'Accuracy', 'Location','southeast')
+end
 
 plot_L_curves(Ls, L1s, L2s, Ks, alphas);
+
+%regularization_plot(sprintf('Adamar K-means, k=%d', Ks), alphas,lprecision, lrecall, lf1score, laccuracy,tprecision, trecall, tf1score, taccuracy)
 
 fprintf("\nProgram finished successfully.\n");
 

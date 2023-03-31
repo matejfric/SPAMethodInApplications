@@ -8,26 +8,25 @@ rng(42);
 DATASET = 'DatasetSelection'; % 'Dataset', 'Dataset2', 'Dataset256', 'DatasetSelection'
 VISUALIZE = false;
 
-[X, ca_Y] = get_train_test_data(DATASET);
+[X, ca_Y] = get_train_test_data(DATASET, 0.2);
 
 %[X, ca_Y] = correlation_analysis(X, ca_Y); % Removal of strongly correlated columns
 
 PiY = [X(:,end), 1-X(:,end)]';
 X = X(:,1:end-1);
 
-%[X, ca_Y] = scaling(X, ca_Y, 'minmax');
-[X, ca_Y] = scaling(X, ca_Y, 'zscore', 'robust');
+[X, ca_Y] = scaling(X, ca_Y, 'minmax');
+%[X, ca_Y] = scaling(X, ca_Y, 'zscore', 'robust');
+
 %Standardizing is usually done when the variables on which the PCA is performed are not measured on the same scale. Note that standardizing implies assigning equal importance to all variables.
 [X, ca_Y] = mypca(X, ca_Y);
 
-fprintf("How balanced are the labels? Ones: %.2f, Zeros: %.2f\n",...
-    sum(X(:,end)), size(X(:,end), 1)-sum(X(:,end)));
+fprintf("How balanced are the labels? Ones: %.2f, Zeros: %.2f\n ", sum(PiY(1,:)), sum(PiY(2,:)));
 
 %ADAMAR
-%alphas = [1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 0.5, 1-1e-1, 1-1e-2, 1-1e-3];
-%alphas = 0.001:0.0003:0.002;
-alphas = 0:0.25:1;
-alphas = [0.25, 0.75];
+%alphas = 0:0.25:1;
+%alphas = [0.25, 0.75];
+alphas = 0.99996;
 Ks = 25; % Number of clusters
 maxIters = 25;
 nrand = 3;

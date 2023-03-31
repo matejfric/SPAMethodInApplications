@@ -2,6 +2,7 @@ clear all
 %close all
 addpath(genpath(pwd));
 rng(13);
+tic;
 
 T = 1000;
 [X_true,Y_true,C_true,Gamma_true,Lambda_true] = generate_synthetic_problem0(T);
@@ -23,11 +24,11 @@ for i=1:nwrong
   Y([idx1 idx2],rperm(i)) = Y([idx2 idx1],rperm(i)); % swap rows (labels)
 end
 
-maxIters = 30;
-nrand = 5;
+maxIters = 50;
+nrand = 3;
 Ks = size(C_true,2);
 
-alphas = 0:0.05:1;
+alphas = 0:0.1:1;
 %alphas = 0.05:0.05:0.95;
 
 Ls = cell(3,1);
@@ -47,7 +48,7 @@ for idx_alpha=1:length(alphas)
             
             [C1, Gamma1, PiX1, Lambda1, it1, stats1, L_out1] = adamar_kmeans(X', Y, K, alpha, maxIters, nrand);
             [C2, Gamma2, PiX2, Lambda2, it2, stats2, L_out2] = adamar_fmincon(X', Y, K, alpha, maxIters, nrand);
-            %[C3, Gamma3, PiX3, Lambda3, it3, stats3, L_out3] = adamar_spa(X', Y, K, alpha, maxIters, nrand);
+            [C3, Gamma3, PiX3, Lambda3, it3, stats3, L_out3] = adamar_spa(X', Y, K, alpha, maxIters, nrand);
 
             Ls{1}(idx_alpha,idx_K)  = L_out1.L;
             L1s{1}(idx_alpha,idx_K) = L_out1.L1;
@@ -57,9 +58,9 @@ for idx_alpha=1:length(alphas)
             L1s{2}(idx_alpha,idx_K) = L_out2.L1;
             L2s{2}(idx_alpha,idx_K) = L_out2.L2;
 
-            %Ls{3}(idx_alpha,idx_K)  = L_out3.L;
-            %L1s{3}(idx_alpha,idx_K) = L_out3.L1;
-            %L2s{3}(idx_alpha,idx_K) = L_out3.L2;
+            Ls{3}(idx_alpha,idx_K)  = L_out3.L;
+            L1s{3}(idx_alpha,idx_K) = L_out3.L1;
+            L2s{3}(idx_alpha,idx_K) = L_out3.L2;
         end
 end
 
@@ -105,6 +106,8 @@ for idx_K=1:length(Ks)
     hold off
 end
 
+toc
+
 function [X,Y,C_true,Gamma_true,Lambda_true] = generate_synthetic_problem0(T)
 %GENERATE_PROBLEM
 
@@ -125,3 +128,4 @@ Y = Lambda_true*Gamma_true; % PiY
 X = C_true*Gamma_true;
            
 end
+

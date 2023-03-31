@@ -1,8 +1,10 @@
-function [X, ca_Y] = get_train_test_data(DATASET, descriptors, testing_images, color, probabilities)
+function [X, ca_Y] = get_train_test_data(...
+    DATASET, train_size, descriptors, testing_images, color, probabilities)
 %GET_TRAIN_TEST_DATA 
 
 arguments
     DATASET {string};
+    train_size = 0.8;
     descriptors = [Descriptor.Roughness Descriptor.Color ];
     testing_images = [68, 137, 143];
     color = true;
@@ -15,7 +17,7 @@ if strcmp(DATASET, 'Dataset2')
     ca = matrix2ca('Dataset2/DescriptorsProbability/');
     %ca = matrix2ca('Dataset2/DescriptorsProbabilityColorGLCMGLRL/');
     n = numel(ca);
-    n_train = floor(n * 0.75); % Training set size
+    n_train = floor(n * train_size); % Training set size
     n_train = 10;
     X = cell2mat({cell2mat(ca(1:n_train)).X}');
     %ca_Y = ca(1:n_train); % test on training data
@@ -23,14 +25,15 @@ if strcmp(DATASET, 'Dataset2')
     ca_Y = ca(n_train+1:n_train+5); % test on testing data
     
 elseif strcmp(DATASET, 'Dataset256')
-    ca = matrix2ca('Dataset/Descriptors256/'); % probability
+    %ca = matrix2ca('Dataset/Descriptors256/'); % probability
     %ca = matrix2ca('Dataset/Descriptors256_new_color/'); % probability
     %ca = matrix2ca('Dataset/SmallImagesDescriptors/');
-    %ca = matrix2ca('Dataset/Descriptors256_binary/'); %binary
+    ca = matrix2ca('Dataset/Descriptors256_binary/'); %binary
     n = numel(ca);
-    %n_train = floor(n * 0.75); % Training set size
-    n_train = 1;
+    n_train = floor(n * train_size); % Training set size
+    %n_train = 1;
     X = cell2mat({cell2mat(ca(1:n_train)).X}');
+    X = under_sample(X);
     %ca_Y = ca(1:n_train); % test on training data
     %ca_Y = ca(n_train+1:n); % test on testing data
     ca_Y = ca(n_train+1:n_train+5); % test on testing data
@@ -48,7 +51,7 @@ elseif strcmp(DATASET, 'DatasetSelection')
     idxs = cellfun(@(x) x.I, gt_ca, 'UniformOutput', false);
     
     % Descriptor(s)
-    str_descriptor = 'StatMomHSV34'; % StatMomHSV, StatMomHSV34, StatMomRGB, GLCM_HSV, GLCM_RGB, GLRLM, GLCMGray1, GLCMGray7
+    str_descriptor = 'StatMomHSV'; % StatMomHSV, StatMomHSV34, StatMomRGB, GLCM_HSV, GLCM_RGB, GLRLM, GLCMGray1, GLCMGray7
     desc1 = descriptor2ca(sprintf('DatasetSelection/%s/%s/', patch_size, str_descriptor));
     desc1 = cellfun(@(x) x.X, desc1, 'UniformOutput', false);
 %     str_descriptor = 'GLCM_HSV';
@@ -73,11 +76,14 @@ elseif strcmp(DATASET, 'DatasetSelection')
     
     % Train-Test Split
     n = numel(ca);
-    n_train = floor(n * 0.7); % Training set size
+    n_train = floor(n * train_size); % Training set size
     X = cell2mat({cell2mat(ca(1:n_train)).X}');
+    
+    %X = under_sample(X);
+    
     %ca_Y = ca(1:n_train); % test on training data
     ca_Y = ca(n_train+1:n); % test on testing data
-    %ca_Y = ca(n_train+1:n_train+10); % test on testing data
+    %ca_Y = ca(n_train+1:n_train+5); % test on testing data
     
 else
     X = get_descriptors(load_images(), descriptors, color, probabilities);
@@ -93,6 +99,20 @@ else
     end
 end
 
+end
+
+function X_ = under_sample(X)
+    n_ones = sum(X(:,end));
+    
+    X_ = zeros(2*n_ones,size(X,2));
+    for i = 0:1
+        G = X(X(:,end)==i,:) ; % Group data
+        idx = randperm(size(G,1),n_ones) ;
+        X_(i*n_ones+1:(i+1)*n_ones,:) = G(idx, :);
+    end
+    
+    rperm = randperm(size(X_,1),size(X_,1));
+    X_ = X_(rperm, :);
 end
 
 function ca = descriptor2ca(folder)

@@ -11,10 +11,10 @@ end
 [coeff,scoreTrain,~,~,explained,mu] = pca(XTrain);
 
 % Plot
-plot_pca(coeff, scoreTrain, explained, ground_truth);
+%plot_pca(coeff, scoreTrain, explained, ground_truth);
 
 % Find the number of components required to explain at least 95% variability.
-idx = find(cumsum(explained)>95,1);
+idx = find(cumsum(explained)>95,1); % hyperparameter
 XTrain95 = scoreTrain(:,1:idx);
 
 n = numel(ca_XYTest);
@@ -69,13 +69,15 @@ end
 legend(hPt(unqIdx))
 
 % Visualization of the first 3 principal components
-subplot(1,3,2)
-%figure
-scatter3(scoreTrain(:,1),scoreTrain(:,2),scoreTrain(:,3),'+')
-axis equal
-xlabel('1st Principal Component')
-ylabel('2nd Principal Component')
-zlabel('3rd Principal Component')  
+if false
+    subplot(1,3,2)
+    %figure
+    scatter3(scoreTrain(:,1),scoreTrain(:,2),scoreTrain(:,3),'+')
+    axis equal
+    xlabel('1st Principal Component')
+    ylabel('2nd Principal Component')
+    zlabel('3rd Principal Component')  
+end
 
 % Scree Plot
 subplot(1,3,3)
