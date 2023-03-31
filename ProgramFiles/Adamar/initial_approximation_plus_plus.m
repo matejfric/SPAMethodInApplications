@@ -1,8 +1,8 @@
 function [Lambda0, Gamma, C] = initial_approximation_plus_plus(X, K, PiY)
 %INITIAL_APPROXIMATION 
 
-C = kmeans_plus_plus(X',K);
-%C = randn(size(X,2),K);
+C = get_kmeans_pp_centroids(X',K); % fix: works correctly, but slowly
+%C = kmeans_plus_plus(X',K); % may not be correct
 
 [rows,n] = size(X);
 
@@ -15,7 +15,7 @@ C = kmeans_plus_plus(X',K);
 Gamma = zeros(K, rows);
 idx = randi(K,rows,1);
 for k = 1:K
-    Gamma(k,idx == k) = 1; % random Gamma
+    Gamma(k,idx == k) = 1; % random binary Gamma
 end
 
 Lambda0 = lambda_solver_jensen(Gamma, PiY);

@@ -30,8 +30,33 @@ function [C] = kmeans_plus_plus(X, K)
             if D(end) == 0, C(:,i:K) = X(:,ones(1,K-i+1)); return; end
             C(:,i) = X(:,find(rand < D/D(end),1));
             [~,L] = max(bsxfun(@minus,2*real(C'*X),dot(C,C,1).'));
+            %plot_initialization(X, C(:,1:i));
         end
         
     end
 end
 
+function [] = plot_initialization(X, C)
+%PLOT_INITIALIZATION Plot initial centroids for the k-means algorithm
+% X ... D, T
+% C ... D, K
+
+figure
+hold on
+xlabel('X','FontSize', 14);
+ylabel('Y','FontSize', 14);
+title('K-means initialization','FontSize', 14);
+grid on
+grid minor
+
+K = size(C,2);
+
+% Draw clusters
+for i = 1:K
+        scatter(X(1,:), X(2,:), 25)
+end
+
+% Draw centroids
+scatter(C(1,:),C(2,:),50 ,'MarkerEdgeColor','k','MarkerFaceColor','r')
+
+end
