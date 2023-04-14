@@ -12,7 +12,7 @@ spgoptions.alpha_min = 1e-6;
 spgoptions.alpha_max = 1e6;
 
 it_in = 0;
-for t = progress(1:T)
+for t = 1:T
     
     gamma0 = Gamma(:,t);
 

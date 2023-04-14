@@ -45,7 +45,7 @@ for nrand = 1:Nrand
     end
 end
 
-mdl = struct('C', C,...
+mdl = struct('C', S',...
     'Gamma', Gamma,...
     'Pi', PiX',...
     'Lambda', Lambda,...
@@ -81,11 +81,11 @@ while it < maxIters % practical stopping criteria after computing new L (see "br
     
 %    Gamma0 = Gamma;
  %   tic
-%    [Gamma,~] = spa_compute_Gamma(S,Gamma0,Lambda,X,alpha,PiY);
+    [Gamma,~] = spa_compute_Gamma(S,Gamma0,Lambda,X,alpha,PiY);
  %   time1 = toc
 
  %   tic
-    [Gamma,~] = spa_compute_Gamma_vec(S,Gamma0,Lambda,X,alpha,PiY);
+    %[Gamma,~] = spa_compute_Gamma_vec(S,Gamma0,Lambda,X,alpha,PiY);
  %   time2 = toc
     
 %    keyboard
