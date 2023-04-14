@@ -5,7 +5,7 @@ function [X, features] = lbp_analysis(ca_dataset)
 
 [images, ~] = size(ca_dataset);
 
-X = zeros(1e5, 16); %TODO
+X = zeros(1e5, 6); %TODO
 
 row = 1;
 
@@ -17,32 +17,20 @@ for img = 1:images
     for i=1:rows
         for j=1:cols
             mypatch = ca_patches{i,j};
-            nFiltSize=8;
-            nFiltRadius=1;
-            filtR=generateRadialFilterLBP(nFiltSize, nFiltRadius);
-            effLBP   = efficientLBP(mypatch, 'filtR', filtR, 'isRotInv', false, 'isChanWiseRot', false);
-            effRILBP = efficientLBP(mypatch, 'filtR', filtR, 'isRotInv', true,  'isChanWiseRot', false);
-            uniqueRotInvLBP=findUniqValsRILBP(nFiltSize);
-            tightValsRILBP=1:length(uniqueRotInvLBP);
-            % Use this function with caution- it is relevant only if 'isChanWiseRot' is false, or the
-            % input image is single-color/grayscale
-            effTightRILBP=tightHistImg(effRILBP, 'inMap', uniqueRotInvLBP, 'outMap', tightValsRILBP);
+            effLBP = efficientLBP(mypatch);
+            
+            [patch_hist,intensity] = compute_histogram(effLBP);
+            
+            mu = dot(patch_hist,intensity); % Mean
+            sigma = sqrt(dot((intensity - mu).^2,patch_hist)); % Standard deviation
+            delta = dot((intensity - mu).^3,patch_hist)/(sigma^3); % Skewness
+            nu = dot((intensity - mu).^4,patch_hist)/(sigma^4); % Kurtosis
+            rho = -dot(patch_hist(patch_hist > 0),log(patch_hist(patch_hist > 0)))/log(2); % Entropy
+            % Notice that: lim_{x->0+}(x*log(x)) = |l.H.| = 0 
+            myrange = max(max(mypatch)) - min(min(mypatch)); % Range
 
-            binsRange=(1:2^nFiltSize)-1;
-%             binsRange = 0:16:255;
-%             x=hist(single( effLBP(:) ), binsRange);
-%             y=hist(single( effRILBP(:) ), binsRange);
-            %h=hist(single( effTightRILBP(:) ), tightValsRILBP);
-            
-            h = histcounts(effRILBP,16,'Normalization', 'probability');
-            
-%             nbins = 16;
-%             [xx] = histcounts(effLBP(:),nbins);
-%             [yy] = histcounts(effRILBP(:),nbins);
-%             [zz] = histcounts(effTightRILBP(:),nbins);
-            
-            % Patch color descriptor
-            X(row,1:length(h)) = h;
+            % Patch descriptor for channel 'c'
+            X(row,:) = [mu, sigma, delta, nu, rho, myrange];
             
             row = row + 1;
         end
@@ -50,8 +38,7 @@ for img = 1:images
 end
 
 X = X(1:row-1, :); % Crop to non-null rows.
-
-X(isnan(X))=0; % NaN => 0
+X(isnan(X)) = 0;
 
 end
 

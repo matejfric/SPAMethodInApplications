@@ -14,7 +14,7 @@ row = 1;
 for img = 1:images
     
     I = im2double(im2gray(ca_dataset{img, 2}));
-    [ca_annotatations, ~] = patchify(I);
+    [ca_annotatations, ~] = patchify(I,16,false);
     [rows, cols] = size(ca_annotatations);
     
 %     [ca_annotatations, ~] = patchify(ca_dataset{img, 2});

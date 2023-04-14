@@ -1,7 +1,7 @@
-function [X, features] = color_analysis_hsv(ca_dataset)
-%COLOR_ANALYSIS Extract color features per patch 
+function [X, features] = lbp_analysis_rgb(ca_dataset)
+%COLOR_ANALYSIS Extract LBP features per patch 
 
-%fprintf("Performing color analysis...\n");
+%fprintf("Performing LBP analysis...\n");
 
 [images, ~] = size(ca_dataset);
 
@@ -12,7 +12,7 @@ X = zeros(1e5, features);
 row = 1;
 
 for img = 1:images
-    I = im2double(rgb2hsv(ca_dataset{img, 1})); % HSV
+    I = im2double(ca_dataset{img, 1});
     
     % Patches for each color channel
     ca_patches = cell(1, nchannels);
@@ -27,8 +27,10 @@ for img = 1:images
             Xc = cell(1,nchannels);
             for c=1:nchannels
                 mypatch = ca_patches{c}{i,j};
-                [patch_hist,intensity] = compute_histogram(mypatch);
-                
+                effLBP = efficientLBP(mypatch);
+
+                [patch_hist,intensity] = compute_histogram(effLBP);
+
                 mu = dot(patch_hist,intensity); % Mean
                 sigma = sqrt(dot((intensity - mu).^2,patch_hist)); % Standard deviation
                 delta = dot((intensity - mu).^3,patch_hist)/(sigma^3); % Skewness
@@ -40,7 +42,7 @@ for img = 1:images
                 % Patch descriptor for channel 'c'
                 Xc{c} = [mu, sigma, delta, nu, rho, myrange];
             end
-            
+
             % Patch color descriptor
             X(row,1:features) = cell2mat(Xc(1:nchannels));
             
@@ -50,8 +52,7 @@ for img = 1:images
 end
 
 X = X(1:row-1, :); % Crop to non-null rows.
-
-X(isnan(X))=0; % NaN => 0
+X(isnan(X)) = 0;
 
 end
 
@@ -61,5 +62,3 @@ function [myhist,intensity] = compute_histogram(mypatch)
     myhist = N/sum(N);
     intensity = 0.5 * (edges(1:end-1) + edges(2:end));
 end
-
-

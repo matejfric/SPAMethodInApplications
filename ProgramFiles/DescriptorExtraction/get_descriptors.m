@@ -64,6 +64,18 @@ else
     X_LBP = [];    
 end
 
+if ismember(Descriptor.LBP_HSV, descriptors)
+    X_LBP_HSV = lbp_analysis_hsv(ca);
+else
+    X_LBP_HSV = [];    
+end
+
+if ismember(Descriptor.LBP_RGB, descriptors)
+    X_LBP_RGB = lbp_analysis_rgb(ca);
+else
+    X_LBP_RGB = [];    
+end
+
 % Ground truth
 if ismember(Descriptor.GroundTruth, descriptors)
     X_True = get_ground_truth(ca, probability);
@@ -73,7 +85,7 @@ end
 
 % Matrix of descriptors
 X = [X_GLCM_Gray, X_GLCM_RGB, X_GLCM_HSV, X_GLRLM,...
-     X_SM_RGB, X_SM_HSV, X_LBP, X_True];
+     X_SM_RGB, X_SM_HSV, X_LBP, X_LBP_RGB, X_LBP_HSV X_True];
 
 end
 

@@ -3,7 +3,6 @@ classdef Descriptor
    enumeration
       Color, StatMomRGB, StatMomHSV,
       Roughness, GLCM_Gray, GLCM_RGB, GLCM_HSV,
-      GLRLM, GroundTruth, LBP,
+      GLRLM, GroundTruth, LBP, LBP_RGB, LBP_HSV
    end
 end
-
