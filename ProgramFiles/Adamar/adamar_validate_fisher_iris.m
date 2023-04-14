@@ -1,5 +1,5 @@
 function [stats] = adamar_validate_fisher_iris(Lambda, C, Y, PiY_true, classes)
-%ADAMAR_PREDICT Make a prediction based on ADAMAR model
+%ADAMAR_PREDICT
 %   Lambda...transion matrix
 %   C........centroids
 %   K........number of clusters

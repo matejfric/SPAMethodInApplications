@@ -17,8 +17,8 @@ L.L = Inf;
 for nrand = 1:Nrand
     disp(['- annealing run #' num2str(nrand)])
     
-    %[Lambda0, Gamma0, C0] = initial_approximation_plus_plus(X, K, PiY);
-    [Lambda0, Gamma0, C0] = initial_approximation(X, K, PiY);
+    [Lambda0, Gamma0, C0] = initial_approximation_plus_plus(X, K, PiY);
+    %[Lambda0, Gamma0, C0] = initial_approximation(X, K, PiY);
     %[Lambda0, Gamma0, C0] = initial_approximation2(X, K, PiY);
     %[Lambda0, Gamma0, C0] = initial_approximation3(X, K, PiY);
     C0=C0';

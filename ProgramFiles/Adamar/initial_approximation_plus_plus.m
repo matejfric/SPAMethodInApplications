@@ -1,7 +1,7 @@
 function [Lambda0, Gamma, C] = initial_approximation_plus_plus(X, K, PiY)
 %INITIAL_APPROXIMATION 
 
-C = get_kmeans_pp_centroids(X',K); % fix: works correctly, but slowly
+C = get_kmeans_pp_centroids(X',K); % fix: works correctly, but slowly (loops)
 %C = kmeans_plus_plus(X',K); % may not be correct
 
 [rows,n] = size(X);

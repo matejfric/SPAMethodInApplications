@@ -1,7 +1,14 @@
 function [stats] = statistics(labels, ground_truth)
 %STATISTICS Summary of this function goes here
 
-[TPR,FPR,T,AUC] = perfcurve(ground_truth,labels,1);
+try
+    [TPR,FPR,T,AUC] = perfcurve(ground_truth,labels,1);
+catch ME
+    % HOTFIX
+    warning("%s\n%s\n", ME.identifier, ME.message);
+    stats = struct('fp', 0, 'fn', 0, 'precision', 0, 'recall', 0, 'f1score', 0, 'accuracy', 0, 'mae', 0, 'mse', 0, 'auc', 0);
+    return
+end 
 
 if isnumeric(labels) 
     labels = round(labels); 

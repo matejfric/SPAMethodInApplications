@@ -18,7 +18,12 @@ rng(42);
 
 display = false;
 dataset = 'DatasetSelection'; % 'Dataset', 'Dataset2', 'Dataset256', 'DatasetSelection'
-[X, ca_Y] = get_train_test_data(dataset);
+
+%[X, ca_Y] = get_train_test_data(dataset);
+
+descriptors = ["LBP" "LBP_HSV" "LBP_RGB" "StatMomHSV" "StatMomRGB" "GLCM_HSV" "GLCM_RGB", "GLRLM"];
+[X, ca_Y] = get_data_from_dataset_selection(...
+    0.5, 'GroundTruthBinaryCropped', descriptors);
 
 % Removal of strongly correlated columns
 %[X, ca_Y] = correlation_analysis(X, ca_Y);
@@ -32,7 +37,8 @@ X = X(:,1:end-1);
 %[X, ca_Y] = scaling(X, ca_Y, 'zscore', 'robust');
 
 % PCA
-[X, ca_Y, explained] = mypca(X, ca_Y, onehotdecode(PiY',[1,2],2));
+%[X, ca_Y, PCA] = mypca(X, ca_Y, onehotdecode(PiY',[1,2],2));
+[X, ca_Y, MRMR] = my_mrmr(X, PiY(1,:), ca_Y);
     
 fprintf("How balanced are the labels? Ones: %.2f, Zeros: %.2f\n ", sum(PiY(1,:)), sum(PiY(2,:)));
 

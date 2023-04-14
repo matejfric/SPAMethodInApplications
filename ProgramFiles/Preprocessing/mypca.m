@@ -1,4 +1,4 @@
-function [XTrain95, ca_XYTest, explained] = mypca(XTrain, ca_XYTest, ground_truth)
+function [XTrain95, ca_XYTest, PCA] = mypca(XTrain, ca_XYTest, ground_truth)
 %PRINCIPAL_COMPONENT_ANALYSIS
 %https://www.mathworks.com/help/stats/pca.html#:~:text=requires%20MATLAB%C2%AE%20Coder%E2%84%A2.-,Apply%20PCA,-to%20New%20Data
 %https://www.mathworks.com/matlabcentral/answers/270329-how-to-select-the-components-that-show-the-most-variance-in-pca#comment_1302615
@@ -14,8 +14,10 @@ end
 %plot_pca(coeff, scoreTrain, explained, ground_truth);
 
 % Find the number of components required to explain at least 95% variability.
-idx = find(cumsum(explained)>95,1); % hyperparameter
+idx = find(cumsum(explained)>99,1); % hyperparameter
 XTrain95 = scoreTrain(:,1:idx);
+
+PCA = struct('explained', explained, 'coeff', coeff, 'mu', mu, 'idx', idx);
 
 n = numel(ca_XYTest);
 for i = 1:n

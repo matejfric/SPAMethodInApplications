@@ -1,4 +1,5 @@
-function [X, ca_Y, method] = scaling(X, ca_Y, method, methodType)
+function [X, ca_Y, method, SCALE] = scaling(...
+    X, ca_Y, method, methodType, colmin, colmax)
 % SCALING Scale training matrix and testing dataset.
 %--------------------------------------------------------------------------
 % Results for SVM_X, training on X10 (first 10 images in 'Dataset'),
@@ -18,14 +19,16 @@ function [X, ca_Y, method] = scaling(X, ca_Y, method, methodType)
 % 'none' ~0.35
 %--------------------------------------------------------------------------
 arguments
-    X, ca_Y, method, methodType = []
+    X, ca_Y, method, methodType = [], colmin = [], colmax = []
 end
 
 if strcmp(method, 'none')
     return;
 elseif strcmp(method, 'minmax')
-    colmin = min(X); % a
-    colmax = max(X); % b
+    if isempty(colmin) || isempty(colmax)
+        colmin = min(X); % a
+        colmax = max(X); % b
+    end
     u = 1;
     l = 0;
     cols = colmax > 1; % Select columns to be scaled
@@ -51,6 +54,9 @@ else
         end
     end
 end
+
+SCALE.colmin = colmin;
+SCALE.colmax = colmax;
 
 end
 

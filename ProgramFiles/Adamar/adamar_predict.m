@@ -32,7 +32,7 @@ for i = 1:n
     stats = statistics(PiY(:,1), Y(:,end));
     if i == 1
         stats_avg = stats;
-    else
+    elseif ~isempty(stats)
         stats_avg.precision = stats.precision + stats_avg.precision;
         stats_avg.recall = stats.recall + stats_avg.recall;
         stats_avg.f1score = stats.f1score + stats_avg.f1score;
