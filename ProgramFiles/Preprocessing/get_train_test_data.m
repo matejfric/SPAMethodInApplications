@@ -43,15 +43,23 @@ elseif strcmp(DATASET, 'Segmentation')
     ca_Y = [];
     
 elseif strcmp(DATASET, 'DatasetSelection')    
-    patch_size = 'Descriptors'; % Descriptors (16), Descriptors8
-    % Ground truth
-    str_gt = 'GroundTruthBinary'; % GroundTruthBinary, GroundTruthProbability
+    %Descriptors folder:
+    % Descriptors (16), Descriptors8
+    patch_size = 'Descriptors'; 
+    
+    %Ground truth:
+    % GroundTruthBinary, GroundTruthProbability, GroundTruthBinaryCropped
+    str_gt = 'GroundTruthBinaryCropped'; 
     gt_ca = descriptor2ca(sprintf('DatasetSelection/%s/%s/',patch_size, str_gt));
     gt = cellfun(@(x) x.X, gt_ca, 'UniformOutput', false);
     idxs = cellfun(@(x) x.I, gt_ca, 'UniformOutput', false);
     
-    % Descriptor(s)
-    str_descriptor = 'StatMomHSV'; % StatMomHSV, StatMomHSV34, StatMomRGB, GLCM_HSV, GLCM_RGB, GLRLM, GLCMGray1, GLCMGray7
+    %Descriptor(s):
+    % LBP, LBP_HSV, LBP_RGB,
+    % StatMomHSV, StatMomHSV34, StatMomRGB,
+    % GLCM_HSV, GLCM_RGB, GLRLM, GLCMGray1, GLCMGray7
+    
+    str_descriptor = 'LBP_HSV'; 
     desc1 = descriptor2ca(sprintf('DatasetSelection/%s/%s/', patch_size, str_descriptor));
     desc1 = cellfun(@(x) x.X, desc1, 'UniformOutput', false);
 %     str_descriptor = 'GLCM_HSV';
@@ -79,7 +87,7 @@ elseif strcmp(DATASET, 'DatasetSelection')
     n_train = floor(n * train_size); % Training set size
     X = cell2mat({cell2mat(ca(1:n_train)).X}');
     
-    %X = under_sample(X);
+    X = under_sample(X);
     
     %ca_Y = ca(1:n_train); % test on training data
     ca_Y = ca(n_train+1:n); % test on testing data
