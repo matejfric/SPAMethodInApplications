@@ -1,4 +1,4 @@
-function [L,L1,L2] = compute_fval_adamar_kmeans(C,Gamma,Lambda,X,alpha, PiY, Tcoeff, Dcoeff)
+function [L,L1,L2] = compute_fval_adamar_kmeans(C,Gamma,Lambda,X,epsilon, PiY, Tcoeff, Dcoeff)
 %COMPUTE_FVAL Compute objective function value (ADAMAR-KMEANS)
 
 [KX,T] = size(Gamma);
@@ -10,7 +10,7 @@ end
 
 L2 = (1/Dcoeff) * -sum(sum((PiY*Gamma').*mylog(Lambda)));
 
-L = alpha*L1 + (1-alpha)*L2;
+L = L1 + epsilon^2 * L2;
 
 end
 

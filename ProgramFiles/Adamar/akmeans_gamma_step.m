@@ -1,4 +1,4 @@
-function [Gamma] = akmeans_gamma_step(X, C, K, Lambda, PiY, alpha, Tcoeff, Dcoeff)
+function [Gamma] = akmeans_gamma_step(X, C, K, Lambda, PiY, epsilon, Tcoeff, Dcoeff)
 %AKMEANS_GAMMA_STEP Compute Gamma
 
 [T,~] = size(X);
@@ -9,7 +9,7 @@ for kx = 1:K
     L1Gamma_kx = (1/Tcoeff) * sum((X - kron(ones(T,1),C(kx,:))).^2,2);
     L2Gamma_kx = (1/Dcoeff) * -Lambda_hat(:,kx)'*PiY;
 
-    expressions(:,kx) = alpha*L1Gamma_kx + (1-alpha)*L2Gamma_kx';
+    expressions(:,kx) = L1Gamma_kx + epsilon^2*L2Gamma_kx';
 end
 
 [~,id] = min(expressions,[],2);

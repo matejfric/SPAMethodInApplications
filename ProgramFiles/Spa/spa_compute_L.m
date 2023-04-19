@@ -1,4 +1,4 @@
-function [L,L1,L2] = spa_compute_L(S,Gamma,Lambda,X,alpha,PiY,Tcoeff,Dcoeff)
+function [L,L1,L2] = spa_compute_L(S,Gamma,Lambda,X,epsilon,PiY,Tcoeff,Dcoeff)
 %SPA_COMPUTE_L Compute objective function value for SPA
 
 [K,T] = size(Gamma);
@@ -16,7 +16,7 @@ for k = 1:KY
 end
 L2 = (1/Dcoeff) * L2;
 
-L = alpha*L1 + (1-alpha)*L2;
+L = L1 + epsilon^2 * L2;
 
 end
 
