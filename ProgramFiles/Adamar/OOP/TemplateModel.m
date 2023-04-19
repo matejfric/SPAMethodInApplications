@@ -10,7 +10,7 @@ classdef TemplateModel < handle
         MRMR        = []       % Minimum Redundancy Maximum Relevance algorithm
         PCA         = []       % Principal Component Analysis
         K           = 25       % Number of clusters
-        alpha       = 0.5      % Regularization parameter
+        epsilon     = 0.5      % Regularization parameter
         maxIt       = 100      % Maximum number of iterations
         Nrand       = 5        % Number of random runs
         scaleT      = true     % Scaling of L1
@@ -22,17 +22,17 @@ classdef TemplateModel < handle
     end
     
     methods
-        function obj = TemplateModel(K,alpha,maxIt,Nrand,scaleT)
+        function obj = TemplateModel(K,epsilon,maxIt,Nrand,scaleT)
             % Constructor
             arguments
                 K      = 25       % Number of clusters
-                alpha  = 0.5;     % Regularization parameter
+                epsilon  = 0.5;     % Regularization parameter
                 maxIt  = 100;     % Maximum number of iterations
                 Nrand  = 5;       % Number of random runs
                 scaleT = true;    % Scaling of L1
             end
             obj.K = K;
-            obj.alpha = alpha;
+            obj.epsilon = epsilon;
             obj.maxIt = maxIt;
             obj.Nrand = Nrand;
             obj.scaleT = scaleT;
