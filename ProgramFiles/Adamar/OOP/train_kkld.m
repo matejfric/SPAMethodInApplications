@@ -1,9 +1,9 @@
 function [mdl,L,stats] = train_kkld(...
-    X, PiY, K, alpha, maxIters, Nrand, scaleT, verbose)
+    X, PiY, K, epsilon, maxIters, Nrand, scaleT, verbose)
 %TRAIN_KKLD 
 % X        data
 % K        number of clusters
-% alpha    penalty-regularisation parameter
+% epsilon    penalty-regularisation parameter
 % C        model parameters on each cluster (centroids)
 % Gamma    probability indicator functions
 % it       number of iterations
@@ -11,14 +11,14 @@ arguments
     X (:,:) double
     PiY (:,:) double
     K {mustBeInteger}
-    alpha double
+    epsilon double
     maxIters {mustBeInteger} = 100;
     Nrand {mustBeInteger} = 5; % Number of random runs
     scaleT = true;
     verbose = false;
 end
 if verbose
-fprintf('ADAMAR, K=%d, alpha=%.2e\n', K, alpha);
+fprintf('ADAMAR, K=%d, epsilon=%.2e\n', K, epsilon);
 end
 if isempty(maxIters)
     maxIters = 1;
@@ -34,7 +34,7 @@ for nrand = 1:Nrand
     [Lambda0, Gamma0, C0] = initial_approximation_plus_plus(X, K, PiY);
     
     [C_temp, Gamma_temp, PiX_temp, Lambda_temp, it_temp, stats_temp, L_temp] =...
-        adamar_fmincon_one(X, PiY, K, alpha, maxIters, Lambda0, Gamma0, C0, verbose);
+        adamar_fmincon_one(X, PiY, K, epsilon, maxIters, Lambda0, Gamma0, C0, verbose);
     
     if L_temp.L < L.L
         C = C_temp;
@@ -56,7 +56,7 @@ mdl = struct('C', C,...
 end
 
 function [C, Gamma, PiX, Lambda, it, stats, L] = ...
-    adamar_fmincon_one(X, PiY, K, alpha, maxIters, Lambda0, Gamma0, C0, verbose)
+    adamar_fmincon_one(X, PiY, K, epsilon, maxIters, Lambda0, Gamma0, C0, verbose)
 %ADAMAR_FMINCON_ONE One run of adamar.
 
 bugfix = false;
@@ -84,12 +84,12 @@ while it < maxIters % practical stopping criteria after computing new L (see "br
         end
         if bugfix
             fprintf(' - before Gamma:    %.2f\n',...
-                compute_L2(C,Gamma,Lambda,X,alpha, PiY,T,D));
+                compute_L2(C,Gamma,Lambda,X,epsilon, PiY,T,D));
         end
     end
     Gamma0 = Gamma;
-    [Gamma,~] = compute_Gamma_vec(C,Gamma0,Lambda,X,alpha,PiY);
-    if bugfix; fprintf(' - after Gamma:     %.2f\n', compute_L2(C,Gamma,Lambda,X,alpha, PiY,T,D)); end
+    [Gamma,~] = compute_Gamma_vec(C,Gamma0,Lambda,X,epsilon,PiY);
+    if bugfix; fprintf(' - after Gamma:     %.2f\n', compute_L2(C,Gamma,Lambda,X,epsilon, PiY,T,D)); end
     
     % CENTROIDS
     if verbose
@@ -98,28 +98,28 @@ while it < maxIters % practical stopping criteria after computing new L (see "br
         end
         if bugfix
             fprintf(' - before C:        %.2f\n',...
-                compute_L2(C,Gamma,Lambda,X,alpha, PiY,T,D)); 
+                compute_L2(C,Gamma,Lambda,X,epsilon, PiY,T,D)); 
         end
     end
     C = compute_C(Gamma,X);
-    if bugfix; fprintf(' - after C:         %.2f\n', compute_L2(C,Gamma,Lambda,X,alpha, PiY,T,D)); end
+    if bugfix; fprintf(' - after C:         %.2f\n', compute_L2(C,Gamma,Lambda,X,epsilon, PiY,T,D)); end
     
     % LAMBDA
     if verbose
         if ~bugfix
             disp(' - solving Lambda problem'); 
         end
-        if bugfix; 
+        if bugfix 
             fprintf(' - before Lambda:   %.2f\n',...
-                compute_L2(C,Gamma,Lambda,X,alpha, PiY,T,D)); 
+                compute_L2(C,Gamma,Lambda,X,epsilon, PiY,T,D)); 
         end
     end
     Lambda = compute_Lambda(Gamma,Lambda,PiY,D);
-    if bugfix; fprintf(' - after Lambda:    %.2f\n', compute_L2(C,Gamma,Lambda,X,alpha, PiY,T,D)); end
+    if bugfix; fprintf(' - after Lambda:    %.2f\n', compute_L2(C,Gamma,Lambda,X,epsilon, PiY,T,D)); end
 
     % Compute objective function value
     Lold = L;
-    [L, L1, L2] = compute_L2(C,Gamma,Lambda,X,alpha,PiY,T,D);
+    [L, L1, L2] = compute_L2(C,Gamma,Lambda,X,epsilon,PiY,T,D);
     
     if verbose
         disp([' it=' num2str(it) ', L=' num2str(L)]);

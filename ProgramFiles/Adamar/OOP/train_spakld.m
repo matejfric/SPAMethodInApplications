@@ -1,8 +1,8 @@
-function [mdl, L, stats] = train_spakld(X, PiY, K, alpha, maxIters, Nrand, scaleT, verbose)
+function [mdl, L, stats] = train_spakld(X, PiY, K, epsilon, maxIters, Nrand, scaleT, verbose)
 %TRAIN_SPAKLD 
 % X        data
 % K        number of clusters
-% alpha    penalty-regularisation parameter
+% epsilon    penalty-regularisation parameter
 % S        model parameters on each cluster (centroids)
 % Gamma    probability indicator functions
 % it       number of iterations
@@ -10,14 +10,14 @@ arguments
     X (:,:) double
     PiY (:,:) double
     K {mustBeInteger}
-    alpha double
+    epsilon double
     maxIters {mustBeInteger} = 100;
     Nrand {mustBeInteger} = 5; % Number of random runs
     scaleT = true;
     verbose = false;
 end
 if verbose
-    fprintf('SPA+KLD, K=%d, alpha=%.2e\n', K, alpha);
+    fprintf('SPA+KLD, K=%d, epsilon=%.2e\n', K, epsilon);
 end
 if isempty(maxIters)
     maxIters = 1;
@@ -32,7 +32,7 @@ for nrand = 1:Nrand
     [Lambda0, Gamma0, C0] = spa_initial_approximation(X, K, PiY);
     
     [S_temp, Gamma_temp, PiX_temp, Lambda_temp, it_temp, stats_temp, L_temp] =...
-        spa_one(X, PiY, K, alpha, maxIters, Lambda0, Gamma0, C0);
+        spa_one(X, PiY, K, epsilon, maxIters, Lambda0, Gamma0, C0);
     
     if L_temp.L < L.L
         S = S_temp;
@@ -54,7 +54,7 @@ mdl = struct('C', S,...
 end
 
 function [S, Gamma, PiX, Lambda, it, stats, L] = ...
-    spa_one(X, PiY, K, alpha, maxIters, Lambda0, Gamma0, S0)
+    spa_one(X, PiY, K, epsilon, maxIters, Lambda0, Gamma0, S0)
 %SPA_FMINCON_ONE One run of adamar.
 
 bugfix = false;
@@ -77,41 +77,41 @@ while it < maxIters % practical stopping criteria after computing new L (see "br
     
     % GAMMA
 %     if ~bugfix; disp(' - solving Gamma problem'); end
-%     if bugfix; fprintf(' - before Gamma:    %.2f\n', spa_compute_L(S,Gamma,Lambda,X,alpha, PiY,T,D)); end
+%     if bugfix; fprintf(' - before Gamma:    %.2f\n', spa_compute_L(S,Gamma,Lambda,X,epsilon, PiY,T,D)); end
     
 %    Gamma0 = Gamma;
  %   tic
-    [Gamma,~] = spa_compute_Gamma(S,Gamma0,Lambda,X,alpha,PiY);
+    [Gamma,~] = spa_compute_Gamma(S,Gamma0,Lambda,X,epsilon,PiY);
  %   time1 = toc
 
  %   tic
-    %[Gamma,~] = spa_compute_Gamma_vec(S,Gamma0,Lambda,X,alpha,PiY);
+    %[Gamma,~] = spa_compute_Gamma_vec(S,Gamma0,Lambda,X,epsilon,PiY);
  %   time2 = toc
     
 %    keyboard
     
-%     if bugfix; fprintf(' - after Gamma:     %.2f\n', spa_compute_L(S,Gamma,Lambda,X,alpha, PiY,T,D)); end
+%     if bugfix; fprintf(' - after Gamma:     %.2f\n', spa_compute_L(S,Gamma,Lambda,X,epsilon, PiY,T,D)); end
     
     % C
 %     if ~bugfix; disp(' - solving S problem'); end
-%     if bugfix; fprintf(' - before S:        %.2f\n', spa_compute_L(S,Gamma,Lambda,X,alpha, PiY,T,D)); end
+%     if bugfix; fprintf(' - before S:        %.2f\n', spa_compute_L(S,Gamma,Lambda,X,epsilon, PiY,T,D)); end
     
     S = spa_compute_S(Gamma,X);
     
-%     if bugfix; fprintf(' - after S:         %.2f\n', spa_compute_L(S,Gamma,Lambda,X,alpha, PiY,T,D)); end
+%     if bugfix; fprintf(' - after S:         %.2f\n', spa_compute_L(S,Gamma,Lambda,X,epsilon, PiY,T,D)); end
     
     % LAMBDA
 %     if ~bugfix; disp(' - solving Lambda problem'); end
-%     if bugfix; fprintf(' - before Lambda:   %.2f\n', spa_compute_L(S,Gamma,Lambda,X,alpha, PiY,T,D)); end
+%     if bugfix; fprintf(' - before Lambda:   %.2f\n', spa_compute_L(S,Gamma,Lambda,X,epsilon, PiY,T,D)); end
     
     Lambda = spa_compute_Lambda(Gamma,Lambda,PiY,D);
     %Lambda = lambda_solver_jensen(Gamma, PiY);
     
-%     if bugfix; fprintf(' - after Lambda:    %.2f\n', spa_compute_L(S,Gamma,Lambda,X,alpha, PiY,T,D)); end
+%     if bugfix; fprintf(' - after Lambda:    %.2f\n', spa_compute_L(S,Gamma,Lambda,X,epsilon, PiY,T,D)); end
 
     % Compute objective function value
     Lold = L;
-    [L, L1, L2] = spa_compute_L(S,Gamma,Lambda,X,alpha,PiY,T,D);
+    [L, L1, L2] = spa_compute_L(S,Gamma,Lambda,X,epsilon,PiY,T,D);
     
 %     disp([' it=' num2str(it) ', L=' num2str(L)]);
     
