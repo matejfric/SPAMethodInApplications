@@ -14,7 +14,7 @@ end
 %plot_pca(coeff, scoreTrain, explained, ground_truth);
 
 % Find the number of components required to explain at least 95% variability.
-idx = find(cumsum(explained)>99,1); % hyperparameter
+idx = find(cumsum(explained)>95,1); % hyperparameter
 XTrain95 = scoreTrain(:,1:idx);
 
 PCA = struct('explained', explained, 'coeff', coeff, 'mu', mu, 'idx', idx);

@@ -10,6 +10,7 @@ title(sprintf('K=%d', K))
 plot( epsilons, [stats_train.f1score],'b-*');
 xlabel('$\varepsilon$','Interpreter','latex')
 ylabel('$f_1-score$','Interpreter','latex')
+set(gca, 'XScale', 'log')
 grid on;
 grid minor;
 
@@ -18,6 +19,7 @@ hold on
 plot( epsilons, [stats_test.f1score],'b-*');
 xlabel('$\varepsilon$','Interpreter','latex')
 ylabel('$f_1-score$','Interpreter','latex')
+set(gca, 'XScale', 'log')
 grid on;
 grid minor;
 hold off

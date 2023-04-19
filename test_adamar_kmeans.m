@@ -36,25 +36,17 @@ Ks = 25;
 
 maxIters = 1000;
 
-%alphas = [1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 0.5];
-%alphas = 0:0.1:1;
-%alphas = 0.9:0.01:1;
-%alphas = 0.99:0.001:1;
-%alphas = 0.999:0.0002:1;
-%alphas = 0.9999:0.00002:1; % tady se ten algoritmus chová hezky
-%alphas = 0.99999:0.000002:1; % až 83% f1-skóre na testovací mže
-%alphas = 0.999999:0.0000002:1; % tady už nic moc, možná už to naráží na numerické chyby?
-alphas = 0.99996;
+epsilons = 10.^(-6:1:6);
 
-L1s = zeros(numel(alphas),length(Ks));
-L2s = zeros(numel(alphas),length(Ks));
+L1s = zeros(numel(epsilons),length(Ks));
+L2s = zeros(numel(epsilons),length(Ks));
 
 nrand = 3; % Number of random runs (annealing)
 
-for a = 1:numel(alphas)
+for a = 1:numel(epsilons)
     for k = 1 : length(Ks)
         [C, Gamma, PiX, Lambda, it, stats_train, L_out] = ...
-            adamar_kmeans(X, PiY', Ks(k), alphas(a), maxIters, nrand);
+            adamar_kmeans(X, PiY', Ks(k), epsilons(a), maxIters, nrand);
         lprecision(a,k) = stats_train.precision;
         lrecall(a,k) = stats_train.recall;
         lf1score(a,k) = stats_train.f1score;
@@ -65,14 +57,14 @@ for a = 1:numel(alphas)
         L2s(a,k) = L_out.L2;
 
         disp("Lambda:"); disp(Lambda); % Transition matrix
-        [stats_test] = adamar_predict(Lambda, C', Ks(k), alphas(a), ca_Y, DATASET, VISUALIZE);
+        [stats_test] = adamar_predict(Lambda, C', Ks(k), epsilons(a), ca_Y, DATASET, VISUALIZE);
         tprecision(a,k) = stats_test.precision;
         trecall(a,k) = stats_test.recall;
         tf1score(a,k) = stats_test.f1score;
         taccuracy(a,k) = stats_test.accuracy;
     end
 
-    %score_plot(sprintf('Adamar k-means, K=%d, alpha=%.2e', K, alpha(a)), K, lprecision(a,:), lrecall(a,:), lf1score(a,:), laccuracy(a,:), tprecision(a,:), trecall(a,:), tf1score(a,:), taccuracy(a,:))
+    %score_plot(sprintf('Adamar k-means, K=%d, epsilon=%.2e', K, epsilon(a)), K, lprecision(a,:), lrecall(a,:), lf1score(a,:), laccuracy(a,:), tprecision(a,:), trecall(a,:), tf1score(a,:), taccuracy(a,:))
 
 end
 
@@ -92,9 +84,9 @@ if false
     legend('F1-score', 'Accuracy', 'Location','southeast')
 end
 
-plot_L_curves(Ls, L1s, L2s, Ks, alphas);
+plot_L_curves(Ls, L1s, L2s, epsilons, Ks);
 
-%regularization_plot(sprintf('Adamar K-means, k=%d', Ks), alphas,lprecision, lrecall, lf1score, laccuracy,tprecision, trecall, tf1score, taccuracy)
+%regularization_plot(sprintf('Adamar K-means, k=%d', Ks), epsilons,lprecision, lrecall, lf1score, laccuracy,tprecision, trecall, tf1score, taccuracy)
 
 fprintf("\nProgram finished successfully.\n");
 

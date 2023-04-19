@@ -17,18 +17,18 @@ descriptors = ["LBP" "LBP_HSV" "LBP_RGB" "StatMomHSV" "StatMomRGB" "GLCM_HSV" "G
 descriptorsEnum = map_descriptors(descriptors);
 
 gt = 'GroundTruthBinaryCropped';
-[X, ca_Y] = get_data_from_dataset_selection(0.1, gt, descriptors);
+[X, ca_Y] = get_data_from_dataset_selection(0.3, gt, descriptors);
 X(isnan(X)) = 0;
 y = X(:,end);
-%[X, ca_Y, ~, SCALE] = scaling(X(:,1:end-1), ca_Y, 'minmax');
-[X, ca_Y, ~, SCALE] = scaling(X(:,1:end-1), ca_Y, 'zscore', 'robust');
+[X, ca_Y, ~, SCALE] = scaling(X(:,1:end-1), ca_Y, 'minmax');
+%[X, ca_Y, ~, SCALE] = scaling(X(:,1:end-1), ca_Y, 'zscore', 'robust');
 
 % Rank features for classification using minimum redundancy maximum relevance (MRMR) algorithm
 [idx,mrmr_scores] = fscmrmr(X,y);
-% figure
-% bar(mrmr_scores(idx))
-% xlabel('Predictor rank')
-% ylabel('Predictor importance score')
+figure
+bar(mrmr_scores(idx))
+xlabel('Predictor rank')
+ylabel('Predictor importance score')
 MRMR.scores = mrmr_scores;
 MRMR.limit = 0.15;
 X = X(:, mrmr_scores > MRMR.limit);
@@ -52,25 +52,21 @@ mdl.MRMR = MRMR;
 mdl.PCA = PCA;
 mdl.SCALE = SCALE;
 mdl.descriptors = descriptorsEnum;
-%alphas = 0:0.01:1;
-%alphas = 0.999:0.0002:1;
-%alphas = [0.95, 0.99, 0.995, 0.999, 0.9995, 0.9999, 0.99995, 0.99999];
-alphas = 0.99:0.003:1;
-%alphas = 0.9997:0.00005:1;
+epsilons = 10.^(-7:1:5);
 % Ks = [5,10,15];
 %Ks = [10,20,30,40,50];
 %Ks = [25,30,35,40];
 Ks = 25;
 
-Ls  = zeros(numel(alphas),length(Ks));
-L1s = zeros(numel(alphas),length(Ks));
-L2s = zeros(numel(alphas),length(Ks));
+Ls  = zeros(numel(epsilons),length(Ks));
+L1s = zeros(numel(epsilons),length(Ks));
+L2s = zeros(numel(epsilons),length(Ks));
 
 % Training/validation
 fprintf("Training...\n");
-for a = progress(1:length(alphas))
+for a = progress(1:length(epsilons))
     for k = 1:length(Ks)
-        mdl.alpha = alphas(a);
+        mdl.epsilon = epsilons(a);
         mdl.K = Ks(k);
         mdl.fit(X_train,y_train);
         
@@ -87,27 +83,27 @@ mdl.statsTrain = stats_train;
 mdl.printStatsTrain();
 
 for k = 1:length(Ks)
-    plot_L_curves(Ls(:,k), L1s(:,k), L2s(:,k), alphas, Ks(k));
-    plot_f1score(stats_train(:,k), stats_val(:,k), alphas, Ks(k));
+    plot_L_curves(Ls(:,k), L1s(:,k), L2s(:,k), epsilons, Ks(k));
+    plot_f1score(stats_train(:,k), stats_val(:,k), epsilons, Ks(k));
 end
 
 % Grid search
 if sum([size(stats_val)] >= [2,2]) >= 2
-    [best_alpha, best_K, best_score] = grid_search(stats_val,alphas,Ks);
+    [best_epsilon, best_K, best_score] = grid_search(stats_val,epsilons,Ks);
 else
-    if length(Ks) > length(alphas)
+    if length(Ks) > length(epsilons)
         [best_score, k] = max([stats_val.f1score]);
         best_K = Ks(k);
-        best_alpha = alphas;
+        best_epsilon = epsilons;
     else
         [best_score, a] = max([stats_val.f1score]);
-        best_alpha = alphas(a);
+        best_epsilon = epsilons(a);
         best_K = Ks;
     end
 end
 
 % Test
-mdl.alpha = best_alpha;
+mdl.epsilon = best_epsilon;
 mdl.K = best_K;
 mdl.fit(X_train,y_train);
 y_pred = mdl.predict(X_test');

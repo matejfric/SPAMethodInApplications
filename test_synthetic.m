@@ -26,46 +26,45 @@ for i=1:nwrong
 end
 
 maxIters = 50;
-nrand = 4;
+nrand = 10;
 Ks = size(C_true,2);
 
-alphas = 0:0.05:1;
-%alphas = 0.5;
+epsilons = 10.^(-6:1:6);
 
 Ls = cell(3,1);
 L1s = cell(3,1);
 L2s = cell(3,1);
 for i=1:3
-    Ls{i}  = zeros(numel(alphas),length(Ks));
-    L1s{i} = zeros(numel(alphas),length(Ks));
-    L2s{i} = zeros(numel(alphas),length(Ks));
+    Ls{i}  = zeros(numel(epsilons),length(Ks));
+    L1s{i} = zeros(numel(epsilons),length(Ks));
+    L2s{i} = zeros(numel(epsilons),length(Ks));
 end
 
-for idx_alpha=1:length(alphas)
-    alpha = alphas(idx_alpha);
+for idx_epsilon=1:length(epsilons)
+    epsilon = epsilons(idx_epsilon);
     
     for idx_K=1:length(Ks)
         K = Ks(idx_K);
 
-        [C1, Gamma1, PiX1, Lambda1, it1, stats1, L_out1] = adamar_kmeans(X', Pi, K, alpha, maxIters, nrand);
-        [C2, Gamma2, PiX2, Lambda2, it2, stats2, L_out2] = adamar_fmincon(X', Pi, K, alpha, maxIters, nrand);
-%         [C3, Gamma3, PiX3, Lambda3, it3, stats3, L_out3] = adamar_spa(X', Y, K, alpha, maxIters, nrand);
+        [C1, Gamma1, PiX1, Lambda1, it1, stats1, L_out1] = adamar_kmeans(X', Pi, K, epsilon, maxIters, nrand);
+        [C2, Gamma2, PiX2, Lambda2, it2, stats2, L_out2] = adamar_fmincon(X', Pi, K, epsilon, maxIters, nrand);
+%         [C3, Gamma3, PiX3, Lambda3, it3, stats3, L_out3] = adamar_spa(X', Y, K, epsilon, maxIters, nrand);
 
-        Ls{1}(idx_alpha,idx_K)  = L_out1.L;
-        L1s{1}(idx_alpha,idx_K) = L_out1.L1;
-        L2s{1}(idx_alpha,idx_K) = L_out1.L2;
+        Ls{1}(idx_epsilon,idx_K)  = L_out1.L;
+        L1s{1}(idx_epsilon,idx_K) = L_out1.L1;
+        L2s{1}(idx_epsilon,idx_K) = L_out1.L2;
 
-        Ls{2}(idx_alpha,idx_K)  = L_out2.L;
-        L1s{2}(idx_alpha,idx_K) = L_out2.L1;
-        L2s{2}(idx_alpha,idx_K) = L_out2.L2;
+        Ls{2}(idx_epsilon,idx_K)  = L_out2.L;
+        L1s{2}(idx_epsilon,idx_K) = L_out2.L1;
+        L2s{2}(idx_epsilon,idx_K) = L_out2.L2;
 
-%         Ls{3}(idx_alpha,idx_K)  = L_out3.L;
-%         L1s{3}(idx_alpha,idx_K) = L_out3.L1;
-%         L2s{3}(idx_alpha,idx_K) = L_out3.L2;
+%         Ls{3}(idx_epsilon,idx_K)  = L_out3.L;
+%         L1s{3}(idx_epsilon,idx_K) = L_out3.L1;
+%         L2s{3}(idx_epsilon,idx_K) = L_out3.L2;
     end
     
 %     clc % clear command window
-    fprintf('Finished iteration for alpha=%.2f', alpha);
+    fprintf('Finished iteration for epsilon=%.2f', epsilon);
 %     pause(1)
 end
 
@@ -93,6 +92,8 @@ for idx_K=1:length(Ks)
     xlabel('$L_1$','Interpreter','latex','FontSize', label_fs)
     ylabel('$L_2$','Interpreter','latex','FontSize', label_fs)
     legend('jensen','spg','spa','FontSize', legend_fs)
+    set(gca, 'XScale', 'log')
+    set(gca, 'YScale', 'log')
     hold off
     grid on
     grid minor
@@ -110,32 +111,35 @@ for idx_K=1:length(Ks)
     hold on
     grid on
     grid minor
-    plot(alphas,Ls{1}(:, idx_K),jensen_linestyle(:), 'LineWidth', lw)
-    plot(alphas,Ls{2}(:, idx_K),spg_linestyle(:), 'LineWidth', lw)
-    plot(alphas,Ls{3}(:, idx_K),spa_linestyle(:), 'LineWidth', lw)
-    xlabel('$\alpha$','Interpreter','latex','FontSize', label_fs)
+    plot(epsilons,Ls{1}(:, idx_K),jensen_linestyle(:), 'LineWidth', lw)
+    plot(epsilons,Ls{2}(:, idx_K),spg_linestyle(:), 'LineWidth', lw)
+    plot(epsilons,Ls{3}(:, idx_K),spa_linestyle(:), 'LineWidth', lw)
+    xlabel('$\epsilon$','Interpreter','latex','FontSize', label_fs)
     ylabel('$L$','Interpreter','latex','FontSize', label_fs)
+    set(gca, 'XScale', 'log')
     legend('jensen','spg','spa','FontSize', legend_fs)
     
     subplot(1,3,2)
     hold on
     grid on
     grid minor
-    plot(alphas,L1s{1}(:, idx_K),jensen_linestyle(:), 'LineWidth', lw)
-    plot(alphas,L1s{2}(:, idx_K),spg_linestyle(:), 'LineWidth', lw)
-    plot(alphas,L1s{3}(:, idx_K),spa_linestyle(:), 'LineWidth', lw)
-    xlabel('$\alpha$','Interpreter','latex','FontSize', label_fs)
+    plot(epsilons,L1s{1}(:, idx_K),jensen_linestyle(:), 'LineWidth', lw)
+    plot(epsilons,L1s{2}(:, idx_K),spg_linestyle(:), 'LineWidth', lw)
+    plot(epsilons,L1s{3}(:, idx_K),spa_linestyle(:), 'LineWidth', lw)
+    xlabel('$\epsilon$','Interpreter','latex','FontSize', label_fs)
     ylabel('$L_1$','Interpreter','latex','FontSize', label_fs)
+    set(gca, 'XScale', 'log')
     
     subplot(1,3,3)
     hold on
     grid on
     grid minor
-    plot(alphas,L2s{1}(:, idx_K),jensen_linestyle(:), 'LineWidth', lw)
-    plot(alphas,L2s{2}(:, idx_K),spg_linestyle(:), 'LineWidth', lw)
-    plot(alphas,L2s{3}(:, idx_K),spa_linestyle(:), 'LineWidth', lw)
-    xlabel('$\alpha$','Interpreter','latex','FontSize', label_fs)
+    plot(epsilons,L2s{1}(:, idx_K),jensen_linestyle(:), 'LineWidth', lw)
+    plot(epsilons,L2s{2}(:, idx_K),spg_linestyle(:), 'LineWidth', lw)
+    plot(epsilons,L2s{3}(:, idx_K),spa_linestyle(:), 'LineWidth', lw)
+    xlabel('$\epsilon$','Interpreter','latex','FontSize', label_fs)
     ylabel('$L_2$','Interpreter','latex','FontSize', label_fs)
+    set(gca, 'XScale', 'log')
     hold off
 end
 
