@@ -1,14 +1,18 @@
-function [PiY] = myonehotencode(labels,featureDim)
-%MYONEHOTENCODE Summary of this function goes here
-%   Detailed explanation goes here
+function [Pi,classes] = myonehotencode(labels)
+%MYONEHOTENCODE
+arguments
+    labels (:,1) double       
+end
+%OUT: Pi (:,:) double   ... M x T matrix
+%     classes           ... unique classification classes
 
-categ = unique(labels);
+classes = unique(labels,'stable'); % do not sort
 T = length(labels);
-M = length(categ);
-PiY = zeros(T,M);
+M = length(classes);
+Pi = zeros(M,T);
 
 for m=1:M
-    PiY(labels == categ(m),m) = 1;
+    Pi(m, labels == classes(m)) = 1;
 end
 
 

@@ -8,7 +8,11 @@ y_pred = mdlKNN.predict(X_test);
 statsKNN = statistics(y_pred, y_test);
 
 %SVM
-mdlSVM = fitcsvm(X_train, y_train);
+if sum(unique(y_train))<=2
+    mdlSVM = fitcsvm(X_train, y_train);
+else
+    mdlSVM = fitcecoc(X_train, y_train);
+end
 y_pred = mdlSVM.predict(X_test);
 statsSVM = statistics(y_pred, y_test);
 

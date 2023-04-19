@@ -11,9 +11,7 @@ catch ME
 end 
 
 if isnumeric(labels) 
-    labels = round(labels); 
-%     labels(labels<=0.35) = 0; 
-%     labels(labels>0.35) = 1; 
+    labels = round(labels);
 end
 if isnumeric(ground_truth) 
     ground_truth = round(ground_truth); 

@@ -38,14 +38,13 @@ classdef TemplateModel < handle
             obj.scaleT = scaleT;
         end
         
-        function y_pred = predict(obj, X_new)
+        function [y_pred, labels_pred] = predict(obj, X_new)
             % Use the trained model to predict the class labels of new data
-            [y_pred] = predict_bayes(obj.mdl, X_new);
+            [y_pred, labels_pred] = predict_bayes(obj.mdl, X_new);
         end
         
-        function stats = computeStats(~, y_pred, y_test)
-            classes = categories(categorical(y_test));
-            if numel(classes) > 2
+        function stats = computeStats(obj, y_pred, y_test)
+            if numel(obj.mdl.classes) > 2
                 stats = statistics_multiclass(y_pred, y_test);
             else
                 stats = statistics(y_pred, y_test);

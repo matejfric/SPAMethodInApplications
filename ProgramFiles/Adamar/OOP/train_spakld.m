@@ -45,7 +45,7 @@ for nrand = 1:Nrand
     end
 end
 
-mdl = struct('C', S',...
+mdl = struct('C', S,...
     'Gamma', Gamma,...
     'Pi', PiX',...
     'Lambda', Lambda,...
@@ -129,8 +129,8 @@ while it < maxIters % practical stopping criteria after computing new L (see "br
     
     % PiX = round(Lambda*Gamma)'; % round => binary matrix
     Gamma_rec = compute_Gamma_kmeans(S,X); % Reconstruction of Gamma
-    PiX = round(Lambda*Gamma_rec)';
-    [stats] = compute_stats(PiY, PiX);
+    PiX = Lambda*Gamma_rec;
+    [stats] = compute_training_stats(PiY, PiX);
 %     fprintf('F1-Score: %.2f\n', stats.f1score)
     
 end
@@ -139,29 +139,6 @@ Ls.L = L;
 Ls.L1 = L1;
 Ls.L2 = L2;
 L = Ls;
-
-end
-
-function [stats] = compute_stats(PiY, PiX)
-
-if size(PiY, 1) > 2 % multi-class classification
-    c = size(PiY, 1); % number of classes
-    PiX = round(PiX');
-    R = PiX(:, sum(PiX,1)==0 | sum(PiX,1) > 1);
-    r = randi([1 c],1,size(R,2));
-    PiX(:, sum(PiX,1)==0 | sum(PiX,1) > 1) = bsxfun(@eq, r(:), 1:c)';
-    [prediction, ~] = find(PiX);
-    [ground_truth, ~] = find(round(PiY));
-    if length(prediction) ~= length(ground_truth)
-        keyboard
-    end
-    stats = statistics_multiclass(prediction, ground_truth);
-    
-else % binary classification
-    ground_truth = PiY(1,:)';
-    stats = statistics(PiX(:,1), ground_truth);
-%   learningErrors(i) = sum(abs(PiX(:,1) - ground_truth')) / length(ground_truth);
-end
 
 end
 

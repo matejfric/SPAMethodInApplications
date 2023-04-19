@@ -42,9 +42,9 @@ for nrand = 1:Nrand
     end
 end
 
-mdl = struct('C', C,...
+mdl = struct('C', C',...
     'Gamma', Gamma,...
-    'Pi', PiX',...
+    'Pi', PiX,...
     'Lambda', Lambda,...
     'it', it);
 
@@ -69,7 +69,7 @@ if verbose
 end
 learningErrors = zeros(0, maxIters); % preallocation
 ground_truth = PiY(1,:);
-myeps = 1e-4; %TODO
+myeps = 1e-6; %TODO
 
 for it = 1:maxIters
     
@@ -107,29 +107,36 @@ for it = 1:maxIters
     %PiX = round(Lambda*Gamma_rec)'; % Prediction (round => binary matrix)
     PiX = Lambda*Gamma_rec;
     
-    if size(PiY, 1) > 2 % multi-class classification
-        c = size(PiY, 1); % number of classes
-        PiX = round(PiX');
-        R = PiX(:, sum(PiX,1)==0 | sum(PiX,1) > 1);
-        r = randi([1 c],1,size(R,2));
-        PiX(:, sum(PiX,1)==0 | sum(PiX,1) > 1) = bsxfun(@eq, r(:), 1:c)';
-        [prediction, ~] = find(PiX);
-        [ground_truth, ~] = find(round(PiY));
-        if length(prediction) ~= length(ground_truth)
-            keyboard
-        end
-        stats = statistics_multiclass(prediction, ground_truth);
-        if verbose
-            fprintf("it=%d  L=%.2f  L_a=%.2f  f1score=%.3f\n",...
+    [stats] = compute_training_stats(PiY, PiX);
+    
+%     if size(PiY, 1) > 2 % multi-class classification
+%         c = size(PiY, 1); % number of classes
+%         PiX = round(PiX);
+%         R = PiX(:, sum(PiX,1)==0 | sum(PiX,1) > 1);
+%         r = randi([1 c],1,size(R,2));
+%         PiX(:, sum(PiX,1)==0 | sum(PiX,1) > 1) = bsxfun(@eq, r(:), 1:c)';
+%         [prediction, ~] = find(PiX);
+%         [ground_truth, ~] = find(round(PiY));
+%         if length(prediction) ~= length(ground_truth)
+%             keyboard
+%         end
+%         stats = statistics_multiclass(prediction, ground_truth);
+%         if verbose
+%             fprintf("it=%d  L=%.2f  L_a=%.2f  f1score=%.3f\n",...
+%                 it, L, L_real, stats.f1score);
+%         end
+%     else % binary classification
+%         stats = statistics(PiX(1,:), ground_truth);
+%         learningErrors(it) = sum(abs(PiX(1,:) - ground_truth)) / length(ground_truth);
+%         if verbose
+%             fprintf("it=%d  L=%.2f  L_a=%.2f  FN=%d  FP=%d  f1score=%.3f  error:%.3f\n",...
+%                 it, L, L_real, stats.fn, stats.fp, stats.f1score, learningErrors(it));
+%         end
+%     end
+    
+    if verbose
+       fprintf("it=%d  L=%.2f  L_a=%.2f  f1score=%.3f\n",...
                 it, L, L_real, stats.f1score);
-        end
-    else % binary classification
-        stats = statistics(PiX(1,:), ground_truth);
-        learningErrors(it) = sum(abs(PiX(1,:) - ground_truth)) / length(ground_truth);
-        if verbose
-            fprintf("it=%d  L=%.2f  L_a=%.2f  FN=%d  FP=%d  f1score=%.3f  error:%.3f\n",...
-                it, L, L_real, stats.fn, stats.fp, stats.f1score, learningErrors(it));
-        end
     end
 
     

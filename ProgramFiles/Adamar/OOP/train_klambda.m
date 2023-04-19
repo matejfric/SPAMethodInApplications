@@ -17,17 +17,14 @@ end
 
 Lambda = lambda_solver_jensen(Gamma, PiY);
 
-%PiX = round(Lambda*Gamma)'; % round => binary matrix
 PiX = Lambda*Gamma;
-stats_train = statistics(PiX(1,:), PiY(1,:));
-% errX = sum(abs(PiX(:,1) - X(:,end)))/size(X,1);
-% disp(['K-means+KL+Jensen learning error = ' num2str(errX)]);
+stats_train = compute_training_stats(PiY, PiX);
 
 it = NaN;
 [L,L1,L2] = compute_L2(C',Gamma,Lambda,X',alpha,PiY,size(Gamma, 2),size(C',1));
 L_out = struct('L', L, 'L1', L1, 'L2', L2);
 
-mdl = struct('C', C,...
+mdl = struct('C', C',...
     'Gamma', Gamma,...
     'Pi', PiX',...
     'Lambda', Lambda,...

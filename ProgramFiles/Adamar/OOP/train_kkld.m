@@ -28,13 +28,13 @@ end
 L.L = Inf;
 for nrand = 1:Nrand
     if verbose
-    disp(['- annealing run #' num2str(nrand)])
+        disp(['- annealing run #' num2str(nrand)])
     end
 
     [Lambda0, Gamma0, C0] = initial_approximation_plus_plus(X, K, PiY);
     
     [C_temp, Gamma_temp, PiX_temp, Lambda_temp, it_temp, stats_temp, L_temp] =...
-        adamar_fmincon_one(X, PiY, K, alpha, maxIters, Lambda0, Gamma0, C0);
+        adamar_fmincon_one(X, PiY, K, alpha, maxIters, Lambda0, Gamma0, C0, verbose);
     
     if L_temp.L < L.L
         C = C_temp;
@@ -56,7 +56,7 @@ mdl = struct('C', C,...
 end
 
 function [C, Gamma, PiX, Lambda, it, stats, L] = ...
-    adamar_fmincon_one(X, PiY, K, alpha, maxIters, Lambda0, Gamma0, C0)
+    adamar_fmincon_one(X, PiY, K, alpha, maxIters, Lambda0, Gamma0, C0, verbose)
 %ADAMAR_FMINCON_ONE One run of adamar.
 
 bugfix = false;
@@ -137,39 +137,17 @@ while it < maxIters % practical stopping criteria after computing new L (see "br
     
     % PiX = round(Lambda*Gamma)'; % round => binary matrix
     Gamma_rec = compute_Gamma_kmeans(C,X); % Reconstruction of Gamma
-    PiX = round(Lambda*Gamma_rec)';
-    [stats] = compute_stats(PiY, PiX);
-    fprintf('F1-Score: %.2f\n', stats.f1score)
-    
+    PiX = Lambda*Gamma_rec;
+    [stats] = compute_training_stats(PiY, PiX);
+    if verbose
+        fprintf('F1-Score: %.2f\n', stats.f1score)
+    end
 end
 
 Ls.L = L;
 Ls.L1 = L1;
 Ls.L2 = L2;
 L = Ls;
-
-end
-
-function [stats] = compute_stats(PiY, PiX)
-
-if size(PiY, 1) > 2 % multi-class classification
-    c = size(PiY, 1); % number of classes
-    PiX = round(PiX');
-    R = PiX(:, sum(PiX,1)==0 | sum(PiX,1) > 1);
-    r = randi([1 c],1,size(R,2));
-    PiX(:, sum(PiX,1)==0 | sum(PiX,1) > 1) = bsxfun(@eq, r(:), 1:c)';
-    [prediction, ~] = find(PiX);
-    [ground_truth, ~] = find(round(PiY));
-    if length(prediction) ~= length(ground_truth)
-        keyboard
-    end
-    stats = statistics_multiclass(prediction, ground_truth);
-    
-else % binary classification
-    ground_truth = PiY(1,:)';
-    stats = statistics(PiX(:,1), ground_truth);
-%   learningErrors(i) = sum(abs(PiX(:,1) - ground_truth')) / length(ground_truth);
-end
 
 end
 

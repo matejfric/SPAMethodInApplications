@@ -16,12 +16,10 @@ classdef SPAKLD < TemplateModel
         
         function fit(obj, X_train, y_train)
             % Train the model
-            Pi = zeros(2,length(y_train));
-            Pi(1,y_train==1) = 1;
-            Pi(2,y_train==0) = 1;
-            
+            [Pi, classes] = myonehotencode(y_train);
             [obj.mdl, obj.L, obj.statsTrain] = train_spakld(...
                      X_train, Pi, obj.K, obj.alpha, obj.maxIt, obj.Nrand, obj.scaleT, obj.verbose);
+            obj.mdl.classes = classes;
         end
         
     end

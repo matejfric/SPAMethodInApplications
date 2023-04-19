@@ -1,15 +1,18 @@
-function [labels] = myonehotdecode(PiY,classes,featureDim)
-%MYONEHOTENCODE Summary of this function goes here
-%   Detailed explanation goes here
+function [labels] = myonehotdecode(Pi,classes)
+%MYONEHOTENCODE 
+arguments
+    Pi (:,:) double       % M x T matrix
+    classes (:,1) double  % uniques classes
+end
 
-[T,M] = size(PiY);
+[M,T] = size(Pi);
 
 labels = zeros(T,1);
 
-PiY_int = round(PiY);
+PiY_int = round(Pi);
 
 for m=1:M
-    labels(PiY_int(:,m) == 1) = m;
+    labels(PiY_int(m,:) == 1) = classes(m);
 end
 
 

@@ -129,7 +129,7 @@ if VISUALIZE
     score_plot(title,...
          alphas, lprecision(:,idx_K), lrecall(:,idx_K), lf1score(:,idx_K), laccuracy(:,idx_K),...
          tprecision(:,idx_K), trecall(:,idx_K), tf1score(:,idx_K), taccuracy(:,idx_K));
-    plot_L_curves(Ls, L1s, L2s, Ks, alphas, title);
+    plot_L_curves(Ls, L1s, L2s, alphas,K, title);
 end
 
 end

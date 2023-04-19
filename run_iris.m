@@ -7,8 +7,11 @@ PCA = [];
 SCALE = [];
 descriptorsEnum = [];
 
-%[X,y] = get_iris_data();
-[X,y] = get_bcwd_data();
+[X,y] = get_iris_data();
+%[X,y] = get_bcwd_data();
+
+%[X, ~, ~, SCALE] = scaling(X, [], 'minmax');
+%[X, ~, ~, SCALE] = scaling(X, [], 'zscore', 'robust');
 
 % Rank features for classification using minimum redundancy maximum relevance (MRMR) algorithm
 % [idx,mrmr_scores] = fscmrmr(X,y);
@@ -29,21 +32,24 @@ descriptorsEnum = [];
 
 %[X, ca_Y, PCA] = mypca(X, [], y);
 
-[X_train, X_val, X_test, y_train, y_val, y_test] = train_test_val_split(X,y,0.7,0.15);
+[X_train, X_val, X_test, y_train, y_val, y_test] = train_test_val_split(X,y,0.6,0.2);
 
-%test_standard_classifiers(X_train,X_test,y_train,y_test);
+test_standard_classifiers(X_train,X_test,y_train,y_test);
 
 % Train KKLDJ
 %mdl = KKLDJ();
 %mdl = KKLD();
-mdl = KLambda();
-%mdl = SPAKLD();
+%mdl = KLambda();
+mdl = SPAKLD();
 
 mdl.MRMR = MRMR;
 mdl.PCA = PCA;
 mdl.SCALE = SCALE;
+mdl.Nrand = 15;
 mdl.descriptors = descriptorsEnum;
+mdl.verbose = false;
 alphas = 0:0.05:1;
+%alphas = 0.5;
 %alphas = 0.999:0.0002:1;
 %alphas = [0.95, 0.99, 0.995, 0.999, 0.9995, 0.9999, 0.99995, 0.99999];
 %alphas = 0.99:0.003:1;
@@ -51,8 +57,8 @@ alphas = 0:0.05:1;
 %Ks = [5,10,15];
 %Ks = [10,20,30,40,50];
 %Ks = [25,30,35,40];
-%Ks = 25;
-Ks = 2:2:10;
+Ks = 3;
+%Ks = 2:2:20;
 
 Ls  = zeros(numel(alphas),length(Ks));
 L1s = zeros(numel(alphas),length(Ks));
@@ -70,7 +76,7 @@ for a = progress(1:length(alphas))
         L1s(a,k) = mdl.L.L1;
         L2s(a,k) = mdl.L.L2;
         
-        y_pred = mdl.predict(X_val');
+        [~,y_pred] = mdl.predict(X_val');
         stats_val(a,k)  = mdl.computeStats(y_pred, y_val');
         stats_train(a,k) = mdl.statsTrain;
     end
@@ -78,10 +84,10 @@ end
 mdl.statsTrain = stats_train;
 mdl.printStatsTrain();
 
-% for k = 1:length(Ks)
-%     plot_L_curves(Ls(:,k), L1s(:,k), L2s(:,k), alphas, Ks(k));
-%     plot_f1score(stats_train(:,k), stats_val(:,k), alphas, Ks(k));
-% end
+for k = 1:length(Ks)
+    plot_L_curves(Ls(:,k), L1s(:,k), L2s(:,k), alphas, Ks(k));
+    plot_f1score(stats_train(:,k), stats_val(:,k), alphas, Ks(k));
+end
 
 % Grid search
 if sum([size(stats_val)] >= [2,2]) >= 2
@@ -102,37 +108,39 @@ end
 mdl.alpha = best_alpha;
 mdl.K = best_K;
 mdl.fit(X_train,y_train);
-y_pred = mdl.predict(X_test');
-stats_test = statistics(y_pred, y_test');
+[~,y_pred] = mdl.predict(X_test');
+stats_test = mdl.computeStats(y_pred, y_test');
 fprintf("\nTest performance:\nF1-score = %.3f\nAccuracy = %.3f\n\n",...
     stats_test.f1score, stats_test.accuracy);
 
-% Find the threshold that maximizes the balance
-% between sensitivity and specificity.
+if mdl.mdl.classes <= 2 
+    % Find the threshold that maximizes the balance
+    % between sensitivity and specificity.
 
-% Calculate ROC curve and AUC
-[TPR,FPR,T,AUC,OPTROCPT] = perfcurve(y_test',y_pred,1);
+    % Calculate ROC curve and AUC
+    [TPR,FPR,T,AUC,OPTROCPT] = perfcurve(y_test',y_pred,1);
 
-% Plot ROC curve
-figure
-plot(TPR,FPR, 'DisplayName', 'ROC curve', 'Linewidth', 2)
-hold on
-plot(OPTROCPT(1),OPTROCPT(2),'ro', 'DisplayName', 'Optimal ROC operating point', 'Linewidth', 2)
-xlabel('False positive rate (FPR)', 'FontSize',13, 'Interpreter', 'latex')
-ylabel('True positive rate (TPR)', 'FontSize',13, 'Interpreter', 'latex')
-title(['ROC curve (AUC = ' num2str(AUC,3) ')'], 'Interpreter', 'latex', 'FontSize',15)
-legend('show', 'Location', 'southeast', 'Interpreter', 'latex', 'FontSize',14)
+    % Plot ROC curve
+    figure
+    plot(TPR,FPR, 'DisplayName', 'ROC curve', 'Linewidth', 2)
+    hold on
+    plot(OPTROCPT(1),OPTROCPT(2),'ro', 'DisplayName', 'Optimal ROC operating point', 'Linewidth', 2)
+    xlabel('False positive rate (FPR)', 'FontSize',13, 'Interpreter', 'latex')
+    ylabel('True positive rate (TPR)', 'FontSize',13, 'Interpreter', 'latex')
+    title(['ROC curve (AUC = ' num2str(AUC,3) ')'], 'Interpreter', 'latex', 'FontSize',15)
+    legend('show', 'Location', 'southeast', 'Interpreter', 'latex', 'FontSize',14)
 
-% Choose threshold (Youden's J statistic)
-J = max(abs(TPR-FPR));
-threshold = T(find(abs(TPR-FPR)==J,1));
+    % Choose threshold (Youden's J statistic)
+    J = max(abs(TPR-FPR));
+    threshold = T(find(abs(TPR-FPR)==J,1));
 
-% Classify new data using threshold
-y_pred_J = mdl.predict(X_test') >= threshold;
-stats_test = statistics(double(y_pred_J), y_test');
+    % Classify new data using threshold
+    y_pred_J = mdl.predict(X_test') >= threshold;
+    stats_test = mdl.computeStats(double(y_pred_J), y_test');
 
-fprintf("\nTest performance (Youden's J statistic):\nF1-score = %.3f\nAccuracy = %.3f\n\n",...
-    stats_test.f1score, stats_test.accuracy);
+    fprintf("\nTest performance (Youden's J statistic):\nF1-score = %.3f\nAccuracy = %.3f\n\n",...
+        stats_test.f1score, stats_test.accuracy);
+end
 
 %Save the pre-trained model (object of class KKLDJ) to a .mat file
 % save('ModelKKLDJ.mat', 'mdl', '-v7.3'); 

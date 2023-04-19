@@ -16,7 +16,8 @@ nexttile
 hold on
 title('log-log L-curve')
 plot(L1s, L2s,'r-o');
-set(gca, 'XScale', 'log', 'YScale', 'log');
+%set(gca, 'XScale', 'log');
+set(gca, 'YScale', 'log')
 grid minor
 xlabel('$L1$','Interpreter','latex')
 ylabel('$L2$','Interpreter','latex')
