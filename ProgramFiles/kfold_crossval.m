@@ -28,7 +28,7 @@ end
     for m = 1:M
         classes{m} = Xy(y == class_names(m), :);
         folds{m}=cell(k,1);
-        splits{m}=round(length(classes{m})*split);
+        splits{m}=floor(length(classes{m})*split);
     end
     
     % Split the data into k folds
