@@ -1,0 +1,1 @@
+Nikolay S. (2023). Local binary patterns (https://www.mathworks.com/matlabcentral/fileexchange/36484-local-binary-patterns), MATLAB Central File Exchange. Retrieved March 3, 2023.

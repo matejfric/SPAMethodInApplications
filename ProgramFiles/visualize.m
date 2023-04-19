@@ -13,12 +13,71 @@ prediction = vector2image(prediction, original_rgb);
 annnotation = cell2mat(annnotation);
 annnotation(annnotation==1) = 255;   
 
-figure
-montage([original_rgb, annnotation, ground_truth, prediction],...
-    "Size", [1 4], "BackgroundColor", "red", 'BorderSize', 5);
-ax = gca;
-ax.PositionConstraint = "outerposition";
-title(caption);
+%[width, height] = get_screen_resolution();
+%figure('Renderer', 'painters', 'Position', [width/4 height/4 width/2 height/2])
+
+f=figure;
+f.WindowState = 'maximized';
+sgtitle(caption) 
+fontSize = 15;
+
+tiledlayout(1,5,'TileSpacing','Compact','Padding','Compact');
+% Original image
+nexttile
+imshow(cell2mat(original_rgb))
+title("Original image", 'Interpreter', 'latex', 'FontSize', fontSize)
+% Ground truth
+nexttile
+imshow(annnotation, [])
+title("Ground truth", 'Interpreter', 'latex', 'FontSize', fontSize)
+% Ground truth converted to patches
+nexttile
+imshow(ground_truth, [])
+title("Ground truth patches", 'Interpreter', 'latex', 'FontSize', fontSize)
+% Prediction
+nexttile
+imshow(prediction, [])
+title("Prediction", 'Interpreter', 'latex', 'FontSize', fontSize)
+colorbar
+% Prediction overlay
+nexttile
+irig_img = cell2mat(original_rgb);
+% Crop
+sz = size(irig_img(:,:,1));
+ms = mod(sz,16);
+sz = sz - ms; 
+irig_img = irig_img(1:sz(1),1:sz(2),:);
+imshow(irig_img);
+title("Prediction overlay", 'Interpreter', 'latex', 'FontSize', fontSize)
+red = cat(3, ones(sz), zeros(sz), zeros(sz));
+hold on
+h = imshow(red);
+set(h, 'AlphaData', 0.65 .* prediction(1:sz(1),1:sz(2)))
+
+if false
+    % Original image
+    subplot(n_rows,n_cols,1)
+    imshow(cell2mat(original_rgb))
+    % Ground truth
+    subplot(n_rows,n_cols,2)
+    imshow(annnotation, [])
+    % Ground truth converted to patches
+    subplot(n_rows,n_cols,3)
+    imshow(ground_truth, [])
+    % Prediction
+    subplot(n_rows,n_cols,4)
+    imshow(prediction, [])
+    colorbar
+    % Prediction overlay
+    subplot(n_rows,n_cols, 5)
+    irig_img = cell2mat(original_rgb);
+    imshow(irig_img);
+    sz = size(irig_img(:,:,1));
+    red = cat(3, ones(sz), zeros(sz), zeros(sz));
+    hold on
+    h = imshow(red);
+    set(h, 'AlphaData', 0.75 .* prediction(1:sz(1),1:sz(2)))
+end
 
 end
 
@@ -36,4 +95,3 @@ function img = vector2image(vector, original_image)
     
     img = cell2mat(ca_patches);
 end
-

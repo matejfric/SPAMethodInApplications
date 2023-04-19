@@ -1,193 +1,100 @@
 %ADAMAR K-MEANS
-close all
+%close all
 clear all
-addpath('ProgramFiles')
-addpath('ProgramFiles/TQDM') % Progress bar
-addpath('ProgramFiles/AdamarFmincon') % adamar_predict()
-addpath('ProgramFiles/AdamarKmeans') % adamar_kmeans
-addpath('ProgramFiles/SPG')
+addpath(genpath(pwd));
+
 rng(42);
 
-DATASET = 'Dataset'; % 'Dataset', 'Dataset2', 'Dataset256'
-SCALING = false;
+DATASET = 'DatasetSelection'; % 'Dataset', 'Dataset2', 'Dataset256', 'DatasetSelection'
 VISUALIZE = false;
-COLOR = true;
-PROBS = true;
-NN = true;
 
-descriptors = [Descriptor.Roughness Descriptor.Color ];
-testing_images = 137; %[68, 137, 143];
-
-% Neural Networks
-if NN
-    % Generate training descriptors with NN
-    if false 
-        disp('- NN processing training')
-        tic
-        X = get_descriptorsNN(load_images());
-        save('XNN.mat','X');
-        disp(['  finished in ' num2str(toc) 's'])
-    else
-        X = matfile('XNN.mat').X;
-    end
-
-    % Generate testing descriptors with NN
-    disp('- NN processing testing')
-    tic
-    n = numel(testing_images);
-    ca_Y = cell(n,1);
-    for i=1:n
-        disp([' - ' num2str(i) ' of ' num2str(n)])
-        Y.X = get_descriptorsNN(load_images(testing_images(i)));
-        %        Y.X = get_descriptors(load_images(testing_images(i)), descriptors, COLOR, PROBS);
-        Y.I = testing_images(i);
-        ca_Y{i} = Y;
-    end
-    disp(['  finished in ' num2str(toc) 's'])
-else
-    % GLCM and color descriptors
-    [X, ca_Y] = prepare_dataset(DATASET);
-end
+[X, ca_Y] = get_train_test_data(DATASET, 0.8);
 
 % Removal of strongly correlated columns
-[X, ca_Y] = correlation_analysis(X, ca_Y);
+%[X, ca_Y] = correlation_analysis(X, ca_Y);
+
+%[X, ca_Y] = my_umap();
+
+PiY = [X(:,end), 1-X(:,end)]; % Ground truth
+X = X(:,1:end-1);
 
 % Scaling
-%[X, ca_Y] = scaling(X, ca_Y, 'minmax');
+[X, ca_Y] = scaling(X, ca_Y, 'minmax');
+%[X, ca_Y] = scaling(X, ca_Y, 'zscore', 'robust');
 
-% Perform PCA
-%[X, ca_Y] = principal_component_analysis(X, ca_Y);
+% PCA
+[X, ca_Y, explained] = mypca(X, ca_Y);
 
-folder = 'Dataset/SmallImagesDescriptors/';
-%ca_Y = matrix2ca(folder);
+fprintf("How balanced are the labels? Ones: %.2f, Zeros: %.2f\n ", sum(PiY(:,1)), sum(PiY(:,2)));
 
-fprintf("How balanced are the labels? Ones: %.2f, Zeros: %.2f\n",...
-    sum(X(:,end)), size(X(:,end), 1)-sum(X(:,end)));
 
-%Ks = 2:16;
-Ks = 50;%[2,5,12,20,100];
-%Ks = 10;
-%Ks = 100;
+%Ks = [2,5,12];
+%Ks = 25;
+%Ks = [2,4,8,16,32,64];
+Ks = 25;
 
-maxIters = 50;
 
-%alphas = 1e-8;%1e-5*[1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 0.5];
-%alphas = 1e-3.*[1:2:10];
-%alphas = 1-1e-4.*[1:2:10];
-alphas = [0.9,0.95,0.98,0.99,0.995,0.999,1];
+maxIters = 1000;
+
+%alphas = [1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 0.5];
+%alphas = 0:0.1:1;
+%alphas = 0.9:0.01:1;
+%alphas = 0.99:0.001:1;
+%alphas = 0.999:0.0002:1;
+%alphas = 0.9999:0.00002:1; % tady se ten algoritmus chová hezky
+%alphas = 0.99999:0.000002:1; % až 83% f1-skóre na testovací mže
+%alphas = 0.999999:0.0000002:1; % tady už nic moc, možná už to naráží na numerické chyby?
+alphas = 0.99996;
 
 L1s = zeros(numel(alphas),length(Ks));
 L2s = zeros(numel(alphas),length(Ks));
 
-PiY = [X(:,end),1-X(:,end)];
-
-nrand = 2; % Number of random runs (annealing)
+nrand = 3; % Number of random runs (annealing)
 
 for a = 1:numel(alphas)
     for k = 1 : length(Ks)
-        [Lambda, C, Gamma, stats_train, L_out, PiX] = adamar_kmeans(X(:,1:end-1), PiY', Ks(k), alphas(a), maxIters, nrand);
+        [C, Gamma, PiX, Lambda, it, stats_train, L_out] = ...
+            adamar_kmeans(X, PiY', Ks(k), alphas(a), maxIters, nrand);
         lprecision(a,k) = stats_train.precision;
         lrecall(a,k) = stats_train.recall;
         lf1score(a,k) = stats_train.f1score;
         laccuracy(a,k) = stats_train.accuracy;
-        
+
         Ls(a,k) = L_out.L;
         L1s(a,k) = L_out.L1;
         L2s(a,k) = L_out.L2;
-        
+
         disp("Lambda:"); disp(Lambda); % Transition matrix
-        %    smaller_images = [ 172, 177, 179, 203, 209, 212, 228, 240 ];
-        images = 68;
-        
-        [stats_test] = adamar_predict_mat(Lambda, C', Ks(k), alphas(a), [], [], ca_Y, DATASET, VISUALIZE);
-        %if ~SCALING; [stats_test] = adamar_predict(Lambda, C', K, alpha(a), [], [], images, descriptors); end
-        %if SCALING; [stats_test] = adamar_predict(Lambda, C', K, alpha(a), colmin, colmax, images, descriptors); end
-        %if ~SCALING;[stats_test] = adamar_predict_mat(Lambda, C', K, alpha(a), [], [], ca_Y, DATASET, false); end
-        %if SCALING; [stats_test] = adamar_predict_mat(Lambda, C', K, alpha(a), colmin, colmax, ca_Y, DATASET, false); end
+        [stats_test] = adamar_predict(Lambda, C', Ks(k), alphas(a), ca_Y, DATASET, VISUALIZE);
         tprecision(a,k) = stats_test.precision;
         trecall(a,k) = stats_test.recall;
         tf1score(a,k) = stats_test.f1score;
         taccuracy(a,k) = stats_test.accuracy;
     end
-    
+
     %score_plot(sprintf('Adamar k-means, K=%d, alpha=%.2e', K, alpha(a)), K, lprecision(a,:), lrecall(a,:), lf1score(a,:), laccuracy(a,:), tprecision(a,:), trecall(a,:), tf1score(a,:), taccuracy(a,:))
-    
+
 end
 
-% regularization_plot(sprintf('Adamar K-means, k=%d', K), alpha, ...
-%     lprecision, lrecall, lf1score, laccuracy,...
-%     tprecision, trecall, tf1score, taccuracy)
+% Ks plot
+if false
+    figure 
+    subplot(1,2,1)
+    hold on
+    plot(Ks, laccuracy, 'o-' , 'LineWidth', 2);
+    plot(Ks, lf1score, 'o-' , 'LineWidth', 2);
+    hold off
+    subplot(1,2,2)
+    hold on
+    plot(Ks, tf1score, 'o-' , 'LineWidth', 2);
+    plot(Ks, taccuracy, 'o-' , 'LineWidth', 2);
+    hold off
+    legend('F1-score', 'Accuracy', 'Location','southeast')
+end
+
+plot_L_curves(Ls, L1s, L2s, Ks, alphas);
+
+%regularization_plot(sprintf('Adamar K-means, k=%d', Ks), alphas,lprecision, lrecall, lf1score, laccuracy,tprecision, trecall, tf1score, taccuracy)
 
 fprintf("\nProgram finished successfully.\n");
 
-% L-curve
-for k=1:length(Ks)
-    figure
-    hold on
-    title(sprintf('akmeans, K=%d', Ks))
-    plot(L1s(:,k), L2s(:,k),'r-o');
-    %text(L1s(1),L2s(1),['$\alpha = ' num2str(alpha(1)) '$'],'Interpreter','latex')
-    %text(L1s(end),L2s(end),['$\alpha = ' num2str(alpha(end)) '$'],'Interpreter','latex')
-    for i = 1:numel(L1s(:,k))
-        text(L1s(i),L2s(i),['$\alpha = ' num2str(alphas(i)) '$'],'Interpreter','latex')
-    end
-    hold off
-end
-
-for idx_K=1:length(Ks)
-    figure
-    subplot(1,3,1)
-    hold on
-    plot(alphas,Ls(:, idx_K),'r*-')
-    xlabel('$\alpha$','Interpreter','latex')
-    ylabel('$L$','Interpreter','latex')
-    subplot(1,3,2)
-    hold on
-    plot(alphas,L1s(:, idx_K),'b*-')
-    xlabel('$\alpha$','Interpreter','latex')
-    ylabel('$L_1$','Interpreter','latex')
-    subplot(1,3,3)
-    hold on
-    plot(alphas,L2s(:, idx_K),'m*-')
-    xlabel('$\alpha$','Interpreter','latex')
-    ylabel('$L_2$','Interpreter','latex')
-    hold off
-end
-
-function [X, ca_Y] = prepare_dataset(DATASET)
-%PREPARE_DATASET
-    if strcmp(DATASET, 'Dataset2')
-        %ca = matrix2ca('Dataset2/Descriptors/');
-        %ca = matrix2ca('Dataset2/Descriptors512GLRLM/');
-        %ca = matrix2ca('Dataset2/DescriptorsProbability/');
-        ca = matrix2ca('Dataset2/DescriptorsProbabilityColorGLCMGLRL/');
-        n = numel(ca);
-        n_train = floor(n * 0.9); % Training set size
-        n_test = n - n_train;
-        X = cell2mat({cell2mat(ca(1:n_train)).X}');
-        %ca_Y = ca(1:n_train); % test on training data
-        ca_Y = ca(n_train+1:n); % test on testing data
-    elseif strcmp(DATASET, 'Dataset256')
-        ca = matrix2ca('Dataset/Descriptors256/');
-        %ca = matrix2ca('Dataset/Descriptors256_new_color/');
-        n = numel(ca);
-        %n_train = floor(n * 0.95); % Training set size
-        n_train = 100;
-        n_test = n - n_train;
-        X = cell2mat({cell2mat(ca(1:n_train)).X}');
-        %ca_Y = ca(1:n_train); % test on training data
-        %ca_Y = ca(n_train+1:n); % test on testing data
-        ca_Y = ca(n_train+1:n_train+6);
-    else
-        X = get_descriptors(load_images(), descriptors, COLOR, PROBS);
-        %X = matfile('X10.mat').X;
-
-        n = numel(testing_images);
-        ca_Y = cell(n,1);
-        for i=1:n
-            Y.X = get_descriptors(load_images(testing_images(i)), descriptors, COLOR, PROBS); 
-            Y.I = testing_images(i);
-            ca_Y{i} = Y;
-        end
-    end
-end

@@ -1,86 +1,143 @@
 clear all
-close all
+%close all
+addpath(genpath(pwd));
+rng(13);
+tic;
 
-addpath('ProgramFiles')
-addpath('ProgramFiles/TQDM') % Progress bar
-addpath('ProgramFiles/AdamarFmincon') % adamar_predict()
-addpath('ProgramFiles/AdamarKmeans') % adamar_kmeans
-addpath('ProgramFiles/SPG') 
+T = 1000;
+[X_true,Pi_true,C_true,Gamma_true,Lambda_true] = generate_binary_synthetic_problem(T);
+%[X_true,Pi_true,C_true,Gamma_true,Lambda_true] = generate_synthetic_problem(T);
+M = size(Pi_true, 1); % number of classification classes
 
-T = 4;
-[X_true,Y_true,C_true,Gamma_true,Lambda_true] = generate_synthetic_problem(T);
-
-sigma = 10.1; % noise parameter
+sigma = 0.15; % noise parameter
 X = X_true + sigma * randn(size(X_true));
 
-Y = Y_true;
-nwrong = floor(0.0*T); % wrong labels
-idx = randperm(T);
+Pi = Pi_true;
+nwrong = floor(0.05*T); % wrong labels
+rperm = randperm(T);
+
 for i=1:nwrong
-  Y(1:2,idx(i)) = Y(2:-1:1,idx(i));
+  idx1 = find(Pi(:,rperm(i))==1);
+  idx2 = idx1;
+  while idx1 == idx2
+    idx2 = randi(M);
+  end
+  Pi([idx1 idx2],rperm(i)) = Pi([idx2 idx1],rperm(i)); % swap rows (labels)
 end
 
-maxIters = 5e2;
-Ks = 4;%size(C_true,2);
+maxIters = 50;
+nrand = 4;
+Ks = size(C_true,2);
 
-myepss = 10.^[-1:0.1:6];
-%alphas = 0.9:0.01:1;
-%alphas = 0.05:0.05:0.95;
-Ls  = zeros(numel(myepss),length(Ks));
-L1s = zeros(numel(myepss),length(Ks));
-L2s = zeros(numel(myepss),length(Ks));
+alphas = 0:0.05:1;
+%alphas = 0.5;
 
-for idx_myeps=1:length(myepss)
-    myeps = myepss(idx_myeps);
-    
-        for idx_K=1:length(Ks)
-            K = Ks(idx_K);
-    
-            [Lambda, C, Gamma, stats_train, L_out, PiX] = adamar_kmeans(X', Y, K, myeps, maxIters,1e1);
-%            [C, Gamma, PiX, Lambda, it, Lit, learningErrors, stats, L_out] = adamar_fmincon(X', Y, K, myeps, maxIters);
-            
-%             [prediction, ~] = find(round(Lambda * Gamma));
-%             [ground_truth, ~] = find(Y_true);
-%             fprintf("f1score: %.2f", statistics_multiclass(prediction, ground_truth).f1score);
-
-            Ls(idx_myeps,idx_K)  = L_out.L;
-            L1s(idx_myeps,idx_K) = L_out.L1;
-            L2s(idx_myeps,idx_K) = L_out.L2;
-        end
+Ls = cell(3,1);
+L1s = cell(3,1);
+L2s = cell(3,1);
+for i=1:3
+    Ls{i}  = zeros(numel(alphas),length(Ks));
+    L1s{i} = zeros(numel(alphas),length(Ks));
+    L2s{i} = zeros(numel(alphas),length(Ks));
 end
 
+for idx_alpha=1:length(alphas)
+    alpha = alphas(idx_alpha);
+    
+    for idx_K=1:length(Ks)
+        K = Ks(idx_K);
+
+        [C1, Gamma1, PiX1, Lambda1, it1, stats1, L_out1] = adamar_kmeans(X', Pi, K, alpha, maxIters, nrand);
+        [C2, Gamma2, PiX2, Lambda2, it2, stats2, L_out2] = adamar_fmincon(X', Pi, K, alpha, maxIters, nrand);
+%         [C3, Gamma3, PiX3, Lambda3, it3, stats3, L_out3] = adamar_spa(X', Y, K, alpha, maxIters, nrand);
+
+        Ls{1}(idx_alpha,idx_K)  = L_out1.L;
+        L1s{1}(idx_alpha,idx_K) = L_out1.L1;
+        L2s{1}(idx_alpha,idx_K) = L_out1.L2;
+
+        Ls{2}(idx_alpha,idx_K)  = L_out2.L;
+        L1s{2}(idx_alpha,idx_K) = L_out2.L1;
+        L2s{2}(idx_alpha,idx_K) = L_out2.L2;
+
+%         Ls{3}(idx_alpha,idx_K)  = L_out3.L;
+%         L1s{3}(idx_alpha,idx_K) = L_out3.L1;
+%         L2s{3}(idx_alpha,idx_K) = L_out3.L2;
+    end
+    
+%     clc % clear command window
+    fprintf('Finished iteration for alpha=%.2f', alpha);
+%     pause(1)
+end
+
+% PLOTS
+lw = 2; % LineWidth
+label_fs = 15;
+axis_fs = 12;
+legend_fs = 14;
+jensen_linestyle = '*-';
+spg_linestyle = 'd-';
+spa_linestyle = 's-';
+newcolors = [0     0.447 0.741 %blue
+             0.85  0.325 0.098 %orange
+             0.466 0.674 0.188 %green
+             ];
 % L-curve
 for idx_K=1:length(Ks)
     figure
+    colororder(newcolors)
     hold on
-    title(sprintf('K=%d', K))
-    plot(L1s(:,idx_K), L2s(:,idx_K),'r-o');
-    %text(L1s(1),L2s(1),['$\alpha = ' num2str(alpha(1)) '$'],'Interpreter','latex')
-    %text(L1s(end),L2s(end),['$\alpha = ' num2str(alpha(end)) '$'],'Interpreter','latex')
-    for i = 1:numel(L1s(:,idx_K))
-        text(L1s(i),L2s(i),['$\epsilon = ' num2str(myepss(i)) '$'],'Interpreter','latex')
-    end
-    xlabel('$L_1$','Interpreter','latex')
-    ylabel('$L_2$','Interpreter','latex')
+    %title(sprintf('K=%d', K))
+    plot(L1s{1}(:,idx_K), L2s{1}(:,idx_K),jensen_linestyle(:), 'LineWidth', lw);
+    plot(L1s{2}(:,idx_K), L2s{2}(:,idx_K),spg_linestyle(:), 'LineWidth', lw);
+    plot(L1s{3}(:,idx_K), L2s{3}(:,idx_K),spa_linestyle(:), 'LineWidth', lw);
+    xlabel('$L_1$','Interpreter','latex','FontSize', label_fs)
+    ylabel('$L_2$','Interpreter','latex','FontSize', label_fs)
+    legend('jensen','spg','spa','FontSize', legend_fs)
     hold off
+    grid on
+    grid minor
+    ax = gca;
+    ax.FontSize = axis_fs;
 end
 
 for idx_K=1:length(Ks)
     figure
+    colororder(newcolors)
+    ax = gca;
+    ax.FontSize = axis_fs;
+    
     subplot(1,3,1)
     hold on
-    plot(myepss,Ls(:, idx_K),'r*-')
-    xlabel('$\epsilon$','Interpreter','latex')
-    ylabel('$L$','Interpreter','latex')
+    grid on
+    grid minor
+    plot(alphas,Ls{1}(:, idx_K),jensen_linestyle(:), 'LineWidth', lw)
+    plot(alphas,Ls{2}(:, idx_K),spg_linestyle(:), 'LineWidth', lw)
+    plot(alphas,Ls{3}(:, idx_K),spa_linestyle(:), 'LineWidth', lw)
+    xlabel('$\alpha$','Interpreter','latex','FontSize', label_fs)
+    ylabel('$L$','Interpreter','latex','FontSize', label_fs)
+    legend('jensen','spg','spa','FontSize', legend_fs)
+    
     subplot(1,3,2)
     hold on
-    plot(myepss,L1s(:, idx_K),'b*-')
-    xlabel('$\epsilon$','Interpreter','latex')
-    ylabel('$L_1$','Interpreter','latex')
+    grid on
+    grid minor
+    plot(alphas,L1s{1}(:, idx_K),jensen_linestyle(:), 'LineWidth', lw)
+    plot(alphas,L1s{2}(:, idx_K),spg_linestyle(:), 'LineWidth', lw)
+    plot(alphas,L1s{3}(:, idx_K),spa_linestyle(:), 'LineWidth', lw)
+    xlabel('$\alpha$','Interpreter','latex','FontSize', label_fs)
+    ylabel('$L_1$','Interpreter','latex','FontSize', label_fs)
+    
     subplot(1,3,3)
     hold on
-    plot(myepss,L2s(:, idx_K),'m*-')
-    xlabel('$\epsilon$','Interpreter','latex')
-    ylabel('$L_2$','Interpreter','latex')
+    grid on
+    grid minor
+    plot(alphas,L2s{1}(:, idx_K),jensen_linestyle(:), 'LineWidth', lw)
+    plot(alphas,L2s{2}(:, idx_K),spg_linestyle(:), 'LineWidth', lw)
+    plot(alphas,L2s{3}(:, idx_K),spa_linestyle(:), 'LineWidth', lw)
+    xlabel('$\alpha$','Interpreter','latex','FontSize', label_fs)
+    ylabel('$L_2$','Interpreter','latex','FontSize', label_fs)
     hold off
 end
+
+toc
+
