@@ -27,7 +27,8 @@ f_old = sum(f2(Gamma0));
 f_new = sum(f2(Gamma));
 
 if and(f_new > f_old, abs(f_new - f_old) > 1e-4)
-        keyboard
+        %keyboard
+        return
 end
 
 end

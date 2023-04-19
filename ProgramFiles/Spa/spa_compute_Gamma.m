@@ -25,7 +25,8 @@ for t = 1:T
     f_new = f2(Gamma(:,t));
 
     if and(f_new > f_old, abs(f_new - f_old) > 1e-4)
-        keyboard
+        %keyboard
+        break;
     end
 
     it_in = max(it_in2,it_in);

@@ -129,8 +129,9 @@ while it < maxIters % practical stopping criteria after computing new L (see "br
         break; % stop outer cycle
     end
     
-    if L > Lold
-       keyboard
+    if and(L > Lold, abs(L - Lold) > 1e-4)
+       %keyboard
+       break;
     end
     
     it = it + 1;

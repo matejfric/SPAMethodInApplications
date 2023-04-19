@@ -1,4 +1,4 @@
-function [Gamma,it_in] = spa_compute_Gamma_vec(S,Gamma,Lambda,X,alpha, PiY)
+function [Gamma,it_in] = spa_compute_Gamma_vec(S,Gamma,Lambda,X,epsilon, PiY)
 %COMPUTE_GAMMA Adamar Gamma problem
 
 [K,T] = size(Gamma);
@@ -16,8 +16,8 @@ Gamma0 = Gamma;
 H1 = (S'*S);
 H2 = S'*X;
 
-f2 = @(Gamma) f_vec_spg(Gamma,Lambda,X,PiY,S,K,alpha,T,D);
-g2 = @(Gamma) g_vec_spg(Gamma,Lambda,X,PiY,S,K,alpha,T,D,H1,H2);
+f2 = @(Gamma) f_vec_spg(Gamma,Lambda,X,PiY,S,K,epsilon,T,D);
+g2 = @(Gamma) g_vec_spg(Gamma,Lambda,X,PiY,S,K,epsilon,T,D,H1,H2);
 p2 = @(Gamma) projection_simplex(Gamma);
 
 f_old = sum(f2(Gamma0));
@@ -30,7 +30,7 @@ end
 
 end
 
-function L = f_vec_spg(Gamma,Lambda,X,PiY,S,K,alpha,Tcoeff,Dcoeff)
+function L = f_vec_spg(Gamma,Lambda,X,PiY,S,K,epsilon,Tcoeff,Dcoeff)
 T = size(X,2);
 KY = size(Lambda,1);
 KX = size(Gamma,1);
@@ -46,11 +46,11 @@ for ky = 1:KY
 end
 L2 = (1/Dcoeff) * L2;
 
-L = alpha*L1 + (1-alpha)*L2;
+L = L1 + epsilon^2*L2;
 
 end
 
-function G = g_vec_spg(Gamma,Lambda,X,PiY,S,K,alpha,Tcoeff,Dcoeff,H1,H2)
+function G = g_vec_spg(Gamma,Lambda,X,PiY,S,K,epsilon,Tcoeff,Dcoeff,H1,H2)
 T = size(X,2);
 KY = size(Lambda,1);
 G1 = zeros(K,T);
@@ -67,6 +67,6 @@ for kx = 1:K
 end
 G2 = (1/Dcoeff) * G2;
 
-G = alpha*G1 + (1-alpha)*G2;
+G = G1 + epsilon^2*G2;
 
 end

@@ -1,4 +1,4 @@
-function [Gamma,it_in] = compute_Gamma(C,Gamma,Lambda,X,alpha, PiY)
+function [Gamma,it_in] = compute_Gamma(C,Gamma,Lambda,X,epsilon, PiY)
 %COMPUTE_GAMMA Adamar Gamma problem
 
 [K,T] = size(Gamma);
@@ -16,8 +16,8 @@ for t = progress(1:T)
     
     gamma0 = Gamma(:,t);
 
-    f2 = @(gamma) f_spg(gamma,Lambda,X(:,t),PiY(:,t),C,K,alpha,T,D);
-    g2 = @(gamma) g_spg(gamma,Lambda,X(:,t),PiY(:,t),C,K,alpha,T,D);
+    f2 = @(gamma) f_spg(gamma,Lambda,X(:,t),PiY(:,t),C,K,epsilon,T,D);
+    g2 = @(gamma) g_spg(gamma,Lambda,X(:,t),PiY(:,t),C,K,epsilon,T,D);
     p2 = @(gamma) projection_simplex(gamma);
     
     f_old = f2(gamma0);
@@ -33,7 +33,7 @@ end
 
 end
 
-function [L,g] = f_fmincon(gamma,Lambda,x,piY,C,K,alpha,Tcoeff,Dcoeff)
+function [L,g] = f_fmincon(gamma,Lambda,x,piY,C,K,epsilon,Tcoeff,Dcoeff)
 %F_FMINCON Objective function
 
 KY = size(Lambda,1);
@@ -64,12 +64,12 @@ end
 L2 = (1/Dcoeff) * L2;
 G2 = (1/Dcoeff) * G2;
 
-L = alpha*L1 + (1-alpha)*L2;
-g = alpha*G1 + (1-alpha)*G2;
+L = L1 + epsilon^2*L2;
+g = G1 + epsilon^2*G2;
 
 end
 
-function L = f_spg(gamma,Lambda,x,piY,C,K,alpha,Tcoeff,Dcoeff)
+function L = f_spg(gamma,Lambda,x,piY,C,K,epsilon,Tcoeff,Dcoeff)
 %F_SPG Objective function
 
 KY = size(Lambda,1);
@@ -90,11 +90,11 @@ for ky = 1:KY
 end
 L2 = (1/Dcoeff) * L2;
 
-L = alpha*L1 + (1-alpha)*L2;
+L = L1 + epsilon^2*L2;
 
 end
 
-function g = g_spg(gamma,Lambda,x,piY,C,K,alpha,Tcoeff,Dcoeff)
+function g = g_spg(gamma,Lambda,x,piY,C,K,epsilon,Tcoeff,Dcoeff)
 %G_SPG Gradient function
 
 KY = size(Lambda,1);
@@ -113,11 +113,11 @@ for kx = 1:K
 end
 G2 = (1/Dcoeff) * G2;
 
-g = alpha*G1 + (1-alpha)*G2;
+g = G1 + epsilon^2*G2;
 
 end
 
-function H = hessinterior_spg(gamma,Lambda, x, piY, C, K, alpha, lambda, Dcoeff)
+function H = hessinterior_spg(gamma,Lambda, x, piY, C, K, epsilon, lambda, Dcoeff)
 %HESSINTERIOR_SPG Hessian
 
 KY = size(Lambda,1);
@@ -131,7 +131,7 @@ for k_hat = 1:K
         end
     end
 end
-H = (1/Dcoeff)*(1-alpha)*H;
+H = (1/Dcoeff)*epsilon^2*H;
 
 end
 

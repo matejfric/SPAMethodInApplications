@@ -20,13 +20,13 @@ classifiers{3} = KKLD();
 clf_names = pad(["KLambda", "KKLDJ", "KKLD", "KNN", "Linear SVM", "D-Tree"],'both');
 
 Ks = 3;
-alphas = 0:0.1:1;
+epsilons = 10.^(-6:1:6);
 
 for kfold=progress(1:kfolds)
     for clf=1:length(classifiers)
-        for a = 1:length(alphas)
+        for a = 1:length(epsilons)
             for k = 1:length(Ks)
-                classifiers{clf}.alpha = alphas(a);
+                classifiers{clf}.epsilon = epsilons(a);
                 classifiers{clf}.K = Ks(k);
                 classifiers{clf}.fit(X_train{kfold},y_train{kfold})
 

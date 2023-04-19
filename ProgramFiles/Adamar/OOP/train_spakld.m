@@ -123,6 +123,7 @@ while it < maxIters % practical stopping criteria after computing new L (see "br
        if bugfix
             keyboard
        end
+       break;
     end
     
     it = it + 1;

@@ -1,4 +1,4 @@
-function [stats_test] = adamar_predict(Lambda, C, K, alpha, ca_Y, dataset, display)
+function [stats_test] = adamar_predict(Lambda, C, K, epsilon, ca_Y, dataset, display)
 %ADAMAR_PREDICT Make a prediction based on ADAMAR model
 %   Lambda...transion matrix
 %   C........centroids
@@ -7,7 +7,7 @@ function [stats_test] = adamar_predict(Lambda, C, K, alpha, ca_Y, dataset, displ
 %   b........colmax of X
 %   ca_Y.....matrices of descriptors in cell array
 arguments
-    Lambda, C, K, alpha, ca_Y, dataset, display = true
+    Lambda, C, K, epsilon, ca_Y, dataset, display = true
 end
 
 n = numel(ca_Y);
@@ -54,7 +54,7 @@ for i = 1:n
     end  
     
     if display
-        visualize(original_rgb, annnotation, Y(:,end), PiY(:,1), sprintf('Adamar, K=%d, alpha=%.2e', K, alpha));
+        visualize(original_rgb, annnotation, Y(:,end), PiY(:,1), sprintf('Adamar, K=%d, epsilon=%.2e', K, epsilon));
         pause(1)
     end
 end
