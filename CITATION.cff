@@ -3,7 +3,7 @@ message: "If you use this software, please cite it as below."
 authors:
   - family-names: Frič
     given-names: Matěj
-	orcid: https://orcid.org/0009-0000-9885-1521
+    orcid: https://orcid.org/0009-0000-9885-1521
 title: "Scalable Probabilistic Approximation Method in Applications"
 version: 1.0.0
 license: MIT
