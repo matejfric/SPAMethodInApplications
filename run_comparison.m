@@ -1,86 +1,157 @@
 clear all
+warning off; % Custom warning that MCC is undefined during training. 
 addpath(genpath(pwd));
-rng(13);
+rng(42);
 
-%[X,y] = get_iris_data();
-%[X,y] = get_bcwd_data();
-[X,y] = get_wine_data();
+[X,y] = get_bcwd_data();
+%[X,y] = get_wine_data();
 %[X,y] = get_ionosphere_data();
-X = scaling(X, [], 'minmax');
-%X = scaling(X, [], 'zscore', 'robust');
+%X = scaling(X, [], 'minmax');
+X = scaling(X, [], 'zscore');
 
-kfolds = 5;
-[X_train, X_test, y_train, y_test] = kfold_crossval(X, y, kfolds);
 
-classifiers{1} = KLambda();
-classifiers{2} = KKLDJ();
-classifiers{3} = KKLD();
-%classifiers{4} = SPAKLD();
-%clf_names = pad(["KLambda", "KKLDJ", "KKLD", "SPAKLD", "KNN", "SVM", "D-Tree"],'both');
-clf_names = pad(["KLambda", "KKLDJ", "KKLD", "KNN", "Linear SVM", "D-Tree"],'both');
+classifiers{1} = KKLDJ();
+classifiers{2} = KKLD();
+clf_names = ["KKLDJ", "KKLD","KLambda", "KNN", "LinearSVM", "GaussianSVM", "D-Tree"];
+%classifiers{3} = SPAKLD();
+%clf_names = ["KKLDJ", "KKLD", "SPAKLD", "KLambda", "KNN", "LinearSVM", "GaussianSVM", "D-Tree"];
 
-Ks = 3;
+n_rand = 10; % Number of random runs
+for n = progress(1:n_rand)
+
+%--------------------------------------------------------------------------    
+%  KLambda & Decision tree & SVM
+%--------------------------------------------------------------------------
+[X_train, X_test, y_train, y_test] = train_test_split(X,y,0.75);    
+    
+%KLambda
+mdlKL = KLambda();
+clf = find(clf_names == "KLambda");
+mdlKL.fit(X_train, y_train);
+y_pred = mdlKL.predict(X_test');
+stats_test{clf}(n,1) = mdlKL.computeStats(y_pred, y_test');
+
+%Decision tree
+clf = find(clf_names == "D-Tree");
+mdlTree = fitctree(X_train, y_train);
+y_pred = mdlTree.predict(X_test);
+stats_test{clf}(n,1) = statistics(y_pred, y_test);
+
+%LinearSVM
+clf = find(clf_names == "LinearSVM");
+mdlSVM = fitcsvm(X_train, y_train,'KernelScale','auto','KernelFunction','linear');
+y_pred = mdlSVM.predict(X_test);
+stats_test{clf}(n,1) = statistics(y_pred, y_test); 
+
+%GaussianSVM
+clf = find(clf_names == "GaussianSVM");
+mdlSVM = fitcsvm(X_train, y_train,'KernelScale','auto','KernelFunction','gaussian');
+y_pred = mdlSVM.predict(X_test);
+stats_test{clf}(n,1) = statistics(y_pred, y_test); 
+
+%--------------------------------------------------------------------------
+%  KNN, KKLDJ, KKLD, SPAKLD
+%--------------------------------------------------------------------------
+[X_train, X_val, X_test, y_train, y_val, y_test] = train_test_val_split(X,y,0.6,0.2);
+
+%KNN
+Ks_knn = 1:30;
+clf = find(clf_names == "KNN");
+for k = Ks_knn
+    mdlKNN = fitcknn(X_train, y_train, 'NumNeighbors', k);
+    y_pred = mdlKNN.predict(X_val);
+    stats_val_knn(k) = statistics(y_pred, y_val);
+end
+best_mcc_knn = max([stats_val_knn.mcc]);
+idx = find([stats_val_knn.mcc] == best_mcc_knn,1,'first');
+best_k_knn = Ks_knn(idx);
+mdlKNN = fitcknn(X_train, y_train, 'NumNeighbors', best_k_knn);
+y_pred = mdlKNN.predict(X_test);
+stats_test{clf}(n,1) = statistics(y_pred, y_test);    
+
+%KKLDJ, KKLD, SPAKLD
+
+%Ks = 2:1:5;
+Ks = [2,3,4,7,10,15];
 alphas = 0:0.1:1;
-
-for kfold=progress(1:kfolds)
-    for clf=1:length(classifiers)
-        for a = 1:length(alphas)
-            for k = 1:length(Ks)
-                classifiers{clf}.alpha = alphas(a);
-                classifiers{clf}.K = Ks(k);
-                classifiers{clf}.fit(X_train{kfold},y_train{kfold})
-
-%                 Ls{clf}(kfold,a,k)  = classifiers{clf}.L.L;
-%                 L1s{clf}(kfold,a,k) = classifiers{clf}.L.L1;
-%                 L2s{clf}(kfold,a,k) = classifiers{clf}.L.L2;
-
-                [~,y_pred] = classifiers{clf}.predict(X_test{kfold}');
-                stats_test{clf}(kfold,a,k)  = classifiers{clf}.computeStats(y_pred, y_test{kfold}');
-                stats_train{clf}(kfold,a,k) = classifiers{clf}.statsTrain;
-            end
+%alphas = [0.001, 0.01, 0.1, 0.5, 0.8, 0.9, 0.99, 0.999, 0.999, 0.9999];
+%alphas = 0.999:0.0002:0.9999;
+for clf=1:length(classifiers)
+    for a = 1:length(alphas)
+        for k = 1:length(Ks)
+            classifiers{clf}.alpha = alphas(a);
+            classifiers{clf}.K = Ks(k);
+            classifiers{clf}.fit(X_train,y_train)
+            y_pred = classifiers{clf}.predict(X_test');
+            stats_val(a,k) = classifiers{clf}.computeStats(y_pred, y_test');
         end
     end
-    % KNN
-    clf = length(classifiers) + 1;
-    mdlKNN = fitcknn(X_train{kfold}, y_train{kfold}, 'NumNeighbors', Ks);
-    x_pred = mdlKNN.predict(X_train{kfold});
-    stats_train{clf}(kfold,1) = statistics_multiclass(x_pred, y_train{kfold});
-    y_pred = mdlKNN.predict(X_test{kfold});
-    stats_test{clf}(kfold,1) = statistics_multiclass(y_pred, y_test{kfold});
-
-    % SVM
-    clf = length(classifiers) + 2;
-    if sum(unique(y_train{kfold}))<=2
-        mdlSVM = fitcsvm(X_train{kfold}, y_train{kfold});
-    else
-        mdlSVM = fitcecoc(X_train{kfold}, y_train{kfold});
-    end
-    x_pred = mdlSVM.predict(X_train{kfold});
-    stats_train{clf}(kfold,1) = statistics_multiclass(x_pred, y_train{kfold});
-    y_pred = mdlSVM.predict(X_test{kfold});
-    stats_test{clf}(kfold,1) = statistics_multiclass(y_pred, y_test{kfold});
-
-    % Decision Tree
-    clf = length(classifiers) + 3;
-    mdlTree = fitctree(X_train{kfold}, y_train{kfold});
-    x_pred = mdlTree.predict(X_train{kfold});
-    stats_train{clf}(kfold,1) = statistics_multiclass(x_pred, y_train{kfold});
-    y_pred = mdlTree.predict(X_test{kfold});
-    stats_test{clf}(kfold,1) = statistics_multiclass(y_pred, y_test{kfold});
+    [best_alpha, best_K, best_mcc] = grid_search_mcc(stats_val,alphas,Ks);
+    classifiers{clf}.alpha = best_alpha;
+    classifiers{clf}.K = best_K;
+    classifiers{clf}.fit(X_train,y_train);
+    y_pred = classifiers{clf}.predict(X_test');
+    stats = classifiers{clf}.computeStats(y_pred, y_test');
+    stats_test{clf}(n,1) = stats;
 end
 
-
-for clf=1:length(classifiers)+3
-    f1s{clf} = mean(reshape([stats_test{clf}.f1score],size(stats_test{clf})),1);
-    acc{clf} = mean(reshape([stats_test{clf}.accuracy],size(stats_test{clf})),1);
-    lf1s{clf} = mean(reshape([stats_train{clf}.f1score],size(stats_train{clf})),1);
-    lacc{clf} = mean(reshape([stats_train{clf}.accuracy],size(stats_train{clf})),1);
 end
 
-
-fprintf("|                   Testing            |          Training            |\n");
-for clf=1:length(classifiers)+3
-    fprintf("| %s: F1 = %.3f  |  ACC = %.3f  |  F1 = %.3f  |  ACC = %.3f  |\n",...
-        clf_names(clf), max([f1s{clf}]), max([acc{clf}]),max([lf1s{clf}]), max([lacc{clf}]))
+%--------------------------------------------------------------------------
+% Compute mean and standard deviation
+%--------------------------------------------------------------------------
+for clf=1:length(clf_names)
+    f1s{clf}      = mean([stats_test{clf}.f1score]);
+    acc{clf}      = mean([stats_test{clf}.accuracy]);
+    nmcc{clf}     = mean([stats_test{clf}.nmcc]);
+    std_f1s{clf}  = std([stats_test{clf}.f1score]);
+    std_acc{clf}  = std([stats_test{clf}.accuracy]);
+    std_nmcc{clf} = std([stats_test{clf}.nmcc]);
 end
 
+%--------------------------------------------------------------------------
+% Display results
+%--------------------------------------------------------------------------
+
+% Sort nmcc vector in descending order
+nmcc_vec = [nmcc{:}];
+[nmcc_sorted, idx] = sort(nmcc_vec, 'descend');
+
+% Sort other vector accordingly using the same indexing
+clf_names = pad(clf_names(idx),'both');
+f1s = f1s(idx);
+acc = acc(idx);
+nmcc = nmcc(idx);
+std_f1s = std_f1s(idx);
+std_acc = std_acc(idx);
+std_nmcc = std_nmcc(idx);
+
+fprintf("- Testing Scores\n");
+for clf=1:length(clf_names)
+    fprintf("| %s: nMCC = %.3f ± %.2f  |  F1 = %.3f ± %.2f  |  ACC = %.3f ± %.2f  |\n",...
+        clf_names(clf),...
+        nmcc{clf},std_nmcc{clf},...
+        f1s{clf},std_f1s{clf},...
+        acc{clf},std_acc{clf});
+end
+
+%--------------------------------------------------------------------------
+% Write latex table
+%--------------------------------------------------------------------------
+% Open the output file for writing
+fileID = fopen('comparison_results.txt', 'w');
+
+% Write the testing scores to the output file
+fprintf(fileID,"\\toprule\nSML algorithm & NormMCC & Accuracy & $F_1$-score \\\\\n\\midrule\n");
+clf_names = pad(clf_names,'both');
+for clf=1:length(clf_names)
+    fprintf(fileID, "%s & $%.3f \\pm %.2f$  &  $%.3f \\pm %.2f$  &  $%.3f \\pm %.2f$  \\\\\n",...
+        clf_names(clf),...
+        nmcc{clf},std_nmcc{clf},...    
+        f1s{clf},std_f1s{clf},...
+        acc{clf},std_acc{clf});
+end
+fprintf(fileID,"\\bottomrule\n");
+
+% Close the output file
+fclose(fileID);
