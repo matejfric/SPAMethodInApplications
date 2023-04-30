@@ -1,13 +1,30 @@
-# Corrosion Detection Using SVM and Bayesian Models
+# Scalable Probabilistic Approximation Method in Applications
 
-## Datasets:
+- MATLAB implementation for my bachelor thesis at VSB-TUO. To be available from [dspace.vsb](https://dspace.vsb.cz).
 
-- [Corrosion Condition State Semantic Segmentation Dataset](https://data.lib.vt.edu/articles/dataset/Corrosion_Condition_State_Semantic_Segmentation_Dataset/16624663/1)
+## Used Datasets
 
-- [Kaggle.com Corrosion Annotated](https://www.kaggle.com/datasets/tungxnguyen/corrosionannotated)
+- Corrosion Annotated [[Kaggle.com](https://www.kaggle.com/datasets/tungxnguyen/corrosionannotated)]
 
-## Requirements:
+- Breast Cancer Wisconsin (Diagnostic) dataset [[UCI Machine Learning Repository](https://doi.org/10.24432/C5DW2B)]
 
-- MATLAB R2020b and higher
+## Requirements
 
-- [Datasets](https://drive.google.com/file/d/1YFjr2TTqmuKAp1JbNz9VGVK11DuaxlGQ/view?usp=sharing)
+- MATLAB version R2020b and higher
+
+- [Datasets and a pre-trained model](https://drive.google.com/file/d/1flJC5JROhEubYed-wBQSbo4RzLbg1fDw/view?usp=sharing) (~2 MB)
+
+## Quick Start Guide
+
+1. Download the [datasets and a pre-trained model](https://drive.google.com/file/d/1flJC5JROhEubYed-wBQSbo4RzLbg1fDw/view?usp=sharing) (~2 MB)
+2. Extract the `*.zip` file to this project folder
+3. Run the feature extraction script: [`run_feature_extraction.m`](run_feature_extraction.m)
+4. Optionally run any of the scripts below:
+    - [`run_corrosion_mwe.m`](run_corrosion_mwe.m) - visualization of corrosion detection using the pre-trained model (Fig. 5.4 in the thesis)
+    - [`run_corrosion.m`](run_corrosion.m) - training the ML model using one of the developed algorithms, such trained model is used in the above script
+    - [`run_comparison.m`](run_comparison.m) - comparison on Breast Cancer Wisconsin (Diagnostic) dataset (Table 5.2 in the thesis)
+    - [`run_synthetic_test.m`](run_synthetic_test.m) - synthetic test (Fig 5.2 in the thesis)
+
+## Abstract
+
+This thesis aims to extend the research on the newly developed Scalable Probabilistic Approximation (SPA) method, with emphasis predominantly on classification problems. The SPA method is utilized to discretize continuous stochastic processes and, in conjunction with Bayesian causal inference modeling, leads to a multiobjective optimization problem that is capable of simultaneously resolving both objectives. The solution to this problem is formulated as a supervised machine learning algorithm that is suitable for various classification tasks. Although the algorithm is limited in terms of computational cost, a proposed estimation of the problem, which is closely related to the widely known $K$-means algorithm, is applicable even for large datasets. Preliminary experiments demonstrate that this framework is adaptable to the selected application of corrosion detection from image data.
