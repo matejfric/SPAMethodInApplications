@@ -1,13 +1,14 @@
 function [X, ca_Y] = get_data_from_dataset_selection(...
     train_size, ground_truth, descriptors, undersample)
-%GET_DATA_FROM_DATASET_SELECTION Summary of this function goes here
+%GET_DATA_FROM_DATASET_SELECTION
 arguments
-    train_size = 0.8;
+    train_size = 0.7;
     
-    ground_truth = 'GroundTruthBinaryCropped';
+    ground_truth = 'GroundTruth';
     % GroundTruthBinary, GroundTruthProbability, GroundTruthBinaryCropped
     
-    descriptors = ["LBP_HSV" "StatMomHSV"];
+    descriptors = ["StatMomHSV","StatMomRGB","GLCM_Gray","GLCM_HSV","GLCM_RGB"];
+    % ["LBP_HSV" "StatMomHSV"];
     % LBP, LBP_HSV, LBP_RGB,
     % StatMomHSV, StatMomHSV34, StatMomRGB,
     % GLCM_HSV, GLCM_RGB, GLRLM, GLCMGray1, GLCMGray7

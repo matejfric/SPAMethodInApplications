@@ -15,24 +15,21 @@ mdlopt = load('PretrainedModel.mat').mdlopt;
 PCA = mdlopt.PCA; 
 
 % Load the data
-descriptors = ["StatMomHSV","StatMomRGB","GLCM_Gray","GLCM_HSV","GLCM_RGB"];
-gt = 'GroundTruthBinaryCropped';
-undersample = false;
-[X, images] = get_data_from_dataset_selection(0.7, gt, descriptors, undersample);
+[X,images] = get_data_from_dataset_selection();
 y = X(:,end);
 
 % Apply normalization and PCA to data
-[X, images] = scaling(X(:,1:end-1), images, 'minmax');
+[X,images] = scaling(X(:,1:end-1),images,'minmax');
 X = (X-PCA.mu)*PCA.coeff(:,1:PCA.idx);
 
 % Perform three-way-split
-[X_train, X_val, X_test, y_train, y_val, y_test] = train_test_val_split(X,y,0.6,0.2);
+[X_train,~,X_test,y_train,~,y_test] = train_test_val_split(X,y,0.6,0.2);
 
 % Make a predicition based on Bayesian inference 
 y_pred = mdlopt.predict(X_test');
 
 % Compute performance metrics
-stats = statistics(y_pred, y_test');
+stats = statistics(y_pred,y_test');
 
 % Plot confusion matrix
 plot_corrosion_confmat2(y_test',y_pred);

@@ -13,18 +13,21 @@ the results may not be the same due to the stochastic nature of Bayesian
 optimization. To replicate the results in Section 5.7 run the script
 'run_corrosion_mwe.m'.
 
-Expected runtime 40 minutes with 6 core CPU (with parallelization).
+Expected runtime with test size 0.7 is 40 minutes with 6 core CPU
+(with parallelization). Therefore, the test size is set to 0.1 (feel free
+to change it).
 
 Updates will be commited to "Development/test_corrosion_bayesopt.m".
 
 %}
 
+% The amount of training data is set to 10%! 
+% For the final model this parameter was set to 0.7. 
+train_size = 0.1;
+gt = 'GroundTruth';
 descriptors = ["StatMomHSV","StatMomRGB","GLCM_Gray","GLCM_HSV","GLCM_RGB"];
-descriptorsEnum = map_descriptors(descriptors);
-
-gt = 'GroundTruthBinaryCropped';
 undersample = false;
-[X, ca_Y] = get_data_from_dataset_selection(0.7, gt, descriptors, undersample);
+[X, ca_Y] = get_data_from_dataset_selection(0.1, gt, descriptors, undersample);
 X(isnan(X)) = 0; 
 y = X(:,end);
 [X, ca_Y, ~, SCALE] = scaling(X(:,1:end-1), ca_Y, 'minmax');
@@ -41,13 +44,11 @@ y = X(:,end);
 %--------------------------------------------------------------------------
 
 mdl = KKLDJ();
-mdl.MRMR = MRMR;
 mdl.PCA = PCA;
 mdl.SCALE = SCALE;
-mdl.NCAidx = NCAidx;
 mdl.Nrand = 5;
 mdl.scaleT = false;
-mdl.descriptors = descriptorsEnum;
+mdl.descriptors = map_descriptors(descriptors);
 
 alphas = optimizableVariable('alpha',[0.99,1-1e-8],'Type','real'); % [0.99,0.99999999]
 clusters = optimizableVariable('K',[2,150],'Type','integer');
