@@ -9,7 +9,7 @@ rng(42); % For reproducibility; will guarantee that the model is not tested
          % Fig. 5.4 in the main text (page 50).
 
 % Load pre-trained model (see class KKLDJ for more information)
-mdlopt = load('ModelKKLDJ_bayesopt_04-24.mat').mdlopt; 
+mdlopt = load('PretrainedModel.mat').mdlopt; 
 
 % Load PCA parameters
 PCA = mdlopt.PCA; 
