@@ -1,13 +1,17 @@
 function [stats] = statistics(labels, ground_truth)
-%STATISTICS Summary of this function goes here
+%STATISTICS
 
 try
-    [TPR,FPR,T,AUC] = perfcurve(ground_truth,labels,1);
+    [~,~,~,AUC] = perfcurve(ground_truth,labels,1);
+    stats.auc = AUC;
+    
+    [~,~,~,PRAUC] = perfcurve(ground_truth,labels,1,...
+    'xCrit', 'reca', 'yCrit', 'prec'); 
+    stats.prauc = PRAUC;
 catch ME
-    % HOTFIX
     warning("%s\n%s\n", ME.identifier, ME.message);
-    stats = struct('fp', 0, 'fn', 0, 'precision', 0, 'recall', 0, 'f1score', 0, 'accuracy', 0, 'mae', 0, 'mse', 0, 'auc', 0);
-    return
+    stats.auc = NaN;
+    stats.prauc = NaN;
 end 
 
 if isnumeric(labels) 
@@ -18,20 +22,27 @@ if isnumeric(ground_truth)
 end
 
 % Confusion matrix
-C = confusionmat(labels, ground_truth);
+CM = confusionmat(labels, ground_truth);
 
-TN = C(1,1);
-FP = C(1,2);
-FN = C(2,1);
-TP = C(2,2);
+TN = CM(1,1);
+FP = CM(1,2);
+FN = CM(2,1);
+TP = CM(2,2);
 
+stats.CM = CM;
+stats.tp = TP;
+stats.tn = TN;
 stats.fp = FP;
 stats.fn = FN;
 
 %confusionchart(C);
 
 % PRECISION
-stats.precision = TP / (TP + FP);
+if (TP + FP) == 0
+    stats.precision = 0;
+else
+    stats.precision = TP / (TP + FP);
+end
 
 % RECALL
 if (TP + FN) == 0
@@ -41,11 +52,10 @@ else
 end
 
 % F1SCORE
-if (stats.precision + stats.recall) == 0
-    stats.f1score = 0;
+if (TP+FP+FN) == 0
+    stats.f1score = 1;
 else
-    stats.f1score = 2 * (stats.precision * stats.recall) /...
-                    (stats.precision + stats.recall); 
+    stats.f1score = 2*TP / (2*TP + FP + FN);
 end
                 
 % ACCURACY
@@ -71,14 +81,18 @@ stats.mae = sum(abs(labels(:,1) - ground_truth(:,1))) / size(ground_truth,1);
 % https://en.wikipedia.org/wiki/Mean_squared_error
 stats.mse = sum((labels(:,1) - ground_truth(:,1)).^2) / size(ground_truth,1);
 
-stats.auc = AUC;
+% Calculate Matthews Correlation Coefficient (MCC)
+num = (TP*TN - FP*FN);
+denom = sqrt((TP+FP)*(TP+FN)*(TN+FP)*(TN+FN));
+if denom == 0
+    mcc = 0; % TODO: this can be defined better than as zero
+    warning("MCC undefined.");
+else
+    mcc = num / denom; 
+end
 
-%{
-figure
-plot(TPR,FPR)
-hold on
-yline(AUC)
-%}
+stats.mcc = mcc;
+stats.nmcc = (mcc+1)/2;
 
 end
 

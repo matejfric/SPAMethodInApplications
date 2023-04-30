@@ -23,7 +23,7 @@ for i = 3:numel(listing)
 %     figure; imshow(ca{i-2,2}, []);
 end
 
-descriptors = [Descriptor.StatMomHSV];
+descriptors = [Descriptor.GLCM_Gray];
 
 n = size(ca, 1);
 for i = progress(1:n)
@@ -39,5 +39,5 @@ for i = progress(1:n)
     end
     X = get_descriptors(ca(i,1:2), descriptors, PROBABILITIES);
     %TODO: X = get_GLCM_pixel_value
-    save(sprintf('%sX%s.mat', [folder '/Descriptors/StatMomHSV34/'], ca{i,3}),'X');
+    save(sprintf('%sX%s.mat', [folder '/Descriptors/GLCM_Gray/'], ca{i,3}),'X');
 end

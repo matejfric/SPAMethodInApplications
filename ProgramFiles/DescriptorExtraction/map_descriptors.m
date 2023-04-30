@@ -15,6 +15,7 @@ mapping =  {'LBP', Descriptor.LBP;
             'GroundTruth', Descriptor.GroundTruth;
             'LBP_RGB', Descriptor.LBP_RGB;
             'LBP_HSV', Descriptor.LBP_HSV;
+            'LBP16', Descriptor.LBP16;
             };
 
 for i = 1:numel(descriptors)

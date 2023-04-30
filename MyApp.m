@@ -3,11 +3,14 @@ classdef MyApp < matlab.apps.AppBase
     % Properties that correspond to app components
     properties (Access = public)
         UIFigure      matlab.ui.Figure
-        %UIPanel       matlab.ui.container.Panel
         UIAxes        matlab.ui.control.UIAxes
         UploadButton  matlab.ui.control.Button
         ProcessButton matlab.ui.control.Button
-        mdl
+    end
+    
+    properties (Access = private)
+        img % uploaded image 
+        mdl % ML model
     end
     
     % Callbacks that handle component events
@@ -21,21 +24,39 @@ classdef MyApp < matlab.apps.AppBase
                 return;
             end
             % Load image and display it in the panel
-            img = imread(fullfile(pathname, filename));
+            
+            app.img = imread(fullfile(pathname, filename));
             app.UIAxes.Visible = 'on';
-            imshow(img, 'Parent', app.UIAxes);
+            resizedImg = imresize(app.img, ...
+                [app.UIAxes.Position(4) app.UIAxes.Position(3)]);
+            imshow(resizedImg, 'Parent', app.UIAxes);
+
+            
+%             img = imread(fullfile(pathname, filename));
+%             app.UIAxes.Visible = 'on';
+%             imshow(img, 'Parent', app.UIAxes);
         end
         
         % Button pushed function: ProcessButton
         function ProcessButtonPushed(app,~)
             % Get the image from the panel
-            img = getimage(app.UIAxes);
-            h = waitbar(0,'Processing, please wait...');
+            %img = getimage(app.UIAxes);
+            
             % Process the image using your custom function
-            processedImg = app.mdl.processImage(img);
-            close(h);
+            h = waitbar(0,'Processing, please wait...');
+            %processedImg = app.mdl.processImage(img);
+            processedImg = app.mdl.processImage(app.img);
+            
+            % Close waitbar
+            close(h); 
+            
             % Display the updated image in the panel
             app.UIAxes.Visible = 'on';
+            
+            %resizedImg = imresize(processedImg, ...
+            %    [app.UIAxes.Position(4) app.UIAxes.Position(3)]);
+            %imshow(resizedImg, 'Parent', app.UIAxes);
+            
             imshow(processedImg, 'Parent', app.UIAxes);
         end
     end
@@ -87,7 +108,9 @@ classdef MyApp < matlab.apps.AppBase
             createComponents(app);
             
             % Load the pre-trained KKLDJ model 
-            app.mdl = load('ModelKKLDJ.mat').mdl;
+            %app.mdl = load('ModelKKLDJ.mat').mdl;
+            %app.mdl = load('ModelKKLDJ_GLCM_HSV.mat').mdl;
+            app.mdl = load('ModelKKLDJ_bayesopt_04-24.mat').mdlopt;
             
             % Show the figure after all components are created
             app.UIFigure.Visible = 'on';

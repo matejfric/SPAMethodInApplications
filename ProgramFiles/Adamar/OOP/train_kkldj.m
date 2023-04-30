@@ -67,8 +67,6 @@ L0 = L;
 if verbose
     fprintf("it=%d  L=%.2f\n", 0, L0);
 end
-learningErrors = zeros(0, maxIters); % preallocation
-ground_truth = PiY(1,:);
 myeps = 1e-6; %TODO
 
 for it = 1:maxIters

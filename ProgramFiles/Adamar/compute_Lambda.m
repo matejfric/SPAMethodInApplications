@@ -48,7 +48,8 @@ else % SPG
 end
 
 if and(f_new > f_old, abs(f_new - f_old) > 1e-4)
-    keyboard
+    return
+    %keyboard
 end
 
 end

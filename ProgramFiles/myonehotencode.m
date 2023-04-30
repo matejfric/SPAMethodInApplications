@@ -1,12 +1,17 @@
-function [Pi,classes] = myonehotencode(labels)
+function [Pi,classes] = myonehotencode(labels, classes)
 %MYONEHOTENCODE
 arguments
-    labels (:,1) double       
+    labels (:,1) double  
+    classes = []
 end
 %OUT: Pi (:,:) double   ... M x T matrix
 %     classes           ... unique classification classes
 
-classes = unique(labels,'stable'); % do not sort
+if isempty(classes)
+    classes = unique(labels,'stable'); % do not sort
+    classes = sort(classes,'descend');
+end
+
 T = length(labels);
 M = length(classes);
 Pi = zeros(M,T);

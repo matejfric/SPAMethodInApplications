@@ -1,4 +1,4 @@
-function [] = visualize(original_rgb, annnotation, ground_truth, prediction, caption)
+function [f] = visualize(original_rgb, annnotation, ground_truth, prediction, caption)
 %VISUALIZE 
 arguments
     original_rgb
@@ -24,19 +24,22 @@ fontSize = 15;
 tiledlayout(1,5,'TileSpacing','Compact','Padding','Compact');
 % Original image
 nexttile
-imshow(cell2mat(original_rgb))
+imshow(add_border(cell2mat(original_rgb)))
 title("Original image", 'Interpreter', 'latex', 'FontSize', fontSize)
 % Ground truth
 nexttile
-imshow(annnotation, [])
+imshow(add_border(annnotation), [])
+box on
 title("Ground truth", 'Interpreter', 'latex', 'FontSize', fontSize)
 % Ground truth converted to patches
 nexttile
-imshow(ground_truth, [])
+imshow(add_border(ground_truth), [])
+box on
 title("Ground truth patches", 'Interpreter', 'latex', 'FontSize', fontSize)
 % Prediction
 nexttile
-imshow(prediction, [])
+imshow(add_border(prediction), [])
+box on
 title("Prediction", 'Interpreter', 'latex', 'FontSize', fontSize)
 colorbar
 % Prediction overlay
@@ -47,7 +50,8 @@ sz = size(irig_img(:,:,1));
 ms = mod(sz,16);
 sz = sz - ms; 
 irig_img = irig_img(1:sz(1),1:sz(2),:);
-imshow(irig_img);
+imshow(add_border(irig_img));
+box on
 title("Prediction overlay", 'Interpreter', 'latex', 'FontSize', fontSize)
 red = cat(3, ones(sz), zeros(sz), zeros(sz));
 hold on
@@ -79,6 +83,16 @@ if false
     set(h, 'AlphaData', 0.75 .* prediction(1:sz(1),1:sz(2)))
 end
 
+end
+
+function img = add_border(img)
+%ADD_BORDER
+    % Define border width in pixels
+    border_width = 3;
+    % Define border color
+    border_color = 0;
+    % Add the border using the padarray() function
+    img = padarray(img, [border_width, border_width], border_color, 'both');
 end
 
 function img = vector2image(vector, original_image)

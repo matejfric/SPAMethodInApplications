@@ -1,4 +1,5 @@
-function [X, ca_Y] = get_data_from_dataset_selection(train_size, ground_truth, descriptors)
+function [X, ca_Y] = get_data_from_dataset_selection(...
+    train_size, ground_truth, descriptors, undersample)
 %GET_DATA_FROM_DATASET_SELECTION Summary of this function goes here
 arguments
     train_size = 0.8;
@@ -6,10 +7,12 @@ arguments
     ground_truth = 'GroundTruthBinaryCropped';
     % GroundTruthBinary, GroundTruthProbability, GroundTruthBinaryCropped
     
-    descriptors = ["LBP_HSV" "StatMomHSV"]
+    descriptors = ["LBP_HSV" "StatMomHSV"];
     % LBP, LBP_HSV, LBP_RGB,
     % StatMomHSV, StatMomHSV34, StatMomRGB,
     % GLCM_HSV, GLCM_RGB, GLRLM, GLCMGray1, GLCMGray7
+    
+    undersample = false;
 end
     %Descriptors folder:
     % Descriptors (16), Descriptors8
@@ -60,7 +63,9 @@ end
     n_train = floor(n * train_size); % Training set size
     X = cell2mat({cell2mat(ca(1:n_train)).X}');
     
-    %X = under_sample(X);
+    if undersample
+        X = under_sample(X);
+    end
     
     %ca_Y = ca(1:n_train); % test on training data
     ca_Y = ca(n_train+1:n); % test on testing data
