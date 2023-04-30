@@ -1,3 +1,7 @@
+%--------------------------------------------------------------------------    
+%  Comparison on Diagnostic Wisconsin Breast Cancer Dataset
+%--------------------------------------------------------------------------
+
 clear all
 warning off; % Custom warning that MCC is undefined during training. 
 addpath(genpath(pwd));
@@ -6,9 +10,25 @@ rng(42);
 [X,y] = get_bcwd_data();
 %[X,y] = get_wine_data();
 %[X,y] = get_ionosphere_data();
-%X = scaling(X, [], 'minmax');
-X = scaling(X, [], 'zscore');
+%X = normalize(X,'range');
+X = normalize(X,'zscore');
 
+if false
+    % Visualizing the dataset distribution
+    opts = detectImportOptions('bcwd.csv','NumHeaderLines',0);
+    table = readtable('bcwd.csv',opts);
+    features = table.Properties.VariableNames;
+    figure
+    tiledlayout(5,6)
+    for d = 1:size(X,2)
+        nexttile
+        % Use the pdf option to normalize the area under the histogram to 1
+        histogram(X(:,d), 100, 'Normalization', 'pdf')
+        title(strrep(sprintf('Distribution of %s', features{d+2}), '_', ' '))
+        xlabel('Data Values')
+        ylabel('Probability Density')
+    end
+end
 
 classifiers{1} = KKLDJ();
 classifiers{2} = KKLD();
@@ -138,6 +158,7 @@ end
 %--------------------------------------------------------------------------
 % Write latex table
 %--------------------------------------------------------------------------
+
 % Open the output file for writing
 fileID = fopen('comparison_results.txt', 'w');
 
