@@ -26,6 +26,7 @@ Updates will be commited to "Development/test_corrosion_bayesopt.m".
 train_size = 0.1;
 gt = 'GroundTruth';
 descriptors = ["StatMomHSV","StatMomRGB","GLCM_Gray","GLCM_HSV","GLCM_RGB"];
+descriptorsEnum = map_descriptors(descriptors);
 undersample = false;
 [X, ca_Y] = get_data_from_dataset_selection(0.1, gt, descriptors, undersample);
 X(isnan(X)) = 0; 
@@ -48,7 +49,7 @@ mdl.PCA = PCA;
 mdl.SCALE = SCALE;
 mdl.Nrand = 5;
 mdl.scaleT = false;
-mdl.descriptors = map_descriptors(descriptors);
+mdl.descriptors = descriptorsEnum;
 
 alphas = optimizableVariable('alpha',[0.99,1-1e-8],'Type','real'); % [0.99,0.99999999]
 clusters = optimizableVariable('K',[2,150],'Type','integer');
