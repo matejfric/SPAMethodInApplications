@@ -12,6 +12,8 @@ This thesis aims to extend the research on the newly developed Scalable Probabil
 
 - Breast Cancer Wisconsin (Diagnostic) dataset [[UCI Machine Learning Repository](https://doi.org/10.24432/C5DW2B)]
 
+- *K*-means Data [[Kaggle.com]](https://www.kaggle.com/datasets/joonasyoon/clustering-exercises)
+
 ## Requirements
 
 - MATLAB version R2020b and higher
@@ -28,6 +30,8 @@ This thesis aims to extend the research on the newly developed Scalable Probabil
     - [`run_corrosion.m`](run_corrosion.m) - training the ML model using one of the developed algorithms, such trained model is used in the above script
     - [`run_comparison.m`](run_comparison.m) - comparison on Breast Cancer Wisconsin (Diagnostic) dataset (Table 5.2 in the thesis)
     - [`run_synthetic_test.m`](run_synthetic_test.m) - synthetic test (Fig 5.2 in the thesis)
+    - [`run_spa_visualization.m`](run_spa_visualization.m) - SPA visualization in 2D
+    - [`run_kmeans.m`](run_kmeans.m) - custom implementation of *K*-means used to create the animation below
 
 ## Visualization of Lloyd's *K*-means Algorithm
 
