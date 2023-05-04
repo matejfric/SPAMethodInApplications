@@ -12,7 +12,7 @@ This thesis aims to extend the research on the newly developed Scalable Probabil
 
 - Breast Cancer Wisconsin (Diagnostic) dataset [[UCI Machine Learning Repository](https://doi.org/10.24432/C5DW2B)]
 
-- *K*-means Data [[Kaggle.com]](https://www.kaggle.com/datasets/joonasyoon/clustering-exercises)
+- *K*-means Data [[Kaggle.com](https://www.kaggle.com/datasets/joonasyoon/clustering-exercises)]
 
 ## Requirements
 
