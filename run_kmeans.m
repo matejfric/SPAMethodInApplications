@@ -23,7 +23,9 @@ plot_kmeans(X, Gamma, C, K);
 %--------------------------------------------------------------------------
 
 if true
-    frames = animate_kmeans(X', K);
-    filename = 'animation.gif';
-    save_animation_gif(frames, filename, 1)
+    frames = animate_kmeans(X', K); % black background
+    %frames = animate_kmeans_white(X', K); % white background
+    filename = 'myanimation.gif';
+    %save_animation_gif(frames, filename, 1)
 end
+
