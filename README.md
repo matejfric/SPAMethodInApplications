@@ -1,6 +1,6 @@
 # Scalable Probabilistic Approximation Method in Applications
 
-This repository comprises a MATLAB implementation developed as part of my bachelor thesis at VŠB-TUO, which will soon be made available through [dspace.vsb](https://dspace.vsb.cz).
+This repository contains a MATLAB implementation that was developed as a part of my bachelor thesis at VSB – Technical University of Ostrava. The content is now freely accessible on the [Digital repository VSB-TUO](https://dspace.vsb.cz/handle/10084/150159).
 
 ## Abstract
 
